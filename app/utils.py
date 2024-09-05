@@ -1,5 +1,6 @@
 #TimeCenter/app/UTILS.PY É O QUE TEM MINHAS FUNÇÕES
 import pyodbc
+import os
 import pandas as pd
 from datetime import datetime
 import streamlit as st
