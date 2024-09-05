@@ -12,6 +12,6 @@
         ]
       }
     },
-    "postCreateCommand": "pip install pyodbc streamlit pandas"
+    "postCreateCommand": "pip install pyodbc streamlit pandas numpy"
   }
   
