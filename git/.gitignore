@@ -1,7 +1,8 @@
 # Ignorar o arquivo de segredos do Streamlit
-app/.streamlit/secrets.toml
+/workspaces/TimeCenter/app/.streamlit/secrets.toml
 
 # Outras regras de ignorar
 node_modules/
 *.log
+
 __pycache__
