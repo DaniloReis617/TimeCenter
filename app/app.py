@@ -5,9 +5,13 @@ import pandas as pd
 from utils import get_db_connection, validate_login
 from pages import screens  # Módulo com as telas
 
+icone = r"/workspaces/TimeCenter/app/imagens/icone_timenow_cor.png"
+logo_horizontal = r"/workspaces/TimeCenter/app/imagens/logo_timenow_horizontal_cor.png"
+logo_vertical = r"/workspaces/TimeCenter/app/imagens/logo_timenow_vertical_cor.png"
+
 st.set_page_config(
     page_title="Time Center", 
-    page_icon="imagens/icone_timenow_cor.png",  
+    page_icon=icone,  
     layout="wide"
 )
 
@@ -22,7 +26,7 @@ if 'current_screen' not in st.session_state:
 def main():
     if st.session_state['authenticated']:
         with st.sidebar:
-            st.logo("imagens/logo_timenow_horizontal_cor.png", icon_image="imagens/icone_timenow_cor.png")
+            st.logo(logo_horizontal, icon_image=icone)
             st.title("Navegação")
 
             # Obter o perfil do usuário autenticado
@@ -87,7 +91,7 @@ def login_screen():
         with col2:
             col1, col2, col3 = st.columns([3, 4, 3])
             with col2:
-                st.image("imagens/logo_timenow_vertical_cor.png", width=250)
+                st.image(logo_vertical, width=250)
 
             st.write("Bem-vindo ao Time Center, por favor realize o seu login!")
             with st.form(key="form_login", clear_on_submit=True):
