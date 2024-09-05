@@ -6,9 +6,9 @@ from utils import get_db_connection, validate_login
 from pages import screens  # Módulo com as telas
 
 
-icone = "imagens/icone_timenow_cor.png"
-logo_horizontal = "imagens/logo_timenow_horizontal_cor.png"
-logo_vertical = "imagens/logo_timenow_vertical_cor.png"
+icone = r"imagens/icone_timenow_cor.png"
+logo_horizontal = r"imagens/logo_timenow_horizontal_cor.png"
+logo_vertical = r"imagens/logo_timenow_vertical_cor.png"
 
 st.set_page_config(
     page_title="Time Center", 
