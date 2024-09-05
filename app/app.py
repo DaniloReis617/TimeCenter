@@ -5,9 +5,10 @@ import pandas as pd
 from utils import get_db_connection, validate_login
 from pages import screens  # Módulo com as telas
 
-icone = r"/workspaces/TimeCenter/app/imagens/icone_timenow_cor.png"
-logo_horizontal = r"/workspaces/TimeCenter/app/imagens/logo_timenow_horizontal_cor.png"
-logo_vertical = r"/workspaces/TimeCenter/app/imagens/logo_timenow_vertical_cor.png"
+caminho_atual = os.getcwd()
+icone = os.path.join(caminho_atual, r'imagens', 'icone_timenow_cor.png')
+logo_horizontal = os.path.join(caminho_atual, r'imagens', 'logo_timenow_horizontal_cor.png')
+logo_vertical = os.path.join(caminho_atual, r'imagens', 'logo_timenow_vertical_cor.png')
 
 st.set_page_config(
     page_title="Time Center", 
