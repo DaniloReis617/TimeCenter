@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.logo("imagens/logo_timenow_horizontal_cor.png", icon_image="imagens/icone_timenow_cor.png")
+st.logo("imagens/logo_timenow_horizontal_cor.png")
 
 # Inicialização do estado de autenticação
 if 'authenticated' not in st.session_state:
@@ -88,14 +88,15 @@ def login_screen():
         with col2:
             col1, col2, col3 = st.columns([3, 4, 3])
             with col2:
-                st.image(r"imagens/logo_timenow_vertical_cor.png", width=250)
-                st.write("Bem-vindo ao Time Center, por favor realize o seu login!")
-                with st.form(key="form_login", clear_on_submit=True):
-                    username = st.text_input("Email", placeholder="Digite seu Email")
-                    submit_button = st.form_submit_button('Entrar')
-                    
-                    if submit_button:
-                        handle_login(username)
+                st.image("imagens/logo_timenow_vertical_cor.png", width=250)
+
+            st.write("Bem-vindo ao Time Center, por favor realize o seu login!")
+            with st.form(key="form_login", clear_on_submit=True):
+                username = st.text_input("Email", placeholder="Digite seu Email")
+                submit_button = st.form_submit_button('Entrar')
+                
+                if submit_button:
+                    handle_login(username)
 
 def handle_login(username):
     """Lida com o processo de login, incluindo validação e navegação."""
