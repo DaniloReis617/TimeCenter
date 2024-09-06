@@ -7,7 +7,7 @@ from pages import screens  # Módulo com as telas
 
 st.set_page_config(
     page_title="Time Center", 
-    page_icon="imagens/icone_timenow_cor.png",  
+    page_icon=r"imagens/icone_timenow_cor.png",  
     layout="wide"
 )
 
@@ -22,7 +22,7 @@ if 'current_screen' not in st.session_state:
 def main():
     if st.session_state['authenticated']:
         with st.sidebar:
-            st.logo("imagens/logo_timenow_horizontal_cor.png")
+            st.logo(r"imagens/logo_timenow_horizontal_cor.png")
             st.title("Navegação")
 
             # Obter o perfil do usuário autenticado
@@ -87,7 +87,7 @@ def login_screen():
         with col2:
             col1, col2, col3 = st.columns([3, 4, 3])
             with col2:
-                #st.image("imagens/logo_timenow_vertical_cor.png", width=250)
+                st.image(r"imagens/logo_timenow_vertical_cor.png", width=250)
                 st.write("Bem-vindo ao Time Center, por favor realize o seu login!")
                 with st.form(key="form_login", clear_on_submit=True):
                     username = st.text_input("Email", placeholder="Digite seu Email")
