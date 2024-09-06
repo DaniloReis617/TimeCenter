@@ -3,7 +3,7 @@ import streamlit as st
 import os
 import pandas as pd
 import numpy as np
-from utils import apply_custom_style_and_header, get_db_connection, get_vw_nota_manutencao_hh_data, read_data, create_data, update_data
+from utils import apply_custom_style_and_header, get_db_connection, get_vw_nota_manutencao_hh_data, read_data, create_data, update_data, get_projetos_por_usuario, get_descricao_projetos
 
 def home_screen():
     apply_custom_style_and_header("Tela Home")
@@ -353,89 +353,109 @@ def adm_screen():
     apply_custom_style_and_header("Tela de Administração")
 
     conn = get_db_connection()
-    
+
     if conn:
         usuarios_df = read_data(conn, "timecenter.TB_USUARIO")
-        
+
         if usuarios_df.empty:
             st.warning("Nenhum usuário encontrado.")
         else:
             # Criar as abas
-            tab1, tab2, tab3 = st.tabs([
+            tab1, tab2, tab3, tab4 = st.tabs([
                 "Dashboards de Usuários", 
                 "Cadastro de Novos Usuários", 
-                "Edição de Usuários"
+                "Edição de Usuários",
+                "Lista de Projetos por Usuário"
             ])
             
+            # Mapeamentos para os campos NR_NIVEL e FL_STATUS
+            nivel_mapping = {1: "Visualizador", 2: "Gestor", 4: "Administrador", 8: "Super Usuário"}
+            status_mapping = {"A": "Ativo", "I": "Inativo"}
+
+            # Adiciona as colunas mapeadas ao DataFrame de usuários
+            usuarios_df['NR_NIVEL_MAPPED'] = usuarios_df['NR_NIVEL'].map(nivel_mapping)
+            usuarios_df['FL_STATUS_MAPPED'] = usuarios_df['FL_STATUS'].map(status_mapping)
+
             # Conteúdo da aba 1 - Dashboards de Usuários
             with tab1:
                 st.write("Dashboard de Usuários")
-                st.dataframe(usuarios_df[['ID','TX_LOGIN', 'FL_STATUS', 'NR_NIVEL']],use_container_width=True,hide_index=True)  # Exibe as principais colunas dos usuários
-                
+                st.dataframe(usuarios_df[['ID', 'TX_LOGIN', 'FL_STATUS_MAPPED', 'NR_NIVEL_MAPPED']], use_container_width=True, hide_index=True)
+
             # Conteúdo da aba 2 - Cadastro de Novos Usuários
             with tab2:
                 st.write("Cadastro de Novos Usuários")
                 with st.form(key="form_novo_usuario"):
-                    novo_login = st.text_input("Login")
+                    novo_login = st.text_input("Login", key="novo_login")
                     
-                    # Selecionar o perfil para o novo usuário
-                    novo_nivel = st.selectbox("Nível de Acesso", ["Visualizador", "Gestor", "Administrador", "Super Usuário"])
-                    novo_status = st.selectbox("Status", ["Ativo", "Inativo"])
+                    novo_nivel = st.selectbox("Nível de Acesso", ["Visualizador", "Gestor", "Administrador", "Super Usuário"], key="novo_nivel")
+                    novo_status = st.selectbox("Status", ["Ativo", "Inativo"], key="novo_status")
 
-                    # Botão para cadastrar o novo usuário
                     submit_button = st.form_submit_button("Cadastrar")
 
                     if submit_button:
-                        # Mapear o nível e status para seus valores correspondentes
                         nivel_reverso_mapping = {"Visualizador": 1, "Gestor": 2, "Administrador": 4, "Super Usuário": 8}
                         status_reverso_mapping = {"Ativo": "A", "Inativo": "I"}
                         
                         novo_usuario = {
                             "TX_LOGIN": novo_login,
-                            "NR_NIVEL": nivel_reverso_mapping[novo_nivel],  # Converte o perfil para número
-                            "FL_STATUS": status_reverso_mapping[novo_status]  # Converte o status para "A" ou "I"
+                            "NR_NIVEL": nivel_reverso_mapping[novo_nivel],
+                            "FL_STATUS": status_reverso_mapping[novo_status]
                         }
 
-                        # Inserir o novo usuário no banco de dados
                         create_data(conn, "timecenter.TB_USUARIO", novo_usuario)
                         st.success(f"Usuário {novo_login} cadastrado com sucesso!")
 
             # Conteúdo da aba 3 - Edição de Usuários
             with tab3:
-                usuario_selecionado = st.selectbox("Selecione um usuário", usuarios_df['TX_LOGIN'])
+                usuario_selecionado = st.selectbox("Selecione um usuário", usuarios_df['TX_LOGIN'], key="edicao_usuario")
                 usuario_info = usuarios_df[usuarios_df['TX_LOGIN'] == usuario_selecionado].iloc[0]
 
-                # Mapeamento de NR_NIVEL para perfis de texto
-                nivel_mapping = {1: "Visualizador", 2: "Gestor", 4: "Administrador", 8: "Super Usuário"}
                 nivel_atual = nivel_mapping.get(usuario_info['NR_NIVEL'], "Perfil Desconhecido")
-
-                # Mapeamento de FL_STATUS para texto
-                status_mapping = {"A": "Ativo", "I": "Inativo"}
                 status_atual = status_mapping.get(usuario_info['FL_STATUS'], "Status Desconhecido")
                 
                 with st.form(key="form_editar_usuario"):
-                    login = st.text_input("Login", value=usuario_info['TX_LOGIN'])
+                    login = st.text_input("Login", value=usuario_info['TX_LOGIN'], key="edicao_login")
                     
-                    # Selecionar o perfil baseado no mapeamento de NR_NIVEL
                     nivel = st.selectbox("Nível de Acesso", 
                                          ["Visualizador", "Gestor", "Administrador", "Super Usuário"], 
-                                         index=["Visualizador", "Gestor", "Administrador", "Super Usuário"].index(nivel_atual))
+                                         index=["Visualizador", "Gestor", "Administrador", "Super Usuário"].index(nivel_atual), 
+                                         key="edicao_nivel")
                     
-                    # Selecionar o status baseado no mapeamento de FL_STATUS
-                    status = st.selectbox("Status", ["Ativo", "Inativo"], index=["Ativo", "Inativo"].index(status_atual))
+                    status = st.selectbox("Status", ["Ativo", "Inativo"], index=["Ativo", "Inativo"].index(status_atual), key="edicao_status")
                     
                     submit_button = st.form_submit_button("Atualizar")
 
                     if submit_button:
-                        # Mapear o nível de acesso de volta para o número correspondente
                         nivel_reverso_mapping = {"Visualizador": 1, "Gestor": 2, "Administrador": 4, "Super Usuário": 8}
-                        # Mapear o status de volta para "A" ou "I"
                         status_reverso_mapping = {"Ativo": "A", "Inativo": "I"}
                         
                         dados_atualizados = {
                             "TX_LOGIN": login,
-                            "NR_NIVEL": nivel_reverso_mapping[nivel],  # Converte o perfil de volta para número
-                            "FL_STATUS": status_reverso_mapping[status]  # Converte o status de volta para "A" ou "I"
+                            "NR_NIVEL": nivel_reverso_mapping[nivel],
+                            "FL_STATUS": status_reverso_mapping[status]
                         }
                         update_data(conn, "timecenter.TB_USUARIO", "TX_LOGIN", usuario_info['TX_LOGIN'], dados_atualizados)
                         st.success(f"Usuário {login} atualizado com sucesso!")
+
+            # Conteúdo da aba 4 - Projetos por Usuário
+            with tab4:
+                st.write("Projetos por Usuário")
+                usuario_selecionado_projeto = st.selectbox("Selecione um usuário", usuarios_df['TX_LOGIN'], key="projeto_usuario")
+                usuario_info_projeto = usuarios_df[usuarios_df['TX_LOGIN'] == usuario_selecionado_projeto].iloc[0]
+                
+                # Obter os projetos associados ao GID do usuário
+                projetos_df = get_projetos_por_usuario(conn, usuario_info_projeto['GID'])
+
+                if not projetos_df.empty:
+                    # Obter as descrições dos projetos da tabela TB_PROJETO via utils.py
+                    cd_projetos_list = projetos_df['CD_PROJETO'].unique().tolist()
+                    if cd_projetos_list:
+                        projetos_desc_df = get_descricao_projetos(conn, cd_projetos_list)
+
+                        # Fazer o merge das descrições com os projetos
+                        projetos_df = projetos_df.merge(projetos_desc_df, left_on='CD_PROJETO', right_on='GID', how='left')
+
+                        # Exibir a tabela com a descrição dos projetos
+                        st.dataframe(projetos_df[['TX_DESCRICAO']], use_container_width=True, hide_index=True)
+                else:
+                    st.warning(f"Este usuário ({usuario_selecionado_projeto}) não tem acesso a nenhum projeto.")

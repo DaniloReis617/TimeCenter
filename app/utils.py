@@ -147,6 +147,31 @@ def validate_login(conn, username):
         st.error(f"Erro na validação de login para o usuário {username}: {e}")
         return False, None
 
+def get_projetos_por_usuario(conn, gid_usuario):
+    """Retorna os projetos associados ao GID de um usuário."""
+    query = "SELECT * FROM timecenter.TB_USUARIO_PROJETO WHERE CD_USUARIO = ?"
+    
+    try:
+        return pd.read_sql(query, conn, params=[gid_usuario])
+    except Exception as e:
+        st.error(f"Erro ao obter projetos para o usuário {gid_usuario}: {e}")
+        return pd.DataFrame()
+
+def get_descricao_projetos(conn, cd_projetos_list):
+    """Retorna as descrições dos projetos com base na lista de GIDs fornecidos."""
+    query = f"""
+    SELECT GID, TX_DESCRICAO 
+    FROM timecenter.TB_PROJETO 
+    WHERE GID IN ({','.join(['?'] * len(cd_projetos_list))})
+    """
+    
+    try:
+        return pd.read_sql(query, conn, params=cd_projetos_list)
+    except Exception as e:
+        st.error(f"Erro ao obter descrições dos projetos: {e}")
+        return pd.DataFrame()
+
+
 def apply_custom_style_and_header(title):
     # Adiciona estilo personalizado
     st.markdown("""
