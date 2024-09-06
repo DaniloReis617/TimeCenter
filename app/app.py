@@ -87,7 +87,7 @@ def login_screen():
         with col2:
             col1, col2, col3 = st.columns([3, 4, 3])
             with col2:
-                st.image("./imagens/logo_timenow_vertical_cor.png", width=250)
+                st.image("imagens/logo_timenow_vertical_cor.png", width=250)
 
             st.write("Bem-vindo ao Time Center, por favor realize o seu login!")
             with st.form(key="form_login", clear_on_submit=True):
