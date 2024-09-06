@@ -1,5 +1,4 @@
 import streamlit as st
-import os
 import re
 import pandas as pd
 from utils import get_db_connection, validate_login
@@ -23,7 +22,7 @@ if 'current_screen' not in st.session_state:
 def main():
     if st.session_state['authenticated']:
         with st.sidebar:
-            st.logo("imagens/logo_timenow_horizontal_cor.png", icon_image="imagens/icone_timenow_cor.png")
+            st.logo("imagens/logo_timenow_horizontal_cor.png")
             st.title("Navegação")
 
             # Obter o perfil do usuário autenticado
