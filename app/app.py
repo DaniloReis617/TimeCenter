@@ -26,23 +26,22 @@ if 'current_screen' not in st.session_state:
 
 def main():
     if st.session_state['authenticated']:
-
-        # CSS para ajustar a largura da barra lateral
-        st.markdown(
-            """
-            <style>
-            /* Altera a largura da barra lateral */
-            [data-testid="stSidebar"] {
-                width: 200px;  /* Defina a largura desejada */
-            }
-            [data-testid="stSidebar"] .css-1d391kg {  /* Ajusta a largura do conteúdo da barra lateral */
-                width: 200px;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
         with st.sidebar:
+            # CSS para ajustar a largura da barra lateral
+            st.markdown(
+                """
+                <style>
+                /* Altera a largura da barra lateral */
+                [data-testid="stSidebar"] {
+                    width: 200px;  /* Defina a largura desejada */
+                }
+                [data-testid="stSidebar"] .css-1d391kg {  /* Ajusta a largura do conteúdo da barra lateral */
+                    width: 200px;
+                }
+                </style>
+                """,
+                unsafe_allow_html=True
+            )
             st.logo(logo_horizontal, icon_image=icone)
             st.title("Navegação")
 
