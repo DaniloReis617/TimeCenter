@@ -171,6 +171,29 @@ def get_descricao_projetos(conn, cd_projetos_list):
         st.error(f"Erro ao obter descrições dos projetos: {e}")
         return pd.DataFrame()
 
+def get_all_projetos(conn):
+    """Retorna todos os projetos ativos (FL_STATUS = 'A') da tabela timecenter.TB_PROJETO."""
+    query = """
+    SELECT GID, TX_DESCRICAO, FL_STATUS
+    FROM timecenter.TB_PROJETO
+    WHERE FL_STATUS = 'A'
+    """
+    try:
+        return pd.read_sql(query, conn)
+    except Exception as e:
+        st.error(f"Erro ao obter os projetos ativos: {e}")
+        return pd.DataFrame()
+    
+def delete_data(conn, table_name, id_column, id_value):
+    """Deleta um registro existente em uma tabela."""
+    query = f"DELETE FROM {table_name} WHERE {id_column} = ?"
+    try:
+        cursor = conn.cursor()
+        cursor.execute(query, [id_value])
+        conn.commit()
+    except Exception as e:
+        st.error(f"Erro ao deletar registro da tabela {table_name}: {e}")
+
 
 def apply_custom_style_and_header(title):
     # Adiciona estilo personalizado
