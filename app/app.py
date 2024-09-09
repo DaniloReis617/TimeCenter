@@ -1,143 +1,65 @@
 import streamlit as st
-import os
-import re
-import pandas as pd
-from utils import get_db_connection, validate_login
-from pages import screens  # Módulo com as telas
+from utils import get_db_connection, validate_login  # Assumindo que estas funções estão definidas em utils.py
 
+# Configuração inicial da página
+st.set_page_config(page_title="Time Center", page_icon="./assets/icone_timenow_cor.png", layout="wide")
 
-icone = r"./imagens/icone_timenow_cor.png"
-logo_horizontal = r"./imagens/logo_timenow_horizontal_cor.png"
-logo_vertical = r"./imagens/logo_timenow_vertical_cor.png"
-
-st.set_page_config(
-    page_title="Time Center", 
-    page_icon=icone,  
-    layout="wide"
-)
-
-# Inicialização do estado de autenticação
+# Verificar se o usuário está logado e obter o perfil
 if 'authenticated' not in st.session_state:
     st.session_state['authenticated'] = False
+    st.session_state['user_profile'] = None
 
-# Inicialização do estado da tela
-if 'current_screen' not in st.session_state:
-    st.session_state['current_screen'] = 'home'
-
-def main():
-    if st.session_state['authenticated']:
-        with st.sidebar:
-            # CSS para ajustar a largura da barra lateral
-            st.markdown(
-                """
-                <style>
-                /* Altera a largura da barra lateral */
-                [data-testid="stSidebar"] {
-                    width: 200px;  /* Defina a largura desejada */
-                }
-                [data-testid="stSidebar"] .css-1d391kg {  /* Ajusta a largura do conteúdo da barra lateral */
-                    width: 200px;
-                }
-                </style>
-                """,
-                unsafe_allow_html=True
-            )
-            st.logo(logo_horizontal, icon_image=icone)
-            st.title("Navegação")
-
-            # Obter o perfil do usuário autenticado
-            user_perfil = st.session_state['user_info']['perfil']
-
-            # Define as telas permitidas com base no perfil do usuário
-            if user_perfil == "Super Usuário":
-                permitted_screens = ('Home', 'Stakeholders', 'Escopo', 'Custos', 'Recursos', 
-                                     'Qualidade', 'Cronogramas', 'Riscos', 'Aquisições', 'Integração', 'Administração')
-            elif user_perfil == "Administrador":
-                permitted_screens = ('Home', 'Stakeholders', 'Escopo', 'Custos', 'Recursos', 
-                                     'Qualidade', 'Cronogramas', 'Riscos', 'Aquisições', 'Integração', 'Administração')
-            elif user_perfil == "Gestor":
-                permitted_screens = ('Home', 'Stakeholders', 'Escopo', 'Custos', 'Recursos', 
-                                     'Qualidade', 'Cronogramas', 'Riscos', 'Aquisições', 'Integração')
-            else:  # Visualizador
-                permitted_screens = ('Home', 'Stakeholders', 'Escopo', 'Custos', 'Recursos', 
-                                     'Qualidade', 'Cronogramas')
-
-            st.session_state['current_screen'] = st.radio("Ir para:", permitted_screens)
-
-            # Botão para deslogar
-            if st.button("Sair"):
-                logout()
-
-        # Controle de navegação entre as telas
-        if st.session_state['current_screen'] == 'Home':
-            screens.home_screen()
-        elif st.session_state['current_screen'] == 'Stakeholders':
-            screens.stakeholders_screen()
-        elif st.session_state['current_screen'] == 'Escopo':
-            screens.escopo_screen()
-        elif st.session_state['current_screen'] == 'Custos':
-            screens.custos_screen()
-        elif st.session_state['current_screen'] == 'Recursos':
-            screens.recursos_screen()
-        elif st.session_state['current_screen'] == 'Qualidade':
-            screens.qualidade_screen()
-        elif st.session_state['current_screen'] == 'Cronogramas':
-            screens.cronogramas_screen()
-        elif st.session_state['current_screen'] == 'Riscos':
-            screens.riscos_screen()
-        elif st.session_state['current_screen'] == 'Aquisições':
-            screens.aquisicoes_screen()
-        elif st.session_state['current_screen'] == 'Integração':
-            screens.integracao_screen()
-        elif st.session_state['current_screen'] == 'Administração' and user_perfil in ['Super Usuário', 'Administrador']:
-            screens.adm_screen()
-    else:
-        login_screen()
+def load_page(page_name):
+    """Carrega a página dinamicamente com base no nome da página."""
+    module = __import__(f'pages.{page_name}', fromlist=['app'])
+    return module.app
 
 def logout():
     """Função para deslogar o usuário."""
     st.session_state['authenticated'] = False
-    st.session_state['user_info'] = None
-    st.session_state['current_screen'] = 'login'
-    st.rerun()  # Atualiza a página para redirecionar para a tela de login
+    st.session_state['user_profile'] = None
+    st.rerun()
 
-def login_screen():
-    with st.container():
-        col1, col2, col3 = st.columns([3.5, 4, 3.5])
-        with col2:
-            col1, col2, col3 = st.columns([3, 4, 3])
-            with col2:
-                st.image(logo_vertical, width=250)
+# Determinar as páginas acessíveis com base no perfil do usuário
+def get_accessible_pages(user_profile):
+    if user_profile == "Super Usuário" or user_profile == "Administrador":
+        return {
+            "Home": "home",
+            "Stakeholders": "stakeholders",
+            "Escopo": "escopo",
+            "Custos": "custos",
+            "Recursos": "recursos",
+            "Qualidade": "qualidade",
+            "Cronogramas": "cronogramas",
+            "Riscos": "riscos",
+            "Aquisições": "aquisicoes",
+            "Integração": "integracao",
+            "Administração": "adm",
+        }
+    elif user_profile == "Gestor":
+        return {
+            "Home": "home",
+            "Stakeholders": "stakeholders",
+            "Escopo": "escopo",
+            "Custos": "custos",
+            "Recursos": "recursos",
+            "Cronogramas": "cronogramas",
+        }
+    else:  # Visualizador
+        return {
+            "Home": "home",
+            "Stakeholders": "stakeholders",
+        }
 
-            st.write("Bem-vindo ao Time Center, por favor realize o seu login!")
-            with st.form(key="form_login", clear_on_submit=True):
-                username = st.text_input("Email", placeholder="Digite seu Email")
-                submit_button = st.form_submit_button('Entrar')
-                
-                if submit_button:
-                    handle_login(username)
+# Navegação entre páginas
+if not st.session_state['authenticated']:
+    pages = {"Login": "login"}
+else:
+    pages = get_accessible_pages(st.session_state['user_info']['perfil'])
 
-def handle_login(username):
-    """Lida com o processo de login, incluindo validação e navegação."""
-    if not re.match(r"[^@]+@[^@]+\.[^@]+", username):
-        st.error("Por favor, insira um email válido.")
-        return
-    
-    try:
-        conn = get_db_connection()
-        if conn:
-            is_valid, user_details = validate_login(conn, username)
-            if is_valid:
-                st.session_state['authenticated'] = True
-                st.session_state['user_info'] = user_details
-                st.success(f"Login bem-sucedido! Bem-vindo, {st.session_state['user_info']['login']}!")
-                st.rerun()  # Atualiza a página após o login bem-sucedido
-            else:
-                st.error("Usuário inválido. Tente novamente.")
-        else:
-            st.error("Não foi possível conectar ao banco de dados.")
-    except Exception as e:
-        st.error(f"Erro ao tentar autenticar: {e}")
+st.sidebar.title("Navegação")
+st.logo("./assets/logo_timenow_horizontal_cor.png", icon_image="./assets/icone_timenow_cor.png")
+selection = st.sidebar.radio("Ir para", list(pages.keys()))
+page_app = load_page(pages[selection])
+page_app()
 
-if __name__ == "__main__":
-    main()

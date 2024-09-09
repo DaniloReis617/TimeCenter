@@ -3,23 +3,30 @@ import pyodbc
 import os
 import pandas as pd
 from datetime import datetime
+import time
 import streamlit as st
 
 @st.cache_resource
 def get_db_connection():
-    """Estabelece a conexão com o banco de dados utilizando Streamlit Secrets."""
-    try:
-        conn = pyodbc.connect(
-            f"DRIVER={{{st.secrets['database']['driver']}}};"
-            f"SERVER={st.secrets['database']['server']};"
-            f"DATABASE={st.secrets['database']['database']};"
-            f"UID={st.secrets['database']['username']};"
-            f"PWD={st.secrets['database']['password']}"
-        )
-        return conn
-    except pyodbc.Error as e:
-        st.error(f"Erro na conexão com o banco de dados: {e}")
-        return None
+    """Estabelece ou restabelece a conexão com o banco de dados utilizando Streamlit Secrets."""
+    retries = 3
+    for _ in range(retries):
+        try:
+            conn = pyodbc.connect(
+                f"DRIVER={{{st.secrets['database']['driver']}}};"
+                f"SERVER={st.secrets['database']['server']};"
+                f"DATABASE={st.secrets['database']['database']};"
+                f"UID={st.secrets['database']['username']};"
+                f"PWD={st.secrets['database']['password']}",
+                timeout=5  # Define um timeout para a tentativa de conexão
+            )
+            if conn:
+                return conn
+        except pyodbc.Error as e:
+            st.error(f"Tentativa de reconexão falhou: {e}")
+            time.sleep(2)  # Espera antes de tentar novamente
+    return None
+
 
 def get_tables_and_views(conn):
     """Obtém todas as tabelas e views do banco de dados com seus nomes completos."""
@@ -174,7 +181,7 @@ def get_descricao_projetos(conn, cd_projetos_list):
 def get_all_projetos(conn):
     """Retorna todos os projetos ativos (FL_STATUS = 'A') da tabela timecenter.TB_PROJETO."""
     query = """
-    SELECT GID, TX_DESCRICAO, FL_STATUS
+    SELECT ID, GID, TX_DESCRICAO, FL_STATUS, DT_INICIO, DT_TERMINO
     FROM timecenter.TB_PROJETO
     WHERE FL_STATUS = 'A'
     """
