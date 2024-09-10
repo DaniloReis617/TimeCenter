@@ -58,7 +58,7 @@ else:
     pages = get_accessible_pages(st.session_state['user_info']['perfil'])
 
 st.sidebar.title("Navegação")
-st.logo("assets/logo_timenow_horizontal_cor.png", icon_image="assets/icone_timenow_cor.png")
+st.logo("assets/logo_timenow_horizontal_cor.png")
 selection = st.sidebar.radio("Ir para", list(pages.keys()))
 page_app = load_page(pages[selection])
 page_app()
