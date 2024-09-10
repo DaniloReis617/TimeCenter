@@ -1,5 +1,5 @@
 import streamlit as st
-from utils import get_db_connection, validate_login  # Assumindo que estas funções estão definidas em utils.py
+from utils import get_db_connection, validate_login  # Assumindo que estas funções estão definidas em app/utils.py
 
 # Configuração inicial da página
 st.set_page_config(page_title="Time Center", page_icon="./assets/icone_timenow_cor.png", layout="wide")
@@ -58,7 +58,7 @@ else:
     pages = get_accessible_pages(st.session_state['user_info']['perfil'])
 
 st.sidebar.title("Navegação")
-st.logo("assets/logo_timenow_horizontal_cor.png")
+st.logo("./assets/logo_timenow_horizontal_cor.png")
 selection = st.sidebar.radio("Ir para", list(pages.keys()))
 page_app = load_page(pages[selection])
 page_app()
