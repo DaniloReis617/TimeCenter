@@ -14,13 +14,19 @@ def riscos_screen():
         st.error("Selecione um projeto na tela inicial.")
 
     # Criar as abas
-    tab1 = st.tabs([
-        "Mapeamento dos Riscos por Nota"
+    tab1, tab2 = st.tabs([
+        "Mapeamento dos Riscos por Nota",
+        "Outras Páginas"
     ])
     
     # Conteúdo da aba 1
     with tab1:
         st.write("Conteúdo da aba Mapeamento dos Riscos por Nota")
+        # Adicione aqui o conteúdo ou as funcionalidades específicas para Mapeamento dos Riscos por Nota
+
+    # Conteúdo da aba 1
+    with tab2:
+        st.write("Conteúdo da aba de outra página")
         # Adicione aqui o conteúdo ou as funcionalidades específicas para Mapeamento dos Riscos por Nota
 
 def app():
