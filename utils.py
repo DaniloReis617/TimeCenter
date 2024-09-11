@@ -18,7 +18,7 @@ def get_db_connection():
                 f"DATABASE={st.secrets['database']['database']};"
                 f"UID={st.secrets['database']['username']};"
                 f"PWD={st.secrets['database']['password']}",
-                timeout=5  # Define um timeout para a tentativa de conexão
+                timeout=30  # Define um timeout para a tentativa de conexão
             )
             if conn:
                 return conn
