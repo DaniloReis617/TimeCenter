@@ -2,7 +2,7 @@ import streamlit as st
 from utils import get_db_connection, validate_login  # Assumindo que estas funções estão definidas em app/utils.py
 
 # Configuração inicial da página
-st.set_page_config(page_title="Time Center", page_icon="./assets/icone_timenow_cor.png", layout="wide")
+st.set_page_config(page_title="Time Center", page_icon="./assets/icone_timenow_cor.png", layout="wide", initial_sidebar_state="collapsed")
 hide_st_style = """ 
             <style>
             #MainMenu {visibility: hidden;}
