@@ -42,3 +42,6 @@ def integracao_screen():
     with tab3:
         st.write("Conteúdo da aba Timeline da Parada")
         # Adicione aqui o conteúdo ou as funcionalidades específicas para Timeline da Parada
+
+def app():
+    integracao_screen()

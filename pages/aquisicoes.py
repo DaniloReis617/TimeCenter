@@ -36,3 +36,6 @@ def aquisicoes_screen():
     with tab2:
         st.write("Conteúdo da aba Lista de Materiais e Equipamentos")
         # Adicione aqui o conteúdo ou as funcionalidades específicas para Lista de Materiais e Equipamentos
+
+def app():
+    aquisicoes_screen()
