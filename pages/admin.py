@@ -41,3 +41,6 @@ if 'authenticated' in st.session_state and st.session_state['authenticated']:
 else:
     st.warning("Você precisa fazer login.")
     st.query_params.page = "login"
+
+def app():
+    admin_screen()

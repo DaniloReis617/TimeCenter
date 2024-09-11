@@ -6,7 +6,13 @@ from utils import apply_custom_style_and_header, get_db_connection, get_vw_nota_
 
 def escopo_screen():
     apply_custom_style_and_header("Tela de Escopo")
-    
+
+    if 'projeto_info' in st.session_state:
+        projeto_info = st.session_state['projeto_info']
+        st.write(f"Exibindo dados para o projeto {projeto_info['TX_DESCRICAO']}")
+    else:
+        st.error("Selecione um projeto na tela inicial.")
+
     # Criar as abas
     tab1, tab2, tab3, tab4 = st.tabs(["Gestão das Notas e Ordens", "Desafio do Escopo", "Declaração do Escopo", "Gestão das Alterações do Escopo"])
     
@@ -28,24 +34,17 @@ def gestao_notas_ordens_screen():
     conn = get_db_connection()
     
     if conn:
-        # Carregar os projetos e criar o filtro de seleção
-        projetos_df = read_data(conn, "timecenter.TB_PROJETO")
-        projetos = projetos_df['TX_DESCRICAO'].tolist()
-        
-        selected_project = st.selectbox("Selecione o Projeto", projetos)
-        
-        if selected_project:
-            selected_gid = projetos_df.loc[projetos_df['TX_DESCRICAO'] == selected_project, 'GID'].iloc[0]
-            st.session_state['selected_gid'] = selected_gid
+        if 'projeto_info' in st.session_state:
+            projeto_info = st.session_state['projeto_info']
+            selected_gid = projeto_info['GID']
         else:
-            st.session_state['selected_gid'] = None
-            st.warning("Selecione um projeto para continuar.")
+            st.warning("Selecione um projeto na tela inicial.")
             return
 
         try:
             # Obter os dados da tabela VW_NOTA_MANUTENCAO_HH e filtrar pelo GID do projeto selecionado
             df = get_vw_nota_manutencao_hh_data(conn)
-            df = df[df['GID_PROJETO'] == st.session_state['selected_gid']]  # Filtrar pelo GID_PROJETO
+            df = df[df['GID_PROJETO'] == selected_gid]  # Filtrar pelo GID_PROJETO do projeto selecionado
             
             if df.empty:
                 st.warning("Nenhum dado foi encontrado para o projeto selecionado.")

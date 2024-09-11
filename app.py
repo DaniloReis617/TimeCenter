@@ -3,7 +3,14 @@ from utils import get_db_connection, validate_login  # Assumindo que estas funç
 
 # Configuração inicial da página
 st.set_page_config(page_title="Time Center", page_icon="./assets/icone_timenow_cor.png", layout="wide")
-
+hide_st_style = """ 
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_st_style, unsafe_allow_html=True)
 # Verificar se o usuário está logado e obter o perfil
 if 'authenticated' not in st.session_state:
     st.session_state['authenticated'] = False
@@ -35,6 +42,7 @@ def get_accessible_pages(user_profile):
             "Aquisições": "aquisicoes",
             "Integração": "integracao",
             "Administração": "adm",
+            "Administração2": "admin",
         }
     elif user_profile == "Gestor":
         return {
