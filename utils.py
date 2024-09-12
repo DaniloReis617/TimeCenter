@@ -201,9 +201,8 @@ def delete_data(conn, table_name, id_column, id_value):
     except Exception as e:
         st.error(f"Erro ao deletar registro da tabela {table_name}: {e}")
 
-
+# Função principal para aplicar estilo customizado e criar o cabeçalho
 def apply_custom_style_and_header(title):
-    # Adiciona estilo personalizado
     st.markdown("""
         <style>
         .main {
@@ -212,46 +211,66 @@ def apply_custom_style_and_header(title):
             font-family: Arial, sans-serif;
         }
         .stButton button {
-            width: 100%;
-            padding: 10px;
-            background-color: white;
-            color: black;
+            width: auto;
+            padding: 5px 10px;
+            background-color: #f44336;
+            color: white;
             border: none;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             border-radius: 5px;
-            margin-bottom: 10px;
         }
         .stButton button:hover {
-            background-color: #e0e0e0;
+            background-color: #e57373;
         }
-        .left-aligned-title {
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: white;
+            border-bottom: 2px solid #f0f0f0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+        .title-container {
+            flex-grow: 1;
             text-align: left;
-            font-size: 32px;  /* Aumenta o tamanho da fonte */
-            font-weight: bold;
-            color: black;  /* Texto em preto */
-            font-family: Calibri, sans-serif;  /* Fonte Calibri */
+            padding-left: 240px; /* Ajuste para alinhar o título ao lado do sidebar */
         }
-        .centered-time {
-            text-align: right;
-            font-size: 18px;
-            color: black;  /* Hora em preto */
+        .title-container h1 {
+            font-size: 32px;
+            font-weight: bold;
+            color: black;
+            font-family: Calibri, sans-serif;
+            margin: 0;
         }
         </style>
     """, unsafe_allow_html=True)
 
-    # Cabeçalho da tela
-    col1, col2, col3 = st.columns([5, 3.5, 1.5])
+    # Cabeçalho com título ao lado do sidebar
+    st.markdown(f"""
+        <div class="header-container">
+            <div class="title-container">
+                <h1>{title}</h1>
+            </div>
+            <div class="user-info">
+                {get_user_info()}
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
-    with col1:
-        st.markdown(f"<h1 class='left-aligned-title'>{title}</h1>", unsafe_allow_html=True)
-    
-    with col2:
-        if 'user_info' in st.session_state:
-            user_login = st.session_state['user_info'].get('login', 'Usuário não identificado')
-            user_perfil = st.session_state['user_info'].get('perfil', 'Perfil não identificado')
-            # Concatenar o login com o perfil do usuário, separados por um espaço
-            st.markdown(f"<h4 class='centered-time'>Usuário: {user_login} ({user_perfil})</h4>", unsafe_allow_html=True)
-    with col3:    
+    # Criar um espaçamento para o conteúdo abaixo, já que o cabeçalho é fixo
+    st.markdown("<div style='margin-top: 1px;'></div>", unsafe_allow_html=True)
+
+# Função para exibir o login, perfil do usuário e a hora atual
+def get_user_info():
+    if 'user_info' in st.session_state:
+        user_login = st.session_state['user_info'].get('login', 'Usuário não identificado')
+        user_perfil = st.session_state['user_info'].get('perfil', 'Perfil não identificado')
         current_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        st.markdown(f"<h4 class='centered-time'>{current_time}</h4>", unsafe_allow_html=True)
+        return f"<div style='text-align: right;'>Usuário: {user_login} ({user_perfil})<br>Data e Hora: {current_time}</div>"
+    return ""

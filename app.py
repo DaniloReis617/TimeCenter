@@ -42,7 +42,6 @@ def get_accessible_pages(user_profile):
             "Aquisições": "aquisicoes",
             "Integração": "integracao",
             "Administração": "adm",
-            "Administração2": "admin",
         }
     elif user_profile == "Gestor":
         return {
@@ -68,6 +67,9 @@ else:
 st.sidebar.title("Navegação")
 st.logo("./assets/logo_timenow_horizontal_cor.png")
 selection = st.sidebar.radio("Ir para", list(pages.keys()))
+# Botão para deslogar no sidebar
+if st.sidebar.button("Sair"):
+    logout()
 page_app = load_page(pages[selection])
 page_app()
 

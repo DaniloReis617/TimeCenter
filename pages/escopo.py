@@ -2,14 +2,25 @@ import streamlit as st
 import os
 import pandas as pd
 import numpy as np
+from forms.cadastrar_nota_manutencao import add_nota_manutencao
 from utils import apply_custom_style_and_header, get_db_connection, get_vw_nota_manutencao_hh_data, read_data, create_data, update_data, get_projetos_por_usuario, get_descricao_projetos, get_all_projetos, delete_data
+
+@st.dialog("Cadastrar Nota",width="large")
+def show_form_add_nota_manutencao():
+    with st.expander("Nova Nota de Manutenção"):
+        add_nota_manutencao()
 
 def escopo_screen():
     apply_custom_style_and_header("Tela de Escopo")
 
     if 'projeto_info' in st.session_state:
         projeto_info = st.session_state['projeto_info']
-        st.write(f"Exibindo dados para o projeto {projeto_info['TX_DESCRICAO']}")
+        col1, col2 = st.columns([8,2])
+        with col1:
+            st.write(f"Exibindo dados para o projeto {projeto_info['TX_DESCRICAO']}")
+        with col2:    
+            if st.button("Cadastrar Nova Nota de Manutenção"):
+                show_form_add_nota_manutencao()
     else:
         st.error("Selecione um projeto na tela inicial.")
 
