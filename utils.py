@@ -168,6 +168,7 @@ def validate_login(username):
             'status': user_df['FL_STATUS'].iloc[0],
             'perfil': perfil  # Usando o nome do perfil traduzido
         }
+        st.session_state['user_details'] = user_details  # Armazenar os detalhes no estado da sessão
         return True, user_details  # Retorna um bool e um dicionário com detalhes do usuário
     else:
         return False, None  # Se falhar, retorna False e None
@@ -177,6 +178,14 @@ def get_projetos_por_usuario(gid_usuario):
     query = "SELECT * FROM timecenter.TB_USUARIO_PROJETO WHERE CD_USUARIO = ?"
     projetos_df = execute_read_query(query, params=[gid_usuario])
     return projetos_df
+
+def get_usuarios_df():
+    query = """
+    SELECT TX_LOGIN, GID, ID, FL_STATUS, NR_NIVEL 
+    FROM timecenter.TB_USUARIO
+    """
+    usuarios_df = execute_read_query(query)
+    return usuarios_df
 
 def get_descricao_projetos(cd_projetos_list):
     """Retorna as descrições dos projetos com base na lista de GIDs fornecidos."""
@@ -266,9 +275,9 @@ def apply_custom_style_and_header(title):
 
 # Função para exibir o login, perfil do usuário e a hora atual
 def get_user_info():
-    if 'user_info' in st.session_state:
-        user_login = st.session_state['user_info'].get('login', 'Usuário não identificado')
-        user_perfil = st.session_state['user_info'].get('perfil', 'Perfil não identificado')
+    if 'user_details' in st.session_state:
+        user_login = st.session_state['user_details'].get('login', 'Usuário não identificado')
+        user_perfil = st.session_state['user_details'].get('perfil', 'Perfil não identificado')
         current_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         return f"<div style='text-align: right;'>Usuário: {user_login} ({user_perfil})<br>Data e Hora: {current_time}</div>"
     return ""

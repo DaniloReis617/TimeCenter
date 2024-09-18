@@ -5,6 +5,8 @@ from forms.cadastrar_usuarios import add_usuario
 from forms.editar_usuario import edit_usuario
 from forms.cadastrar_projetos import add_projeto
 from forms.editar_projeto import edit_projeto
+from forms.cadastrar_usuarios_por_projetos import add_projeto_usuario
+from forms.editar_usuarios_por_projetos import editar_projeto_usuario
 
 def adm_screen():
     apply_custom_style_and_header("Tela de Administração")
@@ -36,6 +38,15 @@ def adm_screen():
         
         # Conteúdo da aba 2
         with tab2:
+            col1, col2, col3 = st.columns([8,1,1])
+            with col1:
+                st.header("Gestão de Usuários por Projetos")
+            with col2:
+                if st.button("➕👤 Novo",key="addUserProj"):
+                    add_projeto_usuario()
+            with col3:
+                if st.button("✏️👤 Editar",key="editUserProj"):
+                    editar_projeto_usuario()
             show_projetos_por_usuario()
         
         # Conteúdo da aba 3
