@@ -1,3 +1,4 @@
+# pages/stakeholders.py
 import streamlit as st
 import os
 import pandas as pd
@@ -19,7 +20,6 @@ def stakeholders_screen():
     # Conteúdo da aba 1
     with tab1:
         st.write("Conteúdo da tela de Stakeholders")
-        # Conteúdo da aba 1
     with tab2:
         st.write("Conteúdo de outra tela de Stakeholders")
 

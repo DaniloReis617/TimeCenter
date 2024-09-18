@@ -2,14 +2,14 @@ import streamlit as st
 import os
 import re
 import pandas as pd
-from utils import get_db_connection, validate_login
+from utils import validate_login
 
 def app():
     login()
 
 def login():
     with st.container():
-        col1, col2, col3 = st.columns([3.5, 4, 3.5])
+        col1, col2, col3 = st.columns([3.5, 3, 3.5])
         with col2:
             col1, col2, col3 = st.columns([3, 4, 3])
             with col2:
@@ -30,17 +30,13 @@ def handle_login(username):
         return
     
     try:
-        conn = get_db_connection()
-        if conn:
-            is_valid, user_details = validate_login(conn, username)
-            if is_valid:
-                st.session_state['authenticated'] = True
-                st.session_state['user_info'] = user_details
-                st.success(f"Login bem-sucedido! Bem-vindo, {st.session_state['user_info']['login']}!")
-                st.rerun()  # Atualiza a página após o login bem-sucedido
-            else:
-                st.error("Usuário inválido. Tente novamente.")
+        is_valid, user_details = validate_login(username)
+        if is_valid:
+            st.session_state['authenticated'] = True
+            st.session_state['user_info'] = user_details
+            st.success(f"Login bem-sucedido! Bem-vindo, {st.session_state['user_info']['login']}!")
+            st.rerun()  # Atualiza a página após o login bem-sucedido
         else:
-            st.error("Não foi possível conectar ao banco de dados.")
+            st.error("Usuário inválido. Tente novamente.")
     except Exception as e:
-        st.error(f"Erro ao tentar autenticar: {e}")
+        st.error("Erro ao tentar autenticar. Por favor, tente novamente mais tarde.")

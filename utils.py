@@ -1,4 +1,3 @@
-#TimeCenter/app/UTILS.PY É O QUE TEM MINHAS FUNÇÕES
 import pyodbc
 import os
 import pandas as pd
@@ -6,29 +5,61 @@ from datetime import datetime
 import time
 import streamlit as st
 
-@st.cache_resource
 def get_db_connection():
-    """Estabelece ou restabelece a conexão com o banco de dados utilizando Streamlit Secrets."""
+    """Estabelece uma nova conexão com o banco de dados utilizando Streamlit Secrets."""
+    try:
+        conn = pyodbc.connect(
+            f"DRIVER={{{st.secrets['database']['driver']}}};"
+            f"SERVER={st.secrets['database']['server']};"
+            f"DATABASE={st.secrets['database']['database']};"
+            f"UID={st.secrets['database']['username']};"
+            f"PWD={st.secrets['database']['password']}",
+            timeout=30  # Define um timeout para a tentativa de conexão
+        )
+        return conn
+    except pyodbc.Error as e:
+        st.error("Não foi possível conectar ao banco de dados. Por favor, tente novamente mais tarde.")
+        return None
+
+def execute_read_query(query, params=None):
+    """Executa uma consulta SELECT com tratamento de reconexão."""
     retries = 3
-    for _ in range(retries):
+    for attempt in range(retries):
         try:
-            conn = pyodbc.connect(
-                f"DRIVER={{{st.secrets['database']['driver']}}};"
-                f"SERVER={st.secrets['database']['server']};"
-                f"DATABASE={st.secrets['database']['database']};"
-                f"UID={st.secrets['database']['username']};"
-                f"PWD={st.secrets['database']['password']}",
-                timeout=30  # Define um timeout para a tentativa de conexão
-            )
-            if conn:
-                return conn
-        except pyodbc.Error as e:
-            st.error(f"Tentativa de reconexão falhou: {e}")
-            time.sleep(2)  # Espera antes de tentar novamente
-    return None
+            with get_db_connection() as conn:
+                if conn is None:
+                    raise Exception("Conexão com o banco de dados não estabelecida.")
+                df = pd.read_sql(query, conn, params=params)
+                return df
+        except Exception as e:
+            if attempt < retries - 1:
+                time.sleep(2)
+                continue
+            else:
+                st.error("Ocorreu um erro ao executar a consulta ao banco de dados.")
+                return pd.DataFrame()
 
+def execute_write_query(query, params=None):
+    """Executa uma consulta de escrita (INSERT, UPDATE, DELETE) com tratamento de reconexão."""
+    retries = 3
+    for attempt in range(retries):
+        try:
+            with get_db_connection() as conn:
+                if conn is None:
+                    raise Exception("Conexão com o banco de dados não estabelecida.")
+                with conn.cursor() as cursor:
+                    cursor.execute(query, params or [])
+                    conn.commit()
+                return True
+        except Exception as e:
+            if attempt < retries - 1:
+                time.sleep(2)
+                continue
+            else:
+                st.error("Ocorreu um erro ao executar a operação no banco de dados.")
+                return False
 
-def get_tables_and_views(conn):
+def get_tables_and_views():
     """Obtém todas as tabelas e views do banco de dados com seus nomes completos."""
     query = """
     SELECT TABLE_SCHEMA, TABLE_NAME, 'TABLE' AS TYPE
@@ -38,15 +69,12 @@ def get_tables_and_views(conn):
     SELECT TABLE_SCHEMA, TABLE_NAME, 'VIEW' AS TYPE
     FROM INFORMATION_SCHEMA.VIEWS
     """
-    try:
-        tables_views_df = pd.read_sql(query, conn)
+    tables_views_df = execute_read_query(query)
+    if not tables_views_df.empty:
         tables_views_df['FULL_NAME'] = tables_views_df['TABLE_SCHEMA'] + '.' + tables_views_df['TABLE_NAME']
-        return tables_views_df
-    except Exception as e:
-        st.error(f"Erro ao obter tabelas e views: {e}")
-        return pd.DataFrame()
+    return tables_views_df
 
-def get_columns(conn, table_name):
+def get_columns(table_name):
     """Obtém todas as colunas de uma tabela específica."""
     table_name_only = table_name.split('.')[-1]
     query = """
@@ -54,154 +82,124 @@ def get_columns(conn, table_name):
     FROM INFORMATION_SCHEMA.COLUMNS 
     WHERE TABLE_NAME = ?
     """
-    try:
-        return pd.read_sql(query, conn, params=(table_name_only,))['COLUMN_NAME'].tolist()
-    except Exception as e:
-        st.error(f"Erro ao obter colunas da tabela {table_name}: {e}")
+    columns_df = execute_read_query(query, params=(table_name_only,))
+    if not columns_df.empty:
+        return columns_df['COLUMN_NAME'].tolist()
+    else:
         return []
 
-def get_distinct_values(conn, table_name, column_name):
+def get_distinct_values(table_name, column_name):
     """Obtém valores distintos de uma coluna específica."""
     query = f"SELECT DISTINCT {column_name} FROM {table_name}"
-    try:
-        return pd.read_sql(query, conn)[column_name].tolist()
-    except Exception as e:
-        st.error(f"Erro ao obter valores distintos para a coluna {column_name} na tabela {table_name}: {e}")
+    distinct_df = execute_read_query(query)
+    if not distinct_df.empty:
+        return distinct_df[column_name].tolist()
+    else:
         return []
 
-def read_data(conn, table_name, filter_condition=''):
+def read_data(table_name, filter_condition=''):
     """Lê dados de uma tabela ou view com um filtro opcional."""
     query = f"SELECT * FROM {table_name}"
     if filter_condition:
         query += f" WHERE {filter_condition}"
-    try:
-        return pd.read_sql(query, conn)
-    except Exception as e:
-        st.error(f"Erro ao ler dados da tabela {table_name}: {e}")
-        return pd.DataFrame()
-    
-def get_vw_nota_manutencao_hh_data(conn):
+    data_df = execute_read_query(query)
+    return data_df
+
+def get_vw_nota_manutencao_hh_data():
     """Lê a tabela VW_NOTA_MANUTENCAO_HH e retorna as colunas específicas."""
     query = """
         SELECT GID_PROJETO, ID_NOTA_MANUTENCAO, TX_NOTA, TX_ORDEM, TX_TAG, TX_FAMILIA_EQUIPAMENTOS, 
         TX_NOME_SOLICITANTE, TX_DESCRICAO_SERVICO, VL_HH_TOTAL, VL_CUSTO_TOTAL, 
         TX_ESCOPO_TIPO, TX_SITUACAO FROM Dbo.VW_NOTA_MANUTENCAO_HH
     """
-    try:
-        return pd.read_sql(query, conn)
-    except Exception as e:
-        st.error(f"Erro ao ler dados da tabela VW_NOTA_MANUTENCAO_HH: {e}")
-        return pd.DataFrame()
+    data_df = execute_read_query(query)
+    return data_df
 
-def create_data(conn, table_name, new_data):
+def create_data(table_name, new_data):
     """Insere um novo registro em uma tabela."""
     columns = ', '.join(new_data.keys())
     placeholders = ', '.join(['?'] * len(new_data))
     query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
-    try:
-        cursor = conn.cursor()
-        cursor.execute(query, list(new_data.values()))
-        conn.commit()
-    except Exception as e:
-        st.error(f"Erro ao adicionar registro na tabela {table_name}: {e}")
+    params = list(new_data.values())
+    success = execute_write_query(query, params)
+    if success:
+        st.success("Registro adicionado com sucesso!")
+    else:
+        st.error(f"Erro ao adicionar registro na tabela {table_name}.")
 
-def update_data(conn, table_name, id_column, id_value, updated_data):
+def update_data(table_name, id_column, id_value, updated_data):
     """Atualiza um registro existente em uma tabela."""
     set_clause = ', '.join([f"{col} = ?" for col in updated_data.keys()])
     query = f"UPDATE {table_name} SET {set_clause} WHERE {id_column} = ?"
-    try:
-        cursor = conn.cursor()
-        cursor.execute(query, list(updated_data.values()) + [id_value])
-        conn.commit()
-    except Exception as e:
-        st.error(f"Erro ao atualizar registro na tabela {table_name}: {e}")
+    params = list(updated_data.values()) + [id_value]
+    success = execute_write_query(query, params)
+    if success:
+        st.success("Registro atualizado com sucesso!")
+    else:
+        st.error(f"Erro ao atualizar registro na tabela {table_name}.")
 
-def delete_data(conn, table_name, id_column, id_value):
+def delete_data(table_name, id_column, id_value):
     """Deleta um registro existente em uma tabela."""
     query = f"DELETE FROM {table_name} WHERE {id_column} = ?"
-    try:
-        cursor = conn.cursor()
-        cursor.execute(query, [id_value])
-        conn.commit()
-    except Exception as e:
-        st.error(f"Erro ao deletar registro da tabela {table_name}: {e}")
+    params = [id_value]
+    success = execute_write_query(query, params)
+    if success:
+        st.success("Registro deletado com sucesso!")
+    else:
+        st.error(f"Erro ao deletar registro da tabela {table_name}.")
 
-def validate_login(conn, username):
+def validate_login(username):
     """Valida o login do usuário e retorna os detalhes do usuário se válido."""
     query = """
     SELECT TX_LOGIN, GID, ID, FL_STATUS, NR_NIVEL 
     FROM timecenter.TB_USUARIO 
     WHERE TX_LOGIN = ?
     """
-    try:
-        df = pd.read_sql(query, conn, params=(username,))
-        if not df.empty:
-            # Traduzir NR_NIVEL para o nome do perfil
-            nivel_mapping = {1: "Visualizador", 2: "Gestor", 4: "Administrador", 8: "Super Usuário"}
-            perfil = nivel_mapping.get(df['NR_NIVEL'].iloc[0], "Perfil Desconhecido")
+    user_df = execute_read_query(query, params=(username,))
+    if not user_df.empty:
+        # Traduzir NR_NIVEL para o nome do perfil
+        nivel_mapping = {1: "Visualizador", 2: "Gestor", 4: "Administrador", 8: "Super Usuário"}
+        perfil = nivel_mapping.get(user_df['NR_NIVEL'].iloc[0], "Perfil Desconhecido")
 
-            user_details = {
-                'login': df['TX_LOGIN'].iloc[0],
-                'gid': df['GID'].iloc[0],
-                'id': df['ID'].iloc[0],
-                'status': df['FL_STATUS'].iloc[0],
-                'perfil': perfil  # Usando o nome do perfil traduzido
-            }
-            return True, user_details  # Retorna um bool e um dicionário com detalhes do usuário
-        else:
-            return False, None  # Se falhar, retorna False e None
-    except Exception as e:
-        st.error(f"Erro na validação de login para o usuário {username}: {e}")
-        return False, None
+        user_details = {
+            'login': user_df['TX_LOGIN'].iloc[0],
+            'gid': user_df['GID'].iloc[0],
+            'id': user_df['ID'].iloc[0],
+            'status': user_df['FL_STATUS'].iloc[0],
+            'perfil': perfil  # Usando o nome do perfil traduzido
+        }
+        return True, user_details  # Retorna um bool e um dicionário com detalhes do usuário
+    else:
+        return False, None  # Se falhar, retorna False e None
 
-def get_projetos_por_usuario(conn, gid_usuario):
+def get_projetos_por_usuario(gid_usuario):
     """Retorna os projetos associados ao GID de um usuário."""
     query = "SELECT * FROM timecenter.TB_USUARIO_PROJETO WHERE CD_USUARIO = ?"
-    
-    try:
-        return pd.read_sql(query, conn, params=[gid_usuario])
-    except Exception as e:
-        st.error(f"Erro ao obter projetos para o usuário {gid_usuario}: {e}")
-        return pd.DataFrame()
+    projetos_df = execute_read_query(query, params=[gid_usuario])
+    return projetos_df
 
-def get_descricao_projetos(conn, cd_projetos_list):
+def get_descricao_projetos(cd_projetos_list):
     """Retorna as descrições dos projetos com base na lista de GIDs fornecidos."""
+    placeholders = ','.join(['?'] * len(cd_projetos_list))
     query = f"""
     SELECT GID, TX_DESCRICAO 
     FROM timecenter.TB_PROJETO 
-    WHERE GID IN ({','.join(['?'] * len(cd_projetos_list))})
+    WHERE GID IN ({placeholders})
     """
-    
-    try:
-        return pd.read_sql(query, conn, params=cd_projetos_list)
-    except Exception as e:
-        st.error(f"Erro ao obter descrições dos projetos: {e}")
-        return pd.DataFrame()
+    projetos_df = execute_read_query(query, params=cd_projetos_list)
+    return projetos_df
 
-def get_all_projetos(conn):
+def get_all_projetos():
     """Retorna todos os projetos ativos (FL_STATUS = 'A') da tabela timecenter.TB_PROJETO."""
     query = """
     SELECT ID, GID, TX_DESCRICAO, FL_STATUS, DT_INICIO, DT_TERMINO
     FROM timecenter.TB_PROJETO
     WHERE FL_STATUS = 'A'
     """
-    try:
-        return pd.read_sql(query, conn)
-    except Exception as e:
-        st.error(f"Erro ao obter os projetos ativos: {e}")
-        return pd.DataFrame()
-    
-def delete_data(conn, table_name, id_column, id_value):
-    """Deleta um registro existente em uma tabela."""
-    query = f"DELETE FROM {table_name} WHERE {id_column} = ?"
-    try:
-        cursor = conn.cursor()
-        cursor.execute(query, [id_value])
-        conn.commit()
-    except Exception as e:
-        st.error(f"Erro ao deletar registro da tabela {table_name}: {e}")
+    projetos_df = execute_read_query(query)
+    return projetos_df
 
-# Função principal para aplicar estilo customizado e criar o cabeçalho
+# Função para aplicar estilo customizado e criar o cabeçalho
 def apply_custom_style_and_header(title):
     st.markdown("""
         <style>
@@ -264,7 +262,7 @@ def apply_custom_style_and_header(title):
     """, unsafe_allow_html=True)
 
     # Criar um espaçamento para o conteúdo abaixo, já que o cabeçalho é fixo
-    st.markdown("<div style='margin-top: 1px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
 
 # Função para exibir o login, perfil do usuário e a hora atual
 def get_user_info():
