@@ -25,8 +25,14 @@ def login():
 
 def handle_login(username):
     """Lida com o processo de login, incluindo validação e navegação."""
+    # Verifica se o email é válido
     if not re.match(r"[^@]+@[^@]+\.[^@]+", username):
         st.error("Por favor, insira um email válido.")
+        return
+    
+    # Verifica se o domínio do email é timenow.com.br
+    if not username.endswith("@timenow.com.br"):
+        st.error("Por favor, use um email com o domínio @timenow.com.br.")
         return
     
     try:
@@ -40,3 +46,4 @@ def handle_login(username):
             st.error("Usuário inválido. Tente novamente.")
     except Exception as e:
         st.error("Erro ao tentar autenticar. Por favor, tente novamente mais tarde.")
+
