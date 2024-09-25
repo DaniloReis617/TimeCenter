@@ -49,6 +49,7 @@ def get_accessible_pages(user_profile):
             "⚠️ Riscos": "riscos",
             "🛒 Aquisições": "aquisicoes",
             "🔗 Integração": "integracao",
+            "📇 Cadastro Auxiliar": "Cadastro_Auxiliar",
             "🗂️ Administração": "adm",
         }
     elif user_profile == "Gestor":

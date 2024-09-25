@@ -38,6 +38,7 @@ def escopo_screen():
 
     # Conteúdo da aba 1
     with tab1:
+        st.expander("Cadastro de Notas de manutenção")   
         gestao_notas_ordens_screen()
 
     # Conteúdo das outras abas

@@ -1,5 +1,20 @@
 import streamlit as st
-import pandas as pd
+import os
+import base64
+from forms.formulario_pintura import show_servico_pintura_form  # Importando o formulário de pintura
+from forms.formulario_execucao_atividades import show_execucao_atividades_form  # Importando o formulário de execução de atividades
+from utils import (  # Importe as funções geradas
+    get_atividades_execucao,
+    get_servico_pintura,
+    get_descricao_quant,
+    get_exec_atividades_raqueteamento,
+    get_exec_atividades_torque,
+    get_exec_atividades_boca_visita,
+    get_exec_bandejamento,
+    get_remocao_instalacao_valvulas,
+    get_trocadores_calor,
+    get_servico_limpeza_hidrojato
+)
 
 def cronogramas_screen():
     st.title("Tela de Cronogramas")
@@ -9,6 +24,18 @@ def cronogramas_screen():
         st.write(f"Exibindo dados para o projeto {projeto_info['TX_DESCRICAO']}")
     else:
         st.error("Selecione um projeto na tela inicial.")
+
+    # Controle para exibir o formulário de pintura
+    if 'show_form' not in st.session_state:
+        st.session_state['show_form'] = False
+
+    # Controle para exibir o formulário de execução de atividades
+    if 'show_form_execucao' not in st.session_state:
+        st.session_state['show_form_execucao'] = False
+
+    # Variável para controlar a atividade selecionada
+    if 'selected_activity' not in st.session_state:
+        st.session_state['selected_activity'] = None
 
     # Criar as abas
     tab1, tab2, tab3 = st.tabs([
@@ -27,49 +54,141 @@ def cronogramas_screen():
     
     # Conteúdo da aba 3 - Calculadora de Métricas
     with tab3:
-        st.header("Atividades de Execução")
-        atividades_execucao = [
-            {"ID": 1, "Atividades": "RAQUETEAMENTO / DESRAQ. DE UNIÕES FLANGEADAS"},
-            {"ID": 2, "Atividades": "FECHAM/TORQUE UNIÕES FLANGEADAS"},
-            {"ID": 3, "Atividades": "ABERTURA / FECHAMENTO DE BOCA DE VISITA"},
-            {"ID": 4, "Atividades": "BANDEJAMENTO"},
-            {"ID": 5, "Atividades": "REMOÇÃO / INSTALAÇÃO DE VÁLVULAS FLANGEADAS"},
-            {"ID": 6, "Atividades": "TROCADORES DE CALOR"},
-            {"ID": 7, "Atividades": "PADRÃO ENSAIOS NÃO DESTRUTIVOS (END's)"},
-            {"ID": 8, "Atividades": "SERVIÇO DE LIMPEZA COM HIDROJATO"}
-        ]
-        atividade_selecionada = st.selectbox("Selecione uma Atividade", [atividade['Atividades'] for atividade in atividades_execucao])
-        st.write(f"Atividade Selecionada: {atividade_selecionada}")
-        
-        st.header("Etapas de Recursos")
-        etapas_recursos = [
-            {"Etapa": "Preparação de Superfície", "Tipo": "Ferramenta manual", "m2_dia": 6, "Pintores": 1, "Ajudante": None},
-            {"Etapa": "Preparação de Superfície", "Tipo": "Ferramenta mecânica", "m2_dia": 10, "Pintores": 1, "Ajudante": None},
-            {"Etapa": "Preparação de Superfície", "Tipo": "Jateamento abrasivo (cabine de jato)", "m2_dia": 30, "Pintores": 2, "Ajudante": 1},
-            {"Etapa": "Preparação de Superfície", "Tipo": "Hidrojateamento (pistola)", "m2_dia": 20, "Pintores": 2, "Ajudante": 1},
-            {"Etapa": "Preparação de Superfície", "Tipo": "Hidrojateamento (robô)", "m2_dia": 35, "Pintores": 2, "Ajudante": 1},
-            {"Etapa": "Método de Aplicação", "Tipo": "Pistola convencional", "m2_dia": 75, "Pintores": 2, "Ajudante": 1},
-            {"Etapa": "Método de Aplicação", "Tipo": "Pistola airless", "m2_dia": 160, "Pintores": 2, "Ajudante": 1},
-            {"Etapa": "Método de Aplicação", "Tipo": "Rolo", "m2_dia": 30, "Pintores": 1, "Ajudante": None},
-            {"Etapa": "Método de Aplicação", "Tipo": "Trincha (stripe coat)", "m2_dia": 20, "Pintores": 1, "Ajudante": None}
-        ]
-        etapa_selecionada = st.selectbox("Selecione uma Etapa de Recursos", [recurso['Etapa'] for recurso in etapas_recursos])
-        st.write(f"Etapa Selecionada: {etapa_selecionada}")
-        recurso_filtrado = [recurso for recurso in etapas_recursos if recurso['Etapa'] == etapa_selecionada]
-        for recurso in recurso_filtrado:
-            st.text(f"Tipo: {recurso['Tipo']}, m²/dia: {recurso['m2_dia']}, Pintores: {recurso['Pintores']}, Ajudante: {recurso['Ajudante']}")
-        
-        st.header("Descrição e Quantidades")
-        descricao_quant = [
-            {"Descricao": "Silicato de Cálcio", "Tipo": "Tubulação até 4\"", "Quant_ml": 18, "Qt_Rec_Is_Fu": 2},
-            {"Descricao": "Silicato de Cálcio", "Tipo": "Tubulação de 5\" a 8\"", "Quant_ml": 15, "Qt_Rec_Is_Fu": 2},
-            {"Descricao": "Silicato de Cálcio", "Tipo": "Tubulação de 10\" até 16\"", "Quant_ml": 12, "Qt_Rec_Is_Fu": 2},
-            {"Descricao": "Manta de Fibra Cerâmica", "Tipo": "Tubulação até 4\"", "Quant_ml": 40, "Qt_Rec_Is_Fu": 2}
-        ]
-        descricao_selecionada = st.selectbox("Selecione uma Descrição", [item['Descricao'] for item in descricao_quant])
-        descricao_filtrada = [item for item in descricao_quant if item['Descricao'] == descricao_selecionada]
-        for item in descricao_filtrada:
-            st.text(f"Tipo: {item['Tipo']}, Quantidade (ml): {item['Quant_ml']}, Qt_Rec_Is_Fu: {item['Qt_Rec_Is_Fu']}")
+        if not st.session_state['show_form'] and not st.session_state['show_form_execucao']:
+            st.header("Calculadora de Métricas")
+
+            # Pasta de imagens
+            image_folder = 'assets'
+            images = {
+                "Serviço de Pintura": os.path.join(image_folder, "servico_pintura.jpg"),
+                "Execução de Atividades": os.path.join(image_folder, "execucao_atividades.jpg"),
+                "Serviço de Isolamento": os.path.join(image_folder, "servico_isolamento.jpeg"),
+                "Serviço de Andaime": os.path.join(image_folder, "servico_andaime.jpg"),
+                "Caldeiraria e Solda": os.path.join(image_folder, "servico_calderaria.jpg"),
+                "Item em Destaque": os.path.join(image_folder, "item_destaque.jpeg")
+            }
+
+            # Tamanho fixo da altura das imagens usando CSS
+            img_height = "200px"
+
+            # Adicionar CSS para controlar a altura das imagens
+            st.markdown(
+                f"""
+                <style>
+                .image-container img {{
+                    height: {img_height};
+                    object-fit: cover;
+                    width: 100%;
+                }}
+                </style>
+                """,
+                unsafe_allow_html=True
+            )
+
+            def display_image(image_path, alt_text):
+                if os.path.exists(image_path):
+                    st.markdown(f'<div class="image-container"><img src="data:image/jpeg;base64,{base64.b64encode(open(image_path, "rb").read()).decode()}" alt="{alt_text}"></div>', unsafe_allow_html=True)
+                else:
+                    st.error(f"Imagem não encontrada: {alt_text}")
+
+            # Primeira linha de containers (4 colunas)
+            with st.container():
+                col1, col2, col3, col4 = st.columns(4)
+                
+                # Container 1 (Serviço de Pintura)
+                with col1:
+                    display_image(images["Serviço de Pintura"], "Serviço de Pintura")
+                    if st.button("Serviço de Pintura", use_container_width=True, key='pintura_btn'):
+                        st.session_state['show_form'] = True
+                        st.rerun()  # Atualiza a interface imediatamente
+                
+                # Container 2 (Execução de Atividades)
+                with col2:
+                    display_image(images["Execução de Atividades"], "Execução de Atividades")
+                    if st.button("Execução de Atividades", use_container_width=True, key='execucao_btn'):
+                        st.session_state['show_form_execucao'] = True
+                        st.rerun()  # Atualiza a interface imediatamente
+                
+                # Container 3 (Serviço de Isolamento)
+                with col3:
+                    display_image(images["Serviço de Isolamento"], "Serviço de Isolamento")
+                    st.button("Serviço de Isolamento", use_container_width=True)
+                
+                # Container 4 (Serviço de Andaime)
+                with col4:
+                    display_image(images["Serviço de Andaime"], "Serviço de Andaime")
+                    st.button("Serviço de Andaime", use_container_width=True)
+            
+            # Segunda linha de containers (4 colunas)
+            with st.container():
+                col5, col6, col7, col8 = st.columns(4)
+                
+                # Container 5 (Caldeiraria e Solda)
+                with col5:
+                    display_image(images["Caldeiraria e Solda"], "Caldeiraria e Solda")
+                    st.button("Caldeiraria e Solda", use_container_width=True)
+                
+                # Container 6 (Item em Destaque)
+                with col6:
+                    display_image(images["Item em Destaque"], "Item em Destaque")
+                    st.button("Item em Destaque", use_container_width=True)
+
+                # Container vazio nas colunas 7 e 8 para manter o layout alinhado
+                with col7:
+                    st.empty()
+
+                with col8:
+                    st.empty()
+
+        elif st.session_state['show_form']:
+            show_servico_pintura_form()
+
+        elif st.session_state['show_form_execucao']:
+            # Mostrar a galeria de atividades
+            st.subheader("Selecione uma Atividade para Execução")
+            atividades = [
+                "RAQUETEAMENTO / DESRAQ. DE UNIÕES FLANGEADAS",
+                "FECHAM/TORQUE UNIÕES FLANGEADAS",
+                "ABERTURA / FECHAMENTO DE BOCA DE VISITA",
+                "BANDEJAMENTO",
+                "REMOÇÃO / INSTALAÇÃO DE VÁLVULAS FLANGEADAS",
+                "TROCADORES DE CALOR",
+                "PADRÃO ENSAIOS NÃO DESTRUTIVOS (END's)",
+                "SERVIÇO DE LIMPEZA COM HIDROJATO"
+            ]
+            
+            # Substituindo os botões por um rádio
+            atividade_selecionada = st.radio("Selecione a atividade", atividades)
+
+            # Mostrar o formulário correspondente à atividade selecionada
+            atividade_index = atividades.index(atividade_selecionada) if atividade_selecionada else None
+            
+            if atividade_index is not None:
+                if atividade_index == 0:
+                    st.write("Formulário: RAQUETEAMENTO / DESRAQ. DE UNIÕES FLANGEADAS")
+                    show_execucao_atividades_form(atividade_index)
+                elif atividade_index == 1:
+                    st.write("Formulário: FECHAM/TORQUE UNIÕES FLANGEADAS")
+                    show_execucao_atividades_form(atividade_index)
+                elif atividade_index == 2:
+                    st.write("Formulário: ABERTURA / FECHAMENTO DE BOCA DE VISITA")
+                    show_execucao_atividades_form(atividade_index)
+                elif atividade_index == 3:
+                    st.write("Formulário: BANDEJAMENTO")
+                    show_execucao_atividades_form(atividade_index)
+                elif atividade_index == 4:
+                    st.write("Formulário: REMOÇÃO / INSTALAÇÃO DE VÁLVULAS FLANGEADAS")
+                    show_execucao_atividades_form(atividade_index)
+                elif atividade_index == 5:
+                    st.write("Formulário: TROCADORES DE CALOR")
+                    show_execucao_atividades_form(atividade_index)
+                elif atividade_index == 6:
+                    st.write("Formulário: PADRÃO ENSAIOS NÃO DESTRUTIVOS (END's)")
+                    show_execucao_atividades_form(atividade_index)
+                elif atividade_index == 7:
+                    st.write("Formulário: SERVIÇO DE LIMPEZA COM HIDROJATO")
+                    show_execucao_atividades_form(atividade_index)
+
 
 def app():
     cronogramas_screen()
