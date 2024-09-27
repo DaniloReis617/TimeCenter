@@ -59,6 +59,31 @@ def execute_write_query(query, params=None):
                 st.error("Ocorreu um erro ao executar a operação no banco de dados.")
                 return False
 
+def validate_login(username):
+    """Valida o login do usuário e retorna os detalhes do usuário se válido."""
+    query = """
+    SELECT TX_LOGIN, GID, ID, FL_STATUS, NR_NIVEL 
+    FROM timecenter.TB_USUARIO 
+    WHERE TX_LOGIN = ?
+    """
+    user_df = execute_read_query(query, params=(username,))
+    if not user_df.empty:
+        # Traduzir NR_NIVEL para o nome do perfil
+        nivel_mapping = {1: "Visualizador", 2: "Gestor", 4: "Administrador", 8: "Super Usuário"}
+        perfil = nivel_mapping.get(user_df['NR_NIVEL'].iloc[0], "Perfil Desconhecido")
+
+        user_details = {
+            'login': user_df['TX_LOGIN'].iloc[0],
+            'gid': user_df['GID'].iloc[0],
+            'id': user_df['ID'].iloc[0],
+            'status': user_df['FL_STATUS'].iloc[0],
+            'perfil': perfil  # Usando o nome do perfil traduzido
+        }
+        st.session_state['user_details'] = user_details  # Armazenar os detalhes no estado da sessão
+        return True, user_details  # Retorna um bool e um dicionário com detalhes do usuário
+    else:
+        return False, None  # Se falhar, retorna False e None
+
 def get_tables_and_views():
     """Obtém todas as tabelas e views do banco de dados com seus nomes completos."""
     query = """
@@ -147,31 +172,6 @@ def delete_data(table_name, id_column, id_value):
         st.success("Registro deletado com sucesso!")
     else:
         st.error(f"Erro ao deletar registro da tabela {table_name}.")
-
-def validate_login(username):
-    """Valida o login do usuário e retorna os detalhes do usuário se válido."""
-    query = """
-    SELECT TX_LOGIN, GID, ID, FL_STATUS, NR_NIVEL 
-    FROM timecenter.TB_USUARIO 
-    WHERE TX_LOGIN = ?
-    """
-    user_df = execute_read_query(query, params=(username,))
-    if not user_df.empty:
-        # Traduzir NR_NIVEL para o nome do perfil
-        nivel_mapping = {1: "Visualizador", 2: "Gestor", 4: "Administrador", 8: "Super Usuário"}
-        perfil = nivel_mapping.get(user_df['NR_NIVEL'].iloc[0], "Perfil Desconhecido")
-
-        user_details = {
-            'login': user_df['TX_LOGIN'].iloc[0],
-            'gid': user_df['GID'].iloc[0],
-            'id': user_df['ID'].iloc[0],
-            'status': user_df['FL_STATUS'].iloc[0],
-            'perfil': perfil  # Usando o nome do perfil traduzido
-        }
-        st.session_state['user_details'] = user_details  # Armazenar os detalhes no estado da sessão
-        return True, user_details  # Retorna um bool e um dicionário com detalhes do usuário
-    else:
-        return False, None  # Se falhar, retorna False e None
 
 def get_projetos_por_usuario(gid_usuario):
     """Retorna os projetos associados ao GID de um usuário."""

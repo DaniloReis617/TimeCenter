@@ -22,22 +22,22 @@ def Cadastro_Auxiliar_screen():
 
                 # Opções de cadastro
                 cadastro_opcoes = [
-                    "Despesa", 
-                    "Sist. Operacional", 
-                    "Situação Motivo", 
-                    "Setor Solicitante", 
-                    "Setor Responsável", 
-                    "Serviço", 
-                    "Recurso", 
-                    "Planta", 
-                    "Informativo", 
-                    "Família Equipamentos", 
-                    "Executante", 
-                    "Especialidade", 
-                    "Escopo Tipo", 
-                    "Escopo Origem", 
-                    "Área", 
-                    "Apoio"
+                    "Apoio",
+                    "Área",
+                    "Escopo Origem",
+                    "Escopo Tipo",
+                    "Especialidade",
+                    "Executante",
+                    "Família Equipamentos",
+                    "Informativo",
+                    "Planta",
+                    "Recurso",
+                    "Serviço",
+                    "Setor Responsável",
+                    "Setor Solicitante",
+                    "Situação Motivo",
+                    "Sist. Operacional",
+                    "Despesa"
                 ]
                 
                 # Botão de seleção de rádio para escolher a ação

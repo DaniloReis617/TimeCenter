@@ -2,19 +2,9 @@ import streamlit as st
 import os
 import base64
 from forms.formulario_pintura import show_servico_pintura_form  # Importando o formulário de pintura
-from forms.formulario_execucao_atividades import show_execucao_atividades_form  # Importando o formulário de execução de atividades
-from utils import (  # Importe as funções geradas
-    get_atividades_execucao,
-    get_servico_pintura,
-    get_descricao_quant,
-    get_exec_atividades_raqueteamento,
-    get_exec_atividades_torque,
-    get_exec_atividades_boca_visita,
-    get_exec_bandejamento,
-    get_remocao_instalacao_valvulas,
-    get_trocadores_calor,
-    get_servico_limpeza_hidrojato
-)
+from forms.formulario_exec_atividades_raqueteamento import show_exec_atividades_form  # Importando o formulário de execução de atividades
+from forms.formulario_exec_atividades_torque import show_exec_atividades_torque_form 
+from forms.formulario_exec_atividades_boca_visita import show_exec_atividades_boca_visita_form 
 
 def cronogramas_screen():
     st.title("Tela de Cronogramas")
@@ -142,52 +132,62 @@ def cronogramas_screen():
 
         elif st.session_state['show_form']:
             show_servico_pintura_form()
-
+        
         elif st.session_state['show_form_execucao']:
-            # Mostrar a galeria de atividades
-            st.subheader("Selecione uma Atividade para Execução")
-            atividades = [
-                "RAQUETEAMENTO / DESRAQ. DE UNIÕES FLANGEADAS",
-                "FECHAM/TORQUE UNIÕES FLANGEADAS",
-                "ABERTURA / FECHAMENTO DE BOCA DE VISITA",
-                "BANDEJAMENTO",
-                "REMOÇÃO / INSTALAÇÃO DE VÁLVULAS FLANGEADAS",
-                "TROCADORES DE CALOR",
-                "PADRÃO ENSAIOS NÃO DESTRUTIVOS (END's)",
-                "SERVIÇO DE LIMPEZA COM HIDROJATO"
-            ]
-            
-            # Substituindo os botões por um rádio
-            atividade_selecionada = st.radio("Selecione a atividade", atividades)
 
-            # Mostrar o formulário correspondente à atividade selecionada
-            atividade_index = atividades.index(atividade_selecionada) if atividade_selecionada else None
-            
-            if atividade_index is not None:
-                if atividade_index == 0:
-                    st.write("Formulário: RAQUETEAMENTO / DESRAQ. DE UNIÕES FLANGEADAS")
-                    show_execucao_atividades_form(atividade_index)
-                elif atividade_index == 1:
-                    st.write("Formulário: FECHAM/TORQUE UNIÕES FLANGEADAS")
-                    show_execucao_atividades_form(atividade_index)
-                elif atividade_index == 2:
-                    st.write("Formulário: ABERTURA / FECHAMENTO DE BOCA DE VISITA")
-                    show_execucao_atividades_form(atividade_index)
-                elif atividade_index == 3:
-                    st.write("Formulário: BANDEJAMENTO")
-                    show_execucao_atividades_form(atividade_index)
-                elif atividade_index == 4:
-                    st.write("Formulário: REMOÇÃO / INSTALAÇÃO DE VÁLVULAS FLANGEADAS")
-                    show_execucao_atividades_form(atividade_index)
-                elif atividade_index == 5:
-                    st.write("Formulário: TROCADORES DE CALOR")
-                    show_execucao_atividades_form(atividade_index)
-                elif atividade_index == 6:
-                    st.write("Formulário: PADRÃO ENSAIOS NÃO DESTRUTIVOS (END's)")
-                    show_execucao_atividades_form(atividade_index)
-                elif atividade_index == 7:
-                    st.write("Formulário: SERVIÇO DE LIMPEZA COM HIDROJATO")
-                    show_execucao_atividades_form(atividade_index)
+            # Container maior que pega a tela inteira
+            with st.container():
+                # Criando duas colunas dentro do container
+                col1, col2 = st.columns([1, 3])  # Coluna 1 menor e coluna 2 maior
+                
+                # Primeiro container dentro da primeira coluna para o rádio
+                with col1:
+                    with st.container():
+                        # Mostrar a galeria de atividades
+                        st.subheader("Selecione uma Atividade para Execução")
+                        atividades = [
+                            "RAQUETEAMENTO / DESRAQ. DE UNIÕES FLANGEADAS",
+                            "FECHAM/TORQUE UNIÕES FLANGEADAS",
+                            "ABERTURA / FECHAMENTO DE BOCA DE VISITA",
+                            "BANDEJAMENTO",
+                            "REMOÇÃO / INSTALAÇÃO DE VÁLVULAS FLANGEADAS",
+                            "TROCADORES DE CALOR",
+                            "PADRÃO ENSAIOS NÃO DESTRUTIVOS (END's)",
+                            "SERVIÇO DE LIMPEZA COM HIDROJATO"
+                        ]
+                        
+                        # Substituindo os botões por um rádio
+                        atividade_selecionada = st.radio("Selecione a atividade", atividades)
+
+                        # Botão de reset
+                        if st.button("Voltar"):
+                            st.session_state['show_form_execucao'] = False
+                            st.rerun()
+
+                        # Segundo container na segunda coluna para mostrar o resultado
+                with col2:
+                    with st.container():
+                        st.subheader("Resultado da Seleção")
+                        # Lógica de navegação com base na opção selecionada
+                        if atividade_selecionada == "RAQUETEAMENTO / DESRAQ. DE UNIÕES FLANGEADAS":
+                            st.expander("Calculo de RAQUETEAMENTO / DESRAQ. DE UNIÕES FLANGEADAS")
+                            show_exec_atividades_form()
+                        elif atividade_selecionada == "FECHAM/TORQUE UNIÕES FLANGEADAS":
+                            st.expander("Calculo de FECHAM/TORQUE UNIÕES FLANGEADAS")
+                            show_exec_atividades_torque_form()
+                        elif atividade_selecionada == "ABERTURA / FECHAMENTO DE BOCA DE VISITA":
+                            st.expander("Calculo de ABERTURA / FECHAMENTO DE BOCA DE VISITA")
+                            show_exec_atividades_boca_visita_form()
+                        elif atividade_selecionada == "BANDEJAMENTO":
+                            st.expander("Calculo de BANDEJAMENTO")
+                        elif atividade_selecionada == "REMOÇÃO / INSTALAÇÃO DE VÁLVULAS FLANGEADAS":
+                            st.expander("Calculo de REMOÇÃO / INSTALAÇÃO DE VÁLVULAS FLANGEADAS")
+                        elif atividade_selecionada == "TROCADORES DE CALOR":
+                            st.expander("Calculo de TROCADORES DE CALOR")
+                        elif atividade_selecionada == "PADRÃO ENSAIOS NÃO DESTRUTIVOS (END's)":
+                            st.expander("Calculo de PADRÃO ENSAIOS NÃO DESTRUTIVOS (END's)")
+                        elif atividade_selecionada == "SERVIÇO DE LIMPEZA COM HIDROJATO":
+                            st.expander("Calculo de SERVIÇO DE LIMPEZA COM HIDROJATO")
 
 
 def app():

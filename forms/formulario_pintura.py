@@ -1,47 +1,60 @@
 import streamlit as st
+import pandas as pd
+
+# Dados do serviço de pintura
+servico_pintura = pd.DataFrame([
+    {"Etapa": "Preparação de Superfície", "Tipo": "Ferramenta manual", "m2_dia": 6, "Pintores": 1, "Ajudante": None},
+    {"Etapa": "Preparação de Superfície", "Tipo": "Ferramenta mecânica", "m2_dia": 10, "Pintores": 1, "Ajudante": None},
+    {"Etapa": "Preparação de Superfície", "Tipo": "Jateamento abrasivo (cabine de jato)", "m2_dia": 30, "Pintores": 2, "Ajudante": 1},
+    {"Etapa": "Preparação de Superfície", "Tipo": "Hidrojateamento (pistola)", "m2_dia": 20, "Pintores": 2, "Ajudante": 1},
+    {"Etapa": "Preparação de Superfície", "Tipo": "Hidrojateamento (robô)", "m2_dia": 35, "Pintores": 2, "Ajudante": 1},
+    {"Etapa": "Método de Aplicação", "Tipo": "Pistola convencional", "m2_dia": 75, "Pintores": 2, "Ajudante": 1},
+    {"Etapa": "Método de Aplicação", "Tipo": "Pitola air less", "m2_dia": 160, "Pintores": 2, "Ajudante": 1},
+    {"Etapa": "Método de Aplicação", "Tipo": "Rolo", "m2_dia": 30, "Pintores": 1, "Ajudante": None},
+    {"Etapa": "Método de Aplicação", "Tipo": "Trincha (stripe coat)", "m2_dia": 20, "Pintores": 1, "Ajudante": None}
+])
 
 def show_servico_pintura_form():
     st.subheader("Formulário: Serviço de Pintura")
 
-    # Exemplo de dados para o formulário de Serviço de Pintura
-    etapas = ["Preparação de Superfície", "Método de Aplicação"]
-    tipos = {
-        "Preparação de Superfície": ["Ferramenta manual", "Pistola airless"],
-        "Método de Aplicação": ["Pistola airless", "Rolo"]
-    }
+    # Etapa - Seleção Distinta
+    etapa = st.selectbox("Etapa:", servico_pintura['Etapa'].unique())
+
+    # Filtrar os tipos com base na etapa selecionada
+    tipos_disponiveis = servico_pintura[servico_pintura['Etapa'] == etapa]['Tipo'].unique()
+    tipo = st.selectbox("Tipo:", tipos_disponiveis)
+
+    # Buscar os detalhes com base nas seleções
+    servico_selecionado = servico_pintura[(servico_pintura['Etapa'] == etapa) & (servico_pintura['Tipo'] == tipo)].iloc[0]
     
-    # Organizar os campos em duas colunas
-    col1, col2 = st.columns(2)
+    # Mostrar M² Dia, Pintor e Ajudante conforme a seleção
+    st.text(f"M² por Dia: {servico_selecionado['m2_dia']}")
+    st.text(f"Pintores: {servico_selecionado['Pintores']}")
+    st.text(f"Ajudantes: {servico_selecionado['Ajudante'] if servico_selecionado['Ajudante'] is not None else 0}")
     
-    # Coluna 1
+    # Campo para inserir quantidade de M²
+    qtd_m2 = st.number_input("QTD M²:", min_value=0)
+    
+    col1, col2, col3, col4 =st.columns([1,1,1,7])
+
     with col1:
-        etapa = st.selectbox("Etapa:", etapas)
-        m2_dia = st.number_input("M² por dia:", min_value=1, value=50)
-        pintores = st.number_input("Número de Pintores:", min_value=1, value=2)
-
-    # Coluna 2
-    with col2:
-        tipo = st.selectbox("Tipo:", tipos[etapa])
-        qtd_m2 = st.number_input("QTD M²:", min_value=0)
-        ajudantes = st.number_input("Número de Ajudantes:", min_value=0, value=1)
-
-    # Colocar os botões lado a lado
-    col_calcular, col_voltar = st.columns([1, 1])
-    
-    # Botão de calcular tempo estimado
-    with col_calcular:
+        # Calcular Tempo Estimado
         if st.button("Calcular"):
-            resultado_hora = m2_dia / 8
-            resultado = qtd_m2 * resultado_hora
-            st.success(f"Tempo Estimado: {round(resultado, 2)} horas")
-
-    # Botão de voltar
-    with col_voltar:
+            # Calcular a produtividade por hora
+            produtividade_por_hora = servico_selecionado['m2_dia'] / 8
+            tempo_estimado = qtd_m2 / produtividade_por_hora if qtd_m2 > 0 else 0
+            st.success(f"Tempo Estimado: {round(tempo_estimado, 2)} horas")
+    
+    with col2:
+        # Botão de reset
+        if st.button("Reset"):
+            st.rerun()
+    with col3:
+        # Botão de voltar
         if st.button("Voltar"):
             st.session_state['show_form'] = False
-            st.rerun()  # Atualiza a interface imediatamente
 
-# Função principal que chama a tela de adicionar nota
+# Função principal que chama o formulário
 def main():
     show_servico_pintura_form()
 
