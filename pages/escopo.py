@@ -37,8 +37,7 @@ def escopo_screen():
     ])
 
     # Conteúdo da aba 1
-    with tab1:
-        st.expander("Cadastro de Notas de manutenção")   
+    with tab1: 
         gestao_notas_ordens_screen()
 
     # Conteúdo das outras abas
@@ -112,10 +111,14 @@ def gestao_notas_ordens_screen():
         total_hh = df['VL_HH_TOTAL'].sum()
         custo_total = df['VL_CUSTO_TOTAL'].sum()
 
-        # Exibir as métricas com st.metric
-        st.markdown("### Resumo do Projeto")
-        with st.expander("Cadastrar Nova Nota de Manutenção"):
-            add_nota_manutencao()
+        col1, col2 = st.columns([9,2])
+        with col1:
+            # Exibir as métricas com st.metric
+            st.markdown("### Resumo do Projeto")
+        with col2:  
+            #with st.popover("Cadastrar Nova Nota de Manutenção",use_container_width=True):
+            if st.button("➕👤 Cadastrar",key="addNota"):
+                add_nota_manutencao()
 
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Total de Notas", f"{total_notas}")

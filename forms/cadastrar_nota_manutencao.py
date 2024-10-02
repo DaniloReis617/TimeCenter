@@ -1,6 +1,7 @@
 import streamlit as st 
 from utils import create_data
 
+@st.dialog("Cadastrar Nova Nota")
 def add_nota_manutencao():
     
     # Criação do formulário para adicionar uma nova nota
