@@ -1,6 +1,7 @@
 import streamlit as st
 from utils import get_distinct_values, update_data, read_data
 
+@st.dialog("Cadastrar Nova Nota")
 def edit_nota_manutencao():
     # Verifica se o projeto foi selecionado e se há informação do projeto no estado da sessão
     if 'projeto_info' in st.session_state:

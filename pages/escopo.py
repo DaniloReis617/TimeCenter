@@ -111,13 +111,17 @@ def gestao_notas_ordens_screen():
         total_hh = df['VL_HH_TOTAL'].sum()
         custo_total = df['VL_CUSTO_TOTAL'].sum()
 
-        col1, col2 = st.columns([9,2])
+        col1, col2, col3 = st.columns([8,1,1])
         with col1:
             # Exibir as métricas com st.metric
             st.markdown("### Resumo do Projeto")
         with col2:  
             #with st.popover("Cadastrar Nova Nota de Manutenção",use_container_width=True):
-            if st.button("➕👤 Cadastrar",key="addNota"):
+            if st.button("➕ Cadastrar",key="addNota"):
+                add_nota_manutencao()
+        
+        with col3:
+            if st.button("✏️ Editar",key="EditNota"):
                 add_nota_manutencao()
 
         col1, col2, col3, col4 = st.columns(4)
