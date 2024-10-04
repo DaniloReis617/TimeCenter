@@ -11,12 +11,16 @@ def load_data(selected_gid):
         return pd.DataFrame()
 
     df = df[df['GID_PROJETO'] == selected_gid]
+    # Converter a coluna ID_NOTA_MANUTENCAO para int
+    df['ID_NOTA_MANUTENCAO'] = df['ID_NOTA_MANUTENCAO'].astype(int)
+    # Ordenar o DataFrame pela coluna ID_NOTA_MANUTENCAO de forma decrescente
+    df = df.sort_values(by='ID_NOTA_MANUTENCAO', ascending=False)
 
     df['VL_HH_TOTAL'] = pd.to_numeric(df['VL_HH_TOTAL'], errors='coerce').fillna(0.0)
     df['VL_CUSTO_TOTAL'] = pd.to_numeric(df['VL_CUSTO_TOTAL'], errors='coerce').fillna(0.0)
     
     return df
-@st.dialog("Cadastrar Nova Nota",width="large")
+@st.dialog("Editar Nota",width="large")
 def edit_nota_manutencao():
     # Verifica se o projeto foi selecionado
     if 'projeto_info' in st.session_state:
@@ -35,10 +39,10 @@ def edit_nota_manutencao():
 
     # Seleção do ID_NOTA_MANUTENCAO
     st.subheader("Selecione a Nota de Manutenção para Editar")
-    id_nota_selected = st.selectbox("ID Nota Manutenção", options=sorted(df['ID_NOTA_MANUTENCAO'].unique()))
+    id_nota_selected = st.multiselect("ID Nota Manutenção", options=sorted(df['ID_NOTA_MANUTENCAO'].unique()),key="filteridnota")
 
     # Carregar os dados da nota selecionada
-    nota_data = df[df['ID_NOTA_MANUTENCAO'] == id_nota_selected]
+    nota_data = df[df['ID_NOTA_MANUTENCAO'].isin(id_nota_selected)]
 
     if not nota_data.empty:
         nota_data = nota_data.iloc[0]
