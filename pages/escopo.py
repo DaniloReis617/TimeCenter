@@ -4,6 +4,7 @@ import numpy as np
 import locale
 import io  # Importar o módulo io
 from forms.cadastrar_nota_manutencao import add_nota_manutencao
+from forms.editar_nota_manutencao import edit_nota_manutencao
 from utils import (
     apply_custom_style_and_header,
     get_vw_nota_manutencao_hh_data,
@@ -122,7 +123,7 @@ def gestao_notas_ordens_screen():
         
         with col3:
             if st.button("✏️ Editar",key="EditNota"):
-                add_nota_manutencao()
+                edit_nota_manutencao()
 
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Total de Notas", f"{total_notas}")

@@ -1,9 +1,24 @@
 import streamlit as st
-from utils import get_distinct_values, update_data, read_data
+import pandas as pd
+from utils import get_vw_nota_manutencao_hh_data, update_data
 
-@st.dialog("Cadastrar Nova Nota")
+# Função para carregar os dados com base no GID_PROJETO
+@st.cache_data
+def load_data(selected_gid):
+    df = get_vw_nota_manutencao_hh_data()
+
+    if df is None or df.empty:
+        return pd.DataFrame()
+
+    df = df[df['GID_PROJETO'] == selected_gid]
+
+    df['VL_HH_TOTAL'] = pd.to_numeric(df['VL_HH_TOTAL'], errors='coerce').fillna(0.0)
+    df['VL_CUSTO_TOTAL'] = pd.to_numeric(df['VL_CUSTO_TOTAL'], errors='coerce').fillna(0.0)
+    
+    return df
+@st.dialog("Cadastrar Nova Nota",width="large")
 def edit_nota_manutencao():
-    # Verifica se o projeto foi selecionado e se há informação do projeto no estado da sessão
+    # Verifica se o projeto foi selecionado
     if 'projeto_info' in st.session_state:
         projeto_info = st.session_state['projeto_info']
         selected_gid = projeto_info['GID']
@@ -11,113 +26,98 @@ def edit_nota_manutencao():
         st.warning("Selecione um projeto na tela inicial.")
         return
 
-    # Carregar as notas associadas ao projeto
-    notas = get_distinct_values(f"timecenter.TB_NOTA_MANUTENCAO WHERE GID_PROJETO = {selected_gid}", 'TX_NOTA')
-    
-    # Seção: Escolha da Nota
-    st.subheader("Selecione a Nota, Ordem e Tag")
-    col1, col2, col3 = st.columns(3)
-    
-    # Inicializar listas vazias para ordens e tags
-    ordens = []
-    tags = []
-    nota_data = None  # Inicializar nota_data como None
+    # Carregar os dados associados ao projeto
+    df = load_data(selected_gid)
 
-    # Seleção da Nota
-    with col1:
-        tx_nota_selected = st.selectbox("Nota", notas)
-    
-    # Filtrar ordens com base na nota selecionada
-    if tx_nota_selected:
-        ordens = get_distinct_values(f"timecenter.TB_NOTA_MANUTENCAO WHERE TX_NOTA = '{tx_nota_selected}' AND GID_PROJETO = {selected_gid}", 'TX_ORDEM')
-    
-    # Seleção da Ordem
-    with col2:
-        tx_ordem_selected = st.selectbox("Ordem", ordens if ordens else ["Nenhuma ordem disponível"])
-    
-    # Filtrar tags com base na ordem selecionada
-    if tx_ordem_selected and tx_ordem_selected != "Nenhuma ordem disponível":
-        tags = get_distinct_values(f"timecenter.TB_NOTA_MANUTENCAO WHERE TX_NOTA = '{tx_nota_selected}' AND TX_ORDEM = '{tx_ordem_selected}' AND GID_PROJETO = {selected_gid}", 'TX_TAG')
-    
-    # Seleção da Tag
-    with col3:
-        tx_tag_selected = st.selectbox("Tag", tags if tags else ["Nenhuma tag disponível"])
+    if df.empty:
+        st.warning("Nenhuma nota encontrada para o projeto selecionado.")
+        return
 
-    # Carregar os dados da tabela com base nas seleções
-    if tx_tag_selected and tx_tag_selected != "Nenhuma tag disponível":
-        filter_condition = f"TX_NOTA = '{tx_nota_selected}' AND TX_ORDEM = '{tx_ordem_selected}' AND TX_TAG = '{tx_tag_selected}' AND GID_PROJETO = {selected_gid}"
-        nota_data = read_data('timecenter.TB_NOTA_MANUTENCAO', filter_condition)
-    
-    # Verificar se nota_data foi carregado corretamente
-    if nota_data is not None and not nota_data.empty:
-        st.write(f"Editando dados para Nota: {tx_nota_selected}, Ordem: {tx_ordem_selected}, Tag: {tx_tag_selected}")
+    # Seleção do ID_NOTA_MANUTENCAO
+    st.subheader("Selecione a Nota de Manutenção para Editar")
+    id_nota_selected = st.selectbox("ID Nota Manutenção", options=sorted(df['ID_NOTA_MANUTENCAO'].unique()))
+
+    # Carregar os dados da nota selecionada
+    nota_data = df[df['ID_NOTA_MANUTENCAO'] == id_nota_selected]
+
+    if not nota_data.empty:
+        nota_data = nota_data.iloc[0]
+
+        st.write(f"Editando Nota: {id_nota_selected}")
         
-        # Formulário para edição dos dados
+        # Formulário de edição
         with st.form(key="edit_nota_form"):
             col1, col2 = st.columns(2)
-            
-            with col1:
-                cd_projeto = st.text_input("Código do Projeto", nota_data['CD_PROJETO'].iloc[0])
-                tx_nota = st.text_input("Descrição da Nota", nota_data['TX_NOTA'].iloc[0])
-                tx_ordem = st.text_input("Ordem", nota_data['TX_ORDEM'].iloc[0])
-                tx_tag = st.text_input("Tag", nota_data['TX_TAG'].iloc[0])
-                tx_tag_linha = st.text_input("Tag da Linha", nota_data['TX_TAG_LINHA'].iloc[0])
-            with col2:
-                cd_servico = st.text_input("Código do Serviço", nota_data['CD_SERVICO'].iloc[0])
-                tx_descricao_servico = st.text_area("Descrição do Serviço", nota_data['TX_DESCRICAO_SERVICO'].iloc[0], height=150)
 
-            # Seção 2: Solicitante e Responsável
+            with col1:
+                cd_projeto = st.text_input("Código do Projeto", nota_data.get('CD_PROJETO', ''))
+                tx_nota = st.text_input("Nota", nota_data.get('TX_NOTA', ''))
+                tx_ordem = st.text_input("Ordem", nota_data.get('TX_ORDEM', ''))
+                tx_tag = st.text_input("Tag", nota_data.get('TX_TAG', ''))
+                tx_tag_linha = st.text_input("Tag da Linha", nota_data.get('TX_TAG_LINHA', ''))
+            with col2:
+                cd_servico = st.text_input("Código do Serviço", nota_data.get('CD_SERVICO', ''))
+                tx_descricao_servico = st.text_area("Descrição do Serviço", nota_data.get('TX_DESCRICAO_SERVICO', ''), height=150)
+
+            # Seção Solicitante e Responsável
             st.header("Solicitante e Responsável")
             col1, col2 = st.columns(2)
             with col1:
-                cd_setor_solicitante = st.text_input("Código do Setor Solicitante", nota_data['CD_SETOR_SOLICITANTE'].iloc[0])
-                tx_nome_solicitante = st.text_input("Nome do Solicitante", nota_data['TX_NOME_SOLICITANTE'].iloc[0])
+                cd_setor_solicitante = st.text_input("Setor Solicitante", nota_data.get('CD_SETOR_SOLICITANTE', ''))
+                tx_nome_solicitante = st.text_input("Nome do Solicitante", nota_data.get('TX_NOME_SOLICITANTE', ''))
             with col2:
-                cd_setor_responsavel = st.text_input("Código do Setor Responsável", nota_data['CD_SETOR_RESPONSAVEL'].iloc[0])
+                cd_setor_responsavel = st.text_input("Setor Responsável", nota_data.get('CD_SETOR_RESPONSAVEL', ''))
 
-            # Seção 3: Detalhes Técnicos
+            # Seção Detalhes Técnicos
             st.header("Detalhes Técnicos")
             col1, col2 = st.columns(2)
             with col1:
-                cd_familia_equipamentos = st.text_input("Família de Equipamentos", nota_data['CD_FAMILIA_EQUIPAMENTOS'].iloc[0])
-                cd_planta = st.text_input("Código da Planta", nota_data['CD_PLANTA'].iloc[0])
-                cd_area = st.text_input("Código da Área", nota_data['CD_AREA'].iloc[0])
-                cd_especialidade = st.text_input("Código da Especialidade", nota_data['CD_ESPECIALIDADE'].iloc[0])
+                cd_familia_equipamentos = st.text_input("Família de Equipamentos", nota_data.get('CD_FAMILIA_EQUIPAMENTOS', ''))
+                cd_planta = st.text_input("Código da Planta", nota_data.get('CD_PLANTA', ''))
+                cd_area = st.text_input("Código da Área", nota_data.get('CD_AREA', ''))
+                cd_especialidade = st.text_input("Código da Especialidade", nota_data.get('CD_ESPECIALIDADE', ''))
             with col2:
-                cd_sistema_operacional_1 = st.text_input("Sistema Operacional 1", nota_data['CD_SISTEMA_OPERACIONAL_1'].iloc[0])
-                cd_sistema_operacional_2 = st.text_input("Sistema Operacional 2", nota_data['CD_SISTEMA_OPERACIONAL_2'].iloc[0])
-                tx_equipamento_mestre = st.text_input("Equipamento Mestre", nota_data['TX_EQUIPAMENTO_MESTRE'].iloc[0])
+                cd_sistema_operacional_1 = st.text_input("Sistema Operacional 1", nota_data.get('CD_SISTEMA_OPERACIONAL_1', ''))
+                cd_sistema_operacional_2 = st.text_input("Sistema Operacional 2", nota_data.get('CD_SISTEMA_OPERACIONAL_2', ''))
+                tx_equipamento_mestre = st.text_input("Equipamento Mestre", nota_data.get('TX_EQUIPAMENTO_MESTRE', ''))
 
-            # Seção 4: Escopo e Situação
+            # Seção Escopo e Situação
             st.header("Escopo e Situação")
             col1, col2 = st.columns(2)
             with col1:
-                cd_escopo_origem = st.text_input("Origem do Escopo", nota_data['CD_ESCOPO_ORIGEM'].iloc[0])
-                cd_escopo_tipo = st.text_input("Tipo de Escopo", nota_data['CD_ESCOPO_TIPO'].iloc[0])
-                cd_situacao_motivo = st.text_input("Motivo da Situação", nota_data['CD_SITUACAO_MOTIVO'].iloc[0])
-                tx_rec_inspecao = st.text_input("Recomendação de Inspeção", nota_data['TX_REC_INSPECAO'].iloc[0])
+                cd_escopo_origem = st.text_input("Origem do Escopo", nota_data.get('CD_ESCOPO_ORIGEM', ''))
+                cd_escopo_tipo = st.text_input("Tipo de Escopo", nota_data.get('CD_ESCOPO_TIPO', ''))
+                cd_situacao_motivo = st.text_input("Motivo da Situação", nota_data.get('CD_SITUACAO_MOTIVO', ''))
+                tx_rec_inspecao = st.text_input("Recomendação de Inspeção", nota_data.get('TX_REC_INSPECAO', ''))
             with col2:
-                fl_nmp = st.selectbox("Tem Nota Manut. Parada?", ["Sim", "Não"], index=0 if nota_data['FL_NMP'].iloc[0] == 'Sim' else 1)
-                fl_ase = st.selectbox("Tem Autorização de Serviço Extra?", ["Sim", "Não"], index=0 if nota_data['FL_ASE'].iloc[0] == 'Sim' else 1)
-                tx_ase = st.text_input("Autorização Serviço Extra", nota_data['TX_ASE'].iloc[0])
+                fl_nmp = st.selectbox("Nota Manutenção Parada?", ["Sim", "Não"], index=0 if nota_data.get('FL_NMP', 'Não') == 'Sim' else 1)
+                fl_ase = st.selectbox("Tem Autorização de Serviço Extra?", ["Sim", "Não"], index=0 if nota_data.get('FL_ASE', 'Não') == 'Sim' else 1)
+                tx_ase = st.text_input("Autorização Serviço Extra", nota_data.get('TX_ASE', ''))
 
             # Seção 5: Executantes
             st.header("Executantes")
             col1, col2 = st.columns(2)
             with col1:
-                cd_executante_1 = st.text_input("Código do Executante 1", nota_data['CD_EXECUTANTE_1'].iloc[0])
+                cd_executante_1 = st.text_input("Código do Executante 1", nota_data.get('CD_EXECUTANTE_1', ''))
             with col2:
-                cd_executante_2 = st.text_input("Código do Executante 2", nota_data['CD_EXECUTANTE_2'].iloc[0])
+                cd_executante_2 = st.text_input("Código do Executante 2", nota_data.get('CD_EXECUTANTE_2', ''))
 
-            # Seção 6: Observações
+
+
+            # Seção Observações
             st.header("Observações")
-            dt_atualizacao = st.date_input("Data de Atualização", nota_data['DT_ATUALIZACAO'].iloc[0])
-            tx_observacao = st.text_area("Observação Adicional", nota_data['TX_OBSERVACAO'].iloc[0], height=100)
-            
-            # Botão de submissão
+            # Converter a data de atualização para garantir que seja uma data válida
+            dt_atualizacao_raw = nota_data.get('DT_ATUALIZACAO', None)
+            if pd.isnull(dt_atualizacao_raw) or isinstance(dt_atualizacao_raw, str):
+                dt_atualizacao = st.date_input("Data de Atualização", value=pd.to_datetime('today').date())
+            else:
+                dt_atualizacao = st.date_input("Data de Atualização", value=pd.to_datetime(dt_atualizacao_raw).date())
+
+            tx_observacao = st.text_area("Observação Adicional", nota_data.get('TX_OBSERVACAO', ''), height=100)
+
             submit_button = st.form_submit_button(label="Atualizar Nota")
 
-        # Atualizar dados na tabela se o botão de envio for clicado
+        # Atualizar dados no banco de dados
         if submit_button:
             updated_data = {
                 "CD_PROJETO": cd_projeto,
@@ -149,13 +149,11 @@ def edit_nota_manutencao():
                 "DT_ATUALIZACAO": dt_atualizacao,
                 "TX_OBSERVACAO": tx_observacao
             }
+            
+            update_data('timecenter.TB_NOTA_MANUTENCAO', 'ID_NOTA_MANUTENCAO', id_nota_selected, updated_data)
+            st.success("Nota atualizada com sucesso!")
 
-            # Chama a função de update passando o ID_NOTA correto
-            update_data('timecenter.TB_NOTA_MANUTENCAO', 'ID_NOTA', nota_data['ID_NOTA_MANUTENCAO'].iloc[0], updated_data)
-    else:
-        st.warning("Nenhuma nota encontrada para as seleções atuais.")
-
-# Função principal que chama a tela de editar nota
+# Função principal
 def main():
     edit_nota_manutencao()
 
