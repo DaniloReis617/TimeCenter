@@ -198,6 +198,235 @@ def get_descricao_projetos(cd_projetos_list):
     projetos_df = execute_read_query(query, params=cd_projetos_list)
     return projetos_df
 
+def get_servicos_projeto(projeto_gid):
+    query = """
+    SELECT GID, TX_DESCRICAO 
+    FROM timecenter.TB_CADASTRO_SERVICO 
+    WHERE CD_PROJETO = ?
+    ORDER BY TX_DESCRICAO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar os serviços: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+    
+def get_situacao_motivo_projeto(projeto_gid):
+    query = """
+    SELECT GID, TX_DESCRICAO 
+    FROM timecenter.TB_CADASTRO_SITUACAO_MOTIVO 
+    WHERE CD_PROJETO = ?
+    ORDER BY TX_DESCRICAO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar os motivos de situação: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+
+def get_setor_solicitante_projeto(projeto_gid):
+    query = """
+    SELECT GID, TX_DESCRICAO 
+    FROM timecenter.TB_CADASTRO_SETOR_SOLICITANTE 
+    WHERE CD_PROJETO = ?
+    ORDER BY TX_DESCRICAO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar os setores solicitantes: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+
+def get_setor_responsavel_projeto(projeto_gid):
+    query = """
+    SELECT GID, TX_DESCRICAO 
+    FROM timecenter.TB_CADASTRO_SETOR_RESPONSAVEL 
+    WHERE CD_PROJETO = ?
+    ORDER BY TX_DESCRICAO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar os setores responsáveis: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+
+def get_familia_equipamentos_projeto(projeto_gid):
+    query = """
+    SELECT GID, TX_DESCRICAO 
+    FROM timecenter.TB_CADASTRO_FAMILIA_EQUIPAMENTOS 
+    WHERE CD_PROJETO = ?
+    ORDER BY TX_DESCRICAO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar as famílias de equipamentos: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+
+def get_plantas_projeto(projeto_gid):
+    query = """
+    SELECT GID, TX_DESCRICAO 
+    FROM timecenter.TB_CADASTRO_PLANTA 
+    WHERE CD_PROJETO = ?
+    ORDER BY TX_DESCRICAO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar as plantas: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+
+def get_especialidades_projeto(projeto_gid):
+    query = """
+    SELECT GID, TX_DESCRICAO 
+    FROM timecenter.TB_CADASTRO_ESPECIALIDADE 
+    WHERE CD_PROJETO = ?
+    ORDER BY TX_DESCRICAO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar as especialidades: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+
+def get_areas_projeto(projeto_gid):
+    query = """
+    SELECT GID, TX_DESCRICAO 
+    FROM timecenter.TB_CADASTRO_AREA 
+    WHERE CD_PROJETO = ?
+    ORDER BY TX_DESCRICAO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar as áreas: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+
+def get_sistemas_operacionais_projeto(projeto_gid):
+    query = """
+    SELECT GID, TX_DESCRICAO 
+    FROM timecenter.TB_CADASTRO_SISTEMA_OPERACIONAL 
+    WHERE CD_PROJETO = ?
+    ORDER BY TX_DESCRICAO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar os sistemas operacionais: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+    
+def get_escopo_origem_projeto(projeto_gid):
+    query = """
+    SELECT GID, TX_DESCRICAO 
+    FROM timecenter.TB_CADASTRO_ESCOPO_ORIGEM
+    WHERE CD_PROJETO = ?
+    ORDER BY TX_DESCRICAO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar as origens de escopo: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+
+def get_escopo_tipo_projeto(projeto_gid):
+    query = """
+    SELECT GID, TX_DESCRICAO 
+    FROM timecenter.TB_CADASTRO_ESCOPO_TIPO
+    WHERE CD_PROJETO = ?
+    ORDER BY TX_DESCRICAO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar os tipos de escopo: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+
+def get_executantes_projeto(projeto_gid):
+    query = """
+    SELECT GID, TX_DESCRICAO 
+    FROM timecenter.TB_CADASTRO_EXECUTANTE
+    WHERE CD_PROJETO = ?
+    ORDER BY TX_DESCRICAO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar os executantes: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+
+
 def get_all_projetos():
     """Retorna todos os projetos ativos (FL_STATUS = 'A') da tabela timecenter.TB_PROJETO."""
     query = """
