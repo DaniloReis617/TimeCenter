@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import locale
 import io  # Importar o módulo io
-from forms.cadastrar_nota_manutencao import add_nota_manutencao
+from forms.cadastrar_nota_manutencao import cadastrar_nota_manutencao
 from forms.editar_nota_manutencao import edit_nota_manutencao
 from utils import (
     apply_custom_style_and_header,
@@ -119,7 +119,7 @@ def gestao_notas_ordens_screen():
         with col2:  
             #with st.popover("Cadastrar Nova Nota de Manutenção",use_container_width=True):
             if st.button("➕ Cadastrar",key="addNota"):
-                add_nota_manutencao()
+                cadastrar_nota_manutencao()
         
         with col3:
             if st.button("✏️ Editar",key="EditNota"):

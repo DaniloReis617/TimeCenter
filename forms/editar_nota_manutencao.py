@@ -67,7 +67,7 @@ def edit_nota_manutencao():
             col1, col2 = st.columns(2)
 
             with col1:
-                cd_projeto = st.text_input("Código do Projeto", nota_data.get('CD_PROJETO', ''))
+                cd_projeto = selected_gid
 
                 # Converter a data de atualização para garantir que seja uma data válida
                 dt_data_row = nota_data.get('DT_NOTA', None)
@@ -501,7 +501,10 @@ def edit_nota_manutencao():
                 "TX_OBSERVACAO": tx_observacao
             }
             
-            update_data('timecenter.TB_NOTA_MANUTENCAO', 'ID_NOTA_MANUTENCAO', id_nota_selected, updated_data)
+            try:
+                update_data('timecenter.TB_NOTA_MANUTENCAO', 'ID_NOTA_MANUTENCAO', id_nota_selected, updated_data)
+            except Exception as e:
+                st.error(f"Erro ao atualizar registro na tabela timecenter.TB_NOTA_MANUTENCAO: {e}")
             st.success("Nota atualizada com sucesso!")
 
 # Função principal
