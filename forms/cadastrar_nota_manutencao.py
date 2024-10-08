@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-from utils import (create_data, read_data, 
+from utils import (create_data, read_data,
+                   convert_to_native_types, 
                    get_servicos_projeto, 
                    get_situacao_motivo_projeto, 
                    get_setor_solicitante_projeto, 
@@ -58,6 +59,10 @@ def cadastrar_nota_manutencao():
 
             dt_data = st.date_input("Data da Nota", value=pd.to_datetime('today').date())
 
+            # Novo campo para DT_HR_CADASTRO
+            dt_hr_cadastro = st.date_input("Data de Cadastro", value=pd.to_datetime('today').date(), disabled=True)
+
+
             situacao_map = {'P': 'Pendente', 'A': 'Aprovado', 'R': 'Reprovado'}
             situacao_nota = st.selectbox("Situação da Nota", options=list(situacao_map.values()))
             fl_situacao_nota = {v: k for k, v in situacao_map.items()}[situacao_nota]
@@ -68,6 +73,9 @@ def cadastrar_nota_manutencao():
             tx_tag_linha = st.text_input("Tag da Linha", "")
 
         with col2:
+
+            dt_hr_alteracao = st.date_input("Data de Alteração", value=pd.to_datetime('today').date(), disabled=True)
+            
             servicos_df = get_servicos_projeto(selected_gid)
             servico_map = dict(zip(servicos_df['TX_DESCRICAO'], servicos_df['GID'])) if not servicos_df.empty else {}
             
@@ -182,37 +190,42 @@ def cadastrar_nota_manutencao():
     if submit_button:
         new_data = {
             "ID": novo_id,
-            "CD_PROJETO": cd_projeto,
-            "DT_NOTA": dt_data,
+            "CD_PROJETO": str(cd_projeto),
+            "DT_NOTA": dt_data.strftime('%Y-%m-%d'),
+            "DT_HR_CADASTRO": dt_hr_cadastro.strftime('%Y-%m-%d %H:%M:%S'),
+            "DT_HR_ALTERACAO": dt_hr_alteracao.strftime('%Y-%m-%d %H:%M:%S'),
             "FL_SITUACAO": fl_situacao_nota,
-            "TX_NOTA": tx_nota,
-            "TX_ORDEM": tx_ordem,
-            "TX_TAG": tx_tag,
-            "TX_TAG_LINHA": tx_tag_linha,
-            "CD_SERVICO": cd_servico,
-            "TX_DESCRICAO_SERVICO": tx_descricao_servico,
-            "CD_SETOR_SOLICITANTE": cd_setor_solicitante,
-            "TX_NOME_SOLICITANTE": tx_nome_solicitante,
-            "CD_SETOR_RESPONSAVEL": cd_setor_responsavel,
-            "CD_FAMILIA_EQUIPAMENTOS": cd_familia_equipamentos,
-            "CD_PLANTA": cd_planta,
-            "CD_AREA": cd_area,
-            "CD_ESPECIALIDADE": cd_especialidade,
-            "CD_SISTEMA_OPERACIONAL_1": cd_sistema_operacional_1,
-            "CD_SISTEMA_OPERACIONAL_2": cd_sistema_operacional_2,
-            "TX_EQUIPAMENTO_MESTRE": tx_equipamento_mestre,
-            "CD_ESCOPO_ORIGEM": cd_escopo_origem,
-            "CD_ESCOPO_TIPO": cd_escopo_tipo,
-            "CD_SITUACAO_MOTIVO": cd_situacao_motivo,
-            "TX_REC_INSPECAO": tx_rec_inspecao,
-            "FL_NMP": fl_nmp,
-            "FL_ASE": fl_ase,
-            "TX_ASE": tx_ase,
-            "CD_EXECUTANTE_1": cd_executante_1,
-            "CD_EXECUTANTE_2": cd_executante_2,
-            "DT_ATUALIZACAO": dt_atualizacao,
-            "TX_OBSERVACAO": tx_observacao
+            "TX_NOTA": str(tx_nota) if tx_nota else None,
+            "TX_ORDEM": str(tx_ordem) if tx_ordem else None,
+            "TX_TAG": str(tx_tag) if tx_tag else None,
+            "TX_TAG_LINHA": str(tx_tag_linha) if tx_tag_linha else None,
+            "CD_SERVICO": str(cd_servico) if cd_servico else None,
+            "TX_DESCRICAO_SERVICO": str(tx_descricao_servico) if tx_descricao_servico else None,
+            "CD_SETOR_SOLICITANTE": str(cd_setor_solicitante) if cd_setor_solicitante else None,
+            "TX_NOME_SOLICITANTE": str(tx_nome_solicitante) if tx_nome_solicitante else None,
+            "CD_SETOR_RESPONSAVEL": str(cd_setor_responsavel) if cd_setor_responsavel else None,
+            "CD_FAMILIA_EQUIPAMENTOS": str(cd_familia_equipamentos) if cd_familia_equipamentos else None,
+            "CD_PLANTA": str(cd_planta) if cd_planta else None,
+            "CD_AREA": str(cd_area) if cd_area else None,
+            "CD_ESPECIALIDADE": str(cd_especialidade) if cd_especialidade else None,
+            "CD_SISTEMA_OPERACIONAL_1": str(cd_sistema_operacional_1) if cd_sistema_operacional_1 else None,
+            "CD_SISTEMA_OPERACIONAL_2": str(cd_sistema_operacional_2) if cd_sistema_operacional_2 else None,
+            "TX_EQUIPAMENTO_MESTRE": str(tx_equipamento_mestre) if tx_equipamento_mestre else None,
+            "CD_ESCOPO_ORIGEM": str(cd_escopo_origem) if cd_escopo_origem else None,
+            "CD_ESCOPO_TIPO": str(cd_escopo_tipo) if cd_escopo_tipo else None,
+            "CD_SITUACAO_MOTIVO": str(cd_situacao_motivo) if cd_situacao_motivo else None,
+            "TX_REC_INSPECAO": str(tx_rec_inspecao) if tx_rec_inspecao else None,
+            "FL_NMP": fl_nmp[0],  # char(1)
+            "FL_ASE": fl_ase[0],  # char(1)
+            "TX_ASE": str(tx_ase) if tx_ase else None,
+            "CD_EXECUTANTE_1": str(cd_executante_1) if cd_executante_1 else None,
+            "CD_EXECUTANTE_2": str(cd_executante_2) if cd_executante_2 else None,
+            "DT_ATUALIZACAO": dt_atualizacao.strftime('%Y-%m-%d'),
+            "TX_OBSERVACAO": str(tx_observacao) if tx_observacao else None
         }
+
+        # Aplique a conversão de tipos antes de atualizar
+        new_data = convert_to_native_types(new_data)
         
         try:
             create_data('timecenter.TB_NOTA_MANUTENCAO', new_data)

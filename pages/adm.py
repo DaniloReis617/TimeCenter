@@ -28,10 +28,10 @@ def adm_screen():
             with col1:
                 st.header("Dashboard de Usuários")
             with col2:
-                if st.button("➕👤 Novo",key="adduser"):
+                if st.button("➕ Novo",key="adduser"):
                     add_usuario()
             with col3:
-                if st.button("✏️👤 Editar",key="edituser"):
+                if st.button("✏️ Editar",key="edituser"):
                     edit_usuario()
 
             show_user_dashboard()
@@ -42,10 +42,10 @@ def adm_screen():
             with col1:
                 st.header("Gestão de Usuários por Projetos")
             with col2:
-                if st.button("➕👤 Novo",key="addUserProj"):
+                if st.button("➕ Novo",key="addUserProj"):
                     add_projeto_usuario()
             with col3:
-                if st.button("✏️👤 Editar",key="editUserProj"):
+                if st.button("✏️ Editar",key="editUserProj"):
                     editar_projeto_usuario()
             show_projetos_por_usuario()
         
@@ -55,10 +55,10 @@ def adm_screen():
             with col1:
                 st.header("Gestão de Projetos")
             with col2:
-                if st.button("➕👤 Novo",key="addproj"):
+                if st.button("➕ Novo",key="addproj"):
                     add_projeto()
             with col3:
-                if st.button("✏️👤 Editar",key="editproj"):
+                if st.button("✏️ Editar",key="editproj"):
                     edit_projeto()
             show_gestao_projetos()
 

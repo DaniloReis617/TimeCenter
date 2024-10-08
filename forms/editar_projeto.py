@@ -15,6 +15,9 @@ def edit_projeto():
             edit_descricao = st.text_input("Descrição do Projeto", value=projeto_info['TX_DESCRICAO'])
             edit_data_inicio = st.date_input("Data de Início", value=pd.to_datetime(projeto_info['DT_INICIO']))
             edit_data_termino = st.date_input("Data de Término", value=pd.to_datetime(projeto_info['DT_TERMINO']))
+            edit_orcamnto = st.text_input("Orçamento do Projeto", value=projeto_info['VL_VALOR_ORCAMENTO'])
+            edit_contigencia = st.text_input("Contingência do Projeto", value=projeto_info['VL_PERCENTUAL_CONTINGENCIA'])
+            edit_informacoes = st.text_area("Informações do Projeto", value=projeto_info['TX_INFORMACAO'], height=100)
             
             # Mapeie os status para a forma completa antes de passar para o selectbox
             status_map = {'A': 'Ativo', 'I': 'Inativo'}
@@ -35,7 +38,10 @@ def edit_projeto():
                     'TX_DESCRICAO': edit_descricao,
                     'DT_INICIO': edit_data_inicio,
                     'DT_TERMINO': edit_data_termino,
-                    'FL_STATUS': status_reverso_mapping[edit_status]
+                    'VL_VALOR_ORCAMENTO': edit_orcamnto,
+                    'VL_PERCENTUAL_CONTINGENCIA': edit_contigencia,
+                    'FL_STATUS': status_reverso_mapping[edit_status],
+                    'TX_INFORMACAO': edit_informacoes
                 }
                 update_data('timecenter.TB_PROJETO', 'GID', projeto_info['GID'], updated_project)
                 st.success("Projeto atualizado com sucesso!")
