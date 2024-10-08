@@ -1,6 +1,7 @@
 import pyodbc
 import os
 import pandas as pd
+import numpy as np
 from datetime import datetime
 import time
 import streamlit as st
@@ -18,7 +19,7 @@ def get_db_connection():
         )
         return conn
     except pyodbc.Error as e:
-        st.error("Não foi possível conectar ao banco de dados. Por favor, tente novamente mais tarde.")
+        st.error(f"Erro ao conectar ao banco de dados: {str(e)}")
         return None
 
 def execute_read_query(query, params=None):
@@ -56,7 +57,7 @@ def execute_write_query(query, params=None):
                 time.sleep(2)
                 continue
             else:
-                st.error("Ocorreu um erro ao executar a operação no banco de dados.")
+                st.error(f"Ocorreu um erro ao executar a operação no banco de dados: {str(e)}")
                 return False
 
 def validate_login(username):
@@ -141,37 +142,104 @@ def get_vw_nota_manutencao_hh_data():
     return data_df
 
 def create_data(table_name, new_data):
-    """Insere um novo registro em uma tabela."""
-    columns = ', '.join(new_data.keys())
-    placeholders = ', '.join(['?'] * len(new_data))
-    query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
-    params = list(new_data.values())
-    success = execute_write_query(query, params)
-    if success:
-        st.success("Registro adicionado com sucesso!")
-    else:
-        st.error(f"Erro ao adicionar registro na tabela {table_name}.")
+    """Insere um novo registro em uma tabela e traz mais informações em caso de erro."""
+    try:
+        # Monta a query de inserção
+        columns = ', '.join(new_data.keys())
+        placeholders = ', '.join(['?'] * len(new_data))
+        query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+        params = list(new_data.values())
+
+        # Tenta executar a query
+        success = execute_write_query(query, params)
+
+        if success:
+            st.success("Registro adicionado com sucesso!")
+        else:
+            st.error(f"Erro ao adicionar registro na tabela {table_name}.")
+
+    except Exception as e:
+        # Mensagem detalhada do erro, com os parâmetros e query
+        error_message = (
+            f"Erro ao adicionar registro na tabela {table_name}.\n"
+            f"Query: {query}\n"
+            f"Parâmetros: {params}\n"
+            f"Detalhes do erro: {str(e)}"
+        )
+        st.error(error_message)
+
+def convert_to_native_types(data):
+    """Converte tipos numpy/pandas para tipos nativos de Python compatíveis com o banco."""
+    for key, value in data.items():
+        if isinstance(value, (np.int64, np.int32, int)):  # Converte para int
+            data[key] = int(value)
+        elif isinstance(value, (np.float64, np.float32, float)):  # Converte para float
+            data[key] = float(value)
+        elif isinstance(value, (pd.Timestamp, np.datetime64)):  # Converte datas para string
+            data[key] = value.strftime('%Y-%m-%d %H:%M:%S') if isinstance(value, pd.Timestamp) else str(pd.to_datetime(value))
+        elif pd.isna(value):  # Verifica valores nulos
+            data[key] = None
+        elif isinstance(value, (str, np.str_)):  # Converte strings
+            data[key] = str(value)
+        else:
+            data[key] = value  # Mantém o valor original se já for nativo do Python
+    return data
 
 def update_data(table_name, id_column, id_value, updated_data):
-    """Atualiza um registro existente em uma tabela."""
-    set_clause = ', '.join([f"{col} = ?" for col in updated_data.keys()])
-    query = f"UPDATE {table_name} SET {set_clause} WHERE {id_column} = ?"
-    params = list(updated_data.values()) + [id_value]
-    success = execute_write_query(query, params)
-    if success:
-        st.success("Registro atualizado com sucesso!")
-    else:
-        st.error(f"Erro ao atualizar registro na tabela {table_name}.")
+    """Atualiza um registro existente em uma tabela e traz mais informações em caso de erro."""
+    try:
+        # Monta o SET clause para a query de atualização
+        set_clause = ', '.join([f"{col} = ?" for col in updated_data.keys()])
+        query = f"UPDATE {table_name} SET {set_clause} WHERE {id_column} = ?"
+        params = list(updated_data.values()) + [id_value]
+
+        # Captura e exibe a query e os parâmetros antes de executar
+        #st.write(f"Query: {query}")
+        #st.write(f"Parâmetros: {params}")
+
+        # Tenta executar a query
+        success = execute_write_query(query, params)
+
+        if success:
+            st.success("Registro atualizado com sucesso!")
+        else:
+            st.error(f"Erro ao atualizar registro na tabela {table_name}.")
+
+    except Exception as e:
+        # Mensagem detalhada do erro, com os parâmetros e query
+        error_message = (
+            f"Erro ao atualizar registro na tabela {table_name}.\n"
+            f"Query: {query}\n"
+            f"Parâmetros: {params}\n"
+            f"Detalhes do erro: {str(e)}"
+        )
+        st.error(error_message)
+
 
 def delete_data(table_name, id_column, id_value):
-    """Deleta um registro existente em uma tabela."""
-    query = f"DELETE FROM {table_name} WHERE {id_column} = ?"
-    params = [id_value]
-    success = execute_write_query(query, params)
-    if success:
-        st.success("Registro deletado com sucesso!")
-    else:
-        st.error(f"Erro ao deletar registro da tabela {table_name}.")
+    """Deleta um registro existente em uma tabela e traz mais informações em caso de erro."""
+    try:
+        # Monta a query de exclusão
+        query = f"DELETE FROM {table_name} WHERE {id_column} = ?"
+        params = [id_value]
+
+        # Tenta executar a query
+        success = execute_write_query(query, params)
+
+        if success:
+            st.success("Registro deletado com sucesso!")
+        else:
+            st.error(f"Erro ao deletar registro da tabela {table_name}.")
+
+    except Exception as e:
+        # Mensagem detalhada do erro, com os parâmetros e query
+        error_message = (
+            f"Erro ao deletar registro na tabela {table_name}.\n"
+            f"Query: {query}\n"
+            f"Parâmetros: {params}\n"
+            f"Detalhes do erro: {str(e)}"
+        )
+        st.error(error_message)
 
 def get_projetos_por_usuario(gid_usuario):
     """Retorna os projetos associados ao GID de um usuário."""
@@ -437,7 +505,6 @@ def get_all_projetos():
     projetos_df = execute_read_query(query)
     return projetos_df
 
-import pandas as pd
 
 # Atividades de Execução
 atividades_execucao = pd.DataFrame([

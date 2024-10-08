@@ -112,7 +112,7 @@ def gestao_notas_ordens_screen():
         total_hh = df['VL_HH_TOTAL'].sum()
         custo_total = df['VL_CUSTO_TOTAL'].sum()
 
-        col1, col2, col3 = st.columns([8,1,1])
+        col1, col2, col3, col4 = st.columns([7,1,1,1])
         with col1:
             # Exibir as métricas com st.metric
             st.markdown("### Resumo do Projeto")
@@ -124,6 +124,12 @@ def gestao_notas_ordens_screen():
         with col3:
             if st.button("✏️ Editar",key="EditNota"):
                 edit_nota_manutencao()
+
+        with col4:
+            if st.button("🔄 Atualizar",key="AtualizarPageNota"):
+                # Invalida o cache e recarrega os dados
+                load_data.clear()
+                load_data(selected_gid)
 
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Total de Notas", f"{total_notas}")
