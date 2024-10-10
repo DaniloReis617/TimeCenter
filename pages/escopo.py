@@ -215,7 +215,7 @@ def gestao_notas_ordens_screen():
             fit_columns_on_grid_load=True,
             theme='alpine',
             enable_enterprise_modules=False,
-            height=400,
+            height=730,
             width='100%',
             reload_data=True
         )

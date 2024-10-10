@@ -47,12 +47,15 @@ def edit_nota_manutencao():
         st.warning("Nenhuma nota encontrada para o projeto selecionado.")
         return
 
-    # Seleção do ID_NOTA_MANUTENCAO
+    # Filtrar valores None da coluna TX_NOTA
+    df = df[df['TX_NOTA'].notna()]
+
+    # Seleção do TX_NOTA
     st.subheader("Selecione a Nota de Manutenção para Editar")
-    id_nota_selected = st.multiselect("ID Nota Manutenção", options=sorted(df['ID'].unique()), key="filteridnota")
+    tx_nota_selected = st.multiselect("Nota de Manutenção", options=sorted(df['TX_NOTA']), key="filtertxnota")
 
     # Carregar os dados da nota selecionada
-    nota_data = df[df['ID'].isin(id_nota_selected)]
+    nota_data = df[df['TX_NOTA'].isin(tx_nota_selected)]
 
     if not nota_data.empty:
         nota_data = nota_data.iloc[0]
