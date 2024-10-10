@@ -56,52 +56,49 @@ def Cadastro_Auxiliar_screen():
 
                 # Lógica de navegação com base na opção selecionada
                 if opcao_selecionada == "Despesa":
-                    st.write("Acessando tela de Cadastro de Despesa")
-                    show_DESPESA()
+                    # Criar as abas
+                    tab1, tab2 = st.tabs([
+                        "Lista de Despesas",
+                        "Lançamento de Despesas - Administração"
+                    ])
+
+                    # Conteúdo da aba 1
+                    with tab1: 
+                        show_DESPESA()
+
+                    # Conteúdo da aba 1
+                    with tab2: 
+                        show_Lancamento_de_Despesas()
+
                 elif opcao_selecionada == "Sist. Operacional":
-                    st.write("Acessando tela de Cadastro de Sistema Operacional")
                     show_SISTEMA_OPERACIONAL()
                 elif opcao_selecionada == "Situação Motivo":
-                    st.write("Acessando tela de Cadastro de Situação Motivo")
                     show_SITUACAO_MOTIVO()
                 elif opcao_selecionada == "Setor Solicitante":
-                    st.write("Acessando tela de Cadastro de Setor Solicitante")
                     show_SETOR_SOLICITANTE()
                 elif opcao_selecionada == "Setor Responsável":
-                    st.write("Acessando tela de Cadastro de Setor Responsável")
                     show_SETOR_RESPONSAVEL()
                 elif opcao_selecionada == "Serviço":
-                    st.write("Acessando tela de Cadastro de Serviço")
                     show_SERVICO()
                 elif opcao_selecionada == "Recurso":
-                    st.write("Acessando tela de Cadastro de Recurso")
                     show_RECURSO()
                 elif opcao_selecionada == "Planta":
-                    st.write("Acessando tela de Cadastro de Planta")
                     show_PLANTA()
                 elif opcao_selecionada == "Informativo":
-                    st.write("Acessando tela de Cadastro de Informativo")
                     show_INFORMATIVO()
                 elif opcao_selecionada == "Família Equipamentos":
-                    st.write("Acessando tela de Cadastro de Família de Equipamentos")
                     show_Familia_Equipamentos()
                 elif opcao_selecionada == "Executante":
-                    st.write("Acessando tela de Cadastro de Executante")
                     show_Executante()
                 elif opcao_selecionada == "Especialidade":
-                    st.write("Acessando tela de Cadastro de Especialidade")
                     show_Especialidade()
                 elif opcao_selecionada == "Escopo Tipo":
-                    st.write("Acessando tela de Cadastro de Escopo Tipo")
                     show_Escopo_Tipo()
                 elif opcao_selecionada == "Escopo Origem":
-                    st.write("Acessando tela de Cadastro de Escopo Origem")
                     show_Escopo_Origem()
                 elif opcao_selecionada == "Área":
-                    st.write("Acessando tela de Cadastro de Área")
                     show_Area()
                 elif opcao_selecionada == "Apoio":
-                    st.write("Acessando tela de Cadastro de Apoio")
                     show_Apoio()
 
 
@@ -751,6 +748,52 @@ def show_DESPESA():
     # Exibir o DataFrame formatado
     st.subheader("Cadastro de Despesa - Administração")
     st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
+
+def show_Lancamento_de_Despesas():
+    if 'projeto_info' in st.session_state:
+        projeto_info = st.session_state['projeto_info']
+        selected_gid = projeto_info['GID']
+    else:
+        st.warning("Selecione um projeto na tela inicial.")
+        return
+    
+    df = read_data("timecenter.TB_LANCAMENTO_DESPESA")
+
+    if df is None or df.empty:
+        return pd.DataFrame()  # Retorna um DataFrame vazio
+
+    # Filtrar o DataFrame pelo projeto selecionado
+    df = df[df['CD_PROJETO'] == selected_gid]
+
+    # Converter a coluna VL_VALOR_CUSTO para float
+    df['VL_VALOR_CUSTO'] = pd.to_numeric(df['VL_VALOR_CUSTO'], errors='coerce').fillna(0.0)
+
+    # Tratar a coluna VL_VALOR_CUSTO
+    # Verificar se a coluna é do tipo string
+    if df['VL_VALOR_CUSTO'].dtype == 'object':
+        # Remover 'R$' e espaços, e converter para float
+        df['VL_VALOR_CUSTO'] = df['VL_VALOR_CUSTO'].str.replace('R$', '').str.replace(' ', '').str.replace('.', '').str.replace(',', '.').astype(float)
+
+    # Garantir que a coluna é float
+    df['VL_VALOR_CUSTO'] = df['VL_VALOR_CUSTO'].astype(float)
+
+    # Formatar a coluna VL_VALOR_CUSTO como BRL
+    df['VL_VALOR_CUSTO'] = df['VL_VALOR_CUSTO'].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+
+    # Converter a coluna ID para int
+    df['ID'] = df['ID'].astype(int)
+
+    # Filtros para a tabela de dados
+    with st.expander("Filtros"):
+        ID_filter_Lancamento_de_Despesas = st.multiselect("ID", options=sorted(df['ID'].unique()))
+
+        # Aplicar os filtros
+        if ID_filter_Lancamento_de_Despesas:
+            df = df[df['ID'].isin(ID_filter_Lancamento_de_Despesas)]
+
+    # Exibir o DataFrame formatado
+    st.subheader("Lançamento de Despesas - Administração")
+    st.dataframe(df[['ID','DT_LANCAMENTO','CD_DESPESA', 'VL_VALOR_CUSTO','TX_OBSERVACAO']], use_container_width=True, hide_index=True)
 
 # Função principal do aplicativo
 def app():
