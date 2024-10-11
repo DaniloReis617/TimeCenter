@@ -118,15 +118,15 @@ def gestao_notas_ordens_screen():
             st.markdown("### Resumo do Projeto")
         with col2:  
             #with st.popover("Cadastrar Nova Nota de Manutenção",use_container_width=True):
-            if st.button("➕ Cadastrar",key="addNota"):
+            if st.button("➕ Cadastrar Nota",key="addNota"):
                 cadastrar_nota_manutencao()
         
         with col3:
-            if st.button("✏️ Editar",key="EditNota"):
+            if st.button("✏️ Editar Nota",key="EditNota"):
                 edit_nota_manutencao()
 
         with col4:
-            if st.button("🔄 Atualizar",key="AtualizarPageNota"):
+            if st.button("🔄 Atualizar Dados",key="AtualizarPageNota"):
                 # Invalida o cache e recarrega os dados
                 load_data.clear()
                 load_data(selected_gid)
@@ -139,19 +139,23 @@ def gestao_notas_ordens_screen():
 
         # Filtros para a tabela de dados
         with st.expander("Filtros"):
-            col1, col2, col3, col4 = st.columns(4)
+            col1, col2, col3, col4, col5 = st.columns(5)
             with col1:
                 nota_filter = st.multiselect("ID Nota Manutenção", options=sorted(df['ID_NOTA_MANUTENCAO'].unique()))
             with col2:
-                ordem_filter = st.multiselect("Ordem", options=sorted(df['TX_ORDEM'].unique()))
+                texto_Nota_filter = st.multiselect("Nota", options=sorted(df['TX_NOTA'].unique()))
             with col3:
-                tag_filter = st.multiselect("Tag", options=sorted(df['TX_TAG'].unique()))
+                ordem_filter = st.multiselect("Ordem", options=sorted(df['TX_ORDEM'].unique()))
             with col4:
+                tag_filter = st.multiselect("Tag", options=sorted(df['TX_TAG'].unique()))
+            with col5:
                 situacao_filter = st.multiselect("Situação", options=sorted(df['TX_SITUACAO'].unique()))
 
             # Aplicar os filtros
             if nota_filter:
                 df = df[df['ID_NOTA_MANUTENCAO'].isin(nota_filter)]
+            if texto_Nota_filter:
+                df = df[df['TX_NOTA'].isin(texto_Nota_filter)]
             if ordem_filter:
                 df = df[df['TX_ORDEM'].isin(ordem_filter)]
             if tag_filter:

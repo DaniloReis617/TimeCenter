@@ -29,6 +29,14 @@ def load_data(selected_gid):
     
     return df
 
+@st.cache_data
+def load_all_notas():
+    """Carregar todas as notas da tabela para verificação de duplicidade"""
+    df = read_data("timecenter.TB_NOTA_MANUTENCAO")
+    if df is None or df.empty:
+        return pd.DataFrame()
+    return df['TX_NOTA']
+
 @st.dialog("Cadastrar Nova Nota", width="large")
 def cadastrar_nota_manutencao():
     if 'projeto_info' in st.session_state:
@@ -38,14 +46,15 @@ def cadastrar_nota_manutencao():
         st.warning("Selecione um projeto na tela inicial.")
         return
 
+    # Carregar as notas existentes para verificação
+    notas_existentes = load_all_notas()
+
     # Carregar os dados existentes para calcular o próximo ID
     df_notas = load_data(selected_gid)
     if df_notas.empty:
         novo_id = 1  # Começa em 1 se não houver notas
     else:
         novo_id = df_notas['ID'].max() + 1  # Incrementa o ID
-
-    st.write(f"Cadastrando nova nota para o projeto: {selected_gid}")
         
     with st.form(key="new_nota_form"):
         col1, col2 = st.columns(2)
@@ -67,7 +76,15 @@ def cadastrar_nota_manutencao():
             situacao_nota = st.selectbox("Situação da Nota", options=list(situacao_map.values()))
             fl_situacao_nota = {v: k for k, v in situacao_map.items()}[situacao_nota]
 
+            # Entrada de Nota com verificação de duplicidade
             tx_nota = st.text_input("Nota", "")
+
+            # Verificação de duplicidade em tempo real
+            nota_existente = tx_nota in notas_existentes.values
+            if nota_existente:
+                st.error(f"A nota '{tx_nota}' já existe. Por favor, insira uma nova nota.")
+
+            
             tx_ordem = st.text_input("Ordem", "")
             tx_tag = st.text_input("Tag", "")
             tx_tag_linha = st.text_input("Tag da Linha", "")

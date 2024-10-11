@@ -757,43 +757,63 @@ def show_Lancamento_de_Despesas():
         st.warning("Selecione um projeto na tela inicial.")
         return
     
-    df = read_data("timecenter.TB_LANCAMENTO_DESPESA")
+    # Carregar os dados de timecenter.TB_LANCAMENTO_DESPESA
+    df_lancamento = read_data("timecenter.TB_LANCAMENTO_DESPESA")
 
-    if df is None or df.empty:
+    if df_lancamento is None or df_lancamento.empty:
         return pd.DataFrame()  # Retorna um DataFrame vazio
 
     # Filtrar o DataFrame pelo projeto selecionado
-    df = df[df['CD_PROJETO'] == selected_gid]
+    df_lancamento = df_lancamento[df_lancamento['CD_PROJETO'] == selected_gid]
 
     # Converter a coluna VL_VALOR_CUSTO para float
-    df['VL_VALOR_CUSTO'] = pd.to_numeric(df['VL_VALOR_CUSTO'], errors='coerce').fillna(0.0)
+    df_lancamento['VL_VALOR_CUSTO'] = pd.to_numeric(df_lancamento['VL_VALOR_CUSTO'], errors='coerce').fillna(0.0)
 
-    # Tratar a coluna VL_VALOR_CUSTO
-    # Verificar se a coluna é do tipo string
-    if df['VL_VALOR_CUSTO'].dtype == 'object':
-        # Remover 'R$' e espaços, e converter para float
-        df['VL_VALOR_CUSTO'] = df['VL_VALOR_CUSTO'].str.replace('R$', '').str.replace(' ', '').str.replace('.', '').str.replace(',', '.').astype(float)
-
-    # Garantir que a coluna é float
-    df['VL_VALOR_CUSTO'] = df['VL_VALOR_CUSTO'].astype(float)
+    # Garantir que a coluna VL_VALOR_CUSTO é float
+    df_lancamento['VL_VALOR_CUSTO'] = df_lancamento['VL_VALOR_CUSTO'].astype(float)
 
     # Formatar a coluna VL_VALOR_CUSTO como BRL
-    df['VL_VALOR_CUSTO'] = df['VL_VALOR_CUSTO'].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+    df_lancamento['VL_VALOR_CUSTO'] = df_lancamento['VL_VALOR_CUSTO'].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
 
     # Converter a coluna ID para int
-    df['ID'] = df['ID'].astype(int)
+    df_lancamento['ID'] = df_lancamento['ID'].astype(int)
+
+    # Carregar os dados de timecenter.TB_CADASTRO_DESPESA para mapear os códigos
+    df_cadastro_despesa = read_data("timecenter.TB_CADASTRO_DESPESA")
+
+    if df_cadastro_despesa is not None and not df_cadastro_despesa.empty:
+        # Fazer a junção com base no campo CD_DESPESA
+        df_lancamento = pd.merge(df_lancamento, df_cadastro_despesa[['GID', 'TX_DESCRICAO']], 
+                                 left_on='CD_DESPESA', right_on='GID', how='left')
+
+        # Substituir a coluna CD_DESPESA por TX_DESCRICAO
+        df_lancamento['CD_DESPESA'] = df_lancamento['TX_DESCRICAO']
+
+    # Renomear as colunas
+    df_lancamento = df_lancamento.rename(columns={
+        'ID': 'ID',
+        'DT_LANCAMENTO': 'Data',
+        'CD_DESPESA': 'Despesa',
+        'VL_VALOR_CUSTO': 'Valor',
+        'TX_OBSERVACAO': 'Observação'
+    })
+
+    # Formatar a coluna Data (DT_LANCAMENTO) para o formato dd/mm/aaaa
+    df_lancamento['Data'] = pd.to_datetime(df_lancamento['Data'], errors='coerce').dt.strftime('%d/%m/%Y')
 
     # Filtros para a tabela de dados
     with st.expander("Filtros"):
-        ID_filter_Lancamento_de_Despesas = st.multiselect("ID", options=sorted(df['ID'].unique()))
+        ID_filter_Lancamento_de_Despesas = st.multiselect("ID", options=sorted(df_lancamento['ID'].unique()))
 
         # Aplicar os filtros
         if ID_filter_Lancamento_de_Despesas:
-            df = df[df['ID'].isin(ID_filter_Lancamento_de_Despesas)]
+            df_lancamento = df_lancamento[df_lancamento['ID'].isin(ID_filter_Lancamento_de_Despesas)]
 
     # Exibir o DataFrame formatado
     st.subheader("Lançamento de Despesas - Administração")
-    st.dataframe(df[['ID','DT_LANCAMENTO','CD_DESPESA', 'VL_VALOR_CUSTO','TX_OBSERVACAO']], use_container_width=True, hide_index=True)
+    st.dataframe(df_lancamento[['ID', 'Data', 'Despesa', 'Valor', 'Observação']], 
+                 use_container_width=True, hide_index=True)
+
 
 # Função principal do aplicativo
 def app():
