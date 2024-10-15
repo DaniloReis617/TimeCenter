@@ -784,10 +784,10 @@ def show_Lancamento_de_Despesas():
     if df_cadastro_despesa is not None and not df_cadastro_despesa.empty:
         # Fazer a junção com base no campo CD_DESPESA
         df_lancamento = pd.merge(df_lancamento, df_cadastro_despesa[['GID', 'TX_DESCRICAO']], 
-                                 left_on='CD_DESPESA', right_on='GID', how='left')
+                                 left_on='CD_INFORMATIVO', right_on='GID', how='left')
 
         # Substituir a coluna CD_DESPESA por TX_DESCRICAO
-        df_lancamento['CD_DESPESA'] = df_lancamento['TX_DESCRICAO']
+        df_lancamento['CD_INFORMATIVO'] = df_lancamento['TX_DESCRICAO']
 
     # Renomear as colunas
     df_lancamento = df_lancamento.rename(columns={
