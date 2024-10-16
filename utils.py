@@ -285,6 +285,63 @@ def get_servicos_projeto(projeto_gid):
         st.error("Não foi possível conectar ao banco de dados.")
         return pd.DataFrame()
     
+def get_nota_informativo_projeto(projeto_gid):
+    query = """
+    SELECT GID, TX_DESCRICAO 
+    FROM timecenter.TB_CADASTRO_INFORMATIVO 
+    WHERE CD_PROJETO = ?
+    ORDER BY TX_DESCRICAO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar os serviços: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+    
+def get_nota_recurso_projeto(projeto_gid):
+    query = """
+    SELECT GID, TX_DESCRICAO 
+    FROM timecenter.TB_CADASTRO_RECURSO 
+    WHERE CD_PROJETO = ?
+    ORDER BY TX_DESCRICAO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar os serviços: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+    
+def get_nota_apoio_projeto(projeto_gid):
+    query = """
+    SELECT GID, TX_DESCRICAO 
+    FROM timecenter.TB_CADASTRO_APOIO 
+    WHERE CD_PROJETO = ?
+    ORDER BY TX_DESCRICAO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar os serviços: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+    
 def get_situacao_motivo_projeto(projeto_gid):
     query = """
     SELECT GID, TX_DESCRICAO 

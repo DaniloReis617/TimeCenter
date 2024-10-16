@@ -106,12 +106,6 @@ def gestao_notas_ordens_screen():
         # Ordenar o DataFrame pela coluna ID_NOTA_MANUTENCAO de forma decrescente
         df = df.sort_values(by='ID_NOTA_MANUTENCAO', ascending=False)
 
-        # Calcular as métricas
-        total_notas = len(df['ID_NOTA_MANUTENCAO'].unique())
-        total_ordens = len(df['TX_ORDEM'].dropna().unique())
-        total_hh = df['VL_HH_TOTAL'].sum()
-        custo_total = df['VL_CUSTO_TOTAL'].sum()
-
         col1, col2, col3, col4 = st.columns([7,1,1,1])
         with col1:
             # Exibir as métricas com st.metric
@@ -130,12 +124,6 @@ def gestao_notas_ordens_screen():
                 # Invalida o cache e recarrega os dados
                 load_data.clear()
                 load_data(selected_gid)
-
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Total de Notas", f"{total_notas}")
-        col2.metric("Total de Ordens", f"{total_ordens}")
-        col3.metric("Total de HH", f"{total_hh}")
-        col4.metric("Custo Total", f"R$ {custo_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
 
         # Filtros para a tabela de dados
         with st.expander("Filtros"):
@@ -162,6 +150,18 @@ def gestao_notas_ordens_screen():
                 df = df[df['TX_TAG'].isin(tag_filter)]
             if situacao_filter:
                 df = df[df['TX_SITUACAO'].isin(situacao_filter)]
+
+        # Calcular as métricas
+        total_notas = len(df['ID_NOTA_MANUTENCAO'].unique())
+        total_ordens = len(df['TX_ORDEM'].dropna().unique())
+        total_hh = df['VL_HH_TOTAL'].sum()
+        custo_total = df['VL_CUSTO_TOTAL'].sum()
+
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("Total de Notas", f"{total_notas}")
+        col2.metric("Total de Ordens", f"{total_ordens}")
+        col3.metric("Total de HH", f"{total_hh}")
+        col4.metric("Custo Total", f"R$ {custo_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
 
         # Limitar o número de registros para melhorar o desempenho
         max_rows = 1000

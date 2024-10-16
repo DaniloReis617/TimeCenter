@@ -40,6 +40,26 @@ def show_exec_atividades_form():
     st.write(f"Qt Rec. (Ca): {atividade_selecionada['QtRec']}")
     st.write(f"Hh: {atividade_selecionada['Hh']}")
 
+        # Campo para inserir quantidade de M²
+    QT_REC = st.number_input("Qt Rec. (Ca):", min_value=0)
+    
+    col1, col2, col3, col4 =st.columns([1,1,1,7])
+
+    with col1:
+        # Calcular Tempo Estimado
+        if st.button("Calcular"):
+            resultado = float(QT_REC) * float(atividade_selecionada['Duracao'])
+            st.success(f"Tempo Estimado: {round(resultado, 2)} horas")
+    
+    with col2:
+        # Botão de reset
+        if st.button("Reset"):
+            st.rerun()
+    with col3:
+        # Botão de voltar
+        if st.button("Voltar",key="btn_Raquet_Desraquet"):
+            st.session_state['show_form'] = False
+
 # Função principal que chama o formulário
 def main():
     show_exec_atividades_form()

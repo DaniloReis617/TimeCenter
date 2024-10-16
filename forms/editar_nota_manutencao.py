@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from utils import (update_data, read_data,
+                   create_data,
                    convert_to_native_types, 
                    get_servicos_projeto, 
                    get_situacao_motivo_projeto, 
@@ -13,7 +14,10 @@ from utils import (update_data, read_data,
                    get_sistemas_operacionais_projeto,
                    get_escopo_origem_projeto,
                    get_escopo_tipo_projeto,
-                   get_executantes_projeto
+                   get_executantes_projeto,
+                   get_nota_informativo_projeto,
+                   get_nota_recurso_projeto,
+                   get_nota_apoio_projeto
 )
 
 # Função para carregar os dados com base no GID_PROJETO
@@ -355,172 +359,315 @@ def edit_nota_manutencao():
 
     # Conteúdo das outras abas
     with tab2:
-        st.write("LANÇAMENTO DE NOTAS DE MANUTENÇÃO (INFORMATIVO) - ADMINISTRAÇÃO")
-        df_INFORMATIVO = read_data("timecenter.TB_NOTA_MANUTENCAO_INFORMATIVO")
+        # Criar as abas
+        tabinformativo1, tabinformativo2 = st.tabs([
+            "Lista de Dados Informativos",
+            "Cadastrar Informativo"
+        ])
 
-        if df_INFORMATIVO is None or df_INFORMATIVO.empty:
-            st.warning("Nenhum informativo encontrado para a nota selecionada.")
-            return
+        with tabinformativo1:
+            st.write("LANÇAMENTO DE NOTAS DE MANUTENÇÃO (INFORMATIVO) - ADMINISTRAÇÃO")
+            df_INFORMATIVO = read_data("timecenter.TB_NOTA_MANUTENCAO_INFORMATIVO")
 
-        # Verifique se 'GID' contém mais de um valor
-        if isinstance(nota_data['GID'], pd.Series):
-            # Se 'GID' for uma série (pode conter mais de um valor)
-            df_INFORMATIVO = df_INFORMATIVO[df_INFORMATIVO['CD_NOTA_MANUTENCAO'].isin(nota_data['GID'])]
-        else:
-            # Se 'GID' for um valor único (string ou número)
-            df_INFORMATIVO = df_INFORMATIVO[df_INFORMATIVO['CD_NOTA_MANUTENCAO'] == nota_data['GID']]
+            if df_INFORMATIVO is None or df_INFORMATIVO.empty:
+                st.warning("Nenhum informativo encontrado para a nota selecionada.")
+                return
 
-        # Carregar os dados de timecenter.TB_CADASTRO_INFORMATIVO para mapear os códigos
-        df_cadastro_INFORMATIVO = read_data("timecenter.TB_CADASTRO_INFORMATIVO")
+            # Verifique se 'GID' contém mais de um valor
+            if isinstance(nota_data['GID'], pd.Series):
+                # Se 'GID' for uma série (pode conter mais de um valor)
+                df_INFORMATIVO = df_INFORMATIVO[df_INFORMATIVO['CD_NOTA_MANUTENCAO'].isin(nota_data['GID'])]
+            else:
+                # Se 'GID' for um valor único (string ou número)
+                df_INFORMATIVO = df_INFORMATIVO[df_INFORMATIVO['CD_NOTA_MANUTENCAO'] == nota_data['GID']]
 
-        if df_cadastro_INFORMATIVO is not None and not df_cadastro_INFORMATIVO.empty:
-            # Fazer a junção com base no campo CD_DESPESA
-            df_INFORMATIVO = pd.merge(df_INFORMATIVO, df_cadastro_INFORMATIVO[['GID', 'TX_DESCRICAO']], 
-                                    left_on='CD_INFORMATIVO', right_on='GID', how='left')
-            
-            # Substituir a coluna CD_DESPESA por TX_DESCRICAO
-            df_INFORMATIVO['CD_INFORMATIVO'] = df_INFORMATIVO['TX_DESCRICAO']
+            # Carregar os dados de timecenter.TB_CADASTRO_INFORMATIVO para mapear os códigos
+            df_cadastro_INFORMATIVO = read_data("timecenter.TB_CADASTRO_INFORMATIVO")
 
-        # Renomear as colunas
-        df_INFORMATIVO = df_INFORMATIVO.rename(columns={
-            'TX_DESCRICAO': 'Descrição'
-        })
+            if df_cadastro_INFORMATIVO is not None and not df_cadastro_INFORMATIVO.empty:
+                # Fazer a junção com base no campo CD_DESPESA
+                df_INFORMATIVO = pd.merge(df_INFORMATIVO, df_cadastro_INFORMATIVO[['GID', 'TX_DESCRICAO']], 
+                                        left_on='CD_INFORMATIVO', right_on='GID', how='left')
+                
+                # Substituir a coluna CD_DESPESA por TX_DESCRICAO
+                df_INFORMATIVO['CD_INFORMATIVO'] = df_INFORMATIVO['TX_DESCRICAO']
 
-        # Exibir o DataFrame formatado
-        st.dataframe(df_INFORMATIVO[['Descrição']], use_container_width=True, hide_index=True)
+            # Renomear as colunas
+            df_INFORMATIVO = df_INFORMATIVO.rename(columns={
+                'TX_DESCRICAO': 'Descrição'
+            })
+
+            # Exibir o DataFrame formatado
+            st.dataframe(df_INFORMATIVO[['Descrição']], use_container_width=True, hide_index=True)
+
+        with tabinformativo2:
+            st.write("FORMULÁRIO DE CADASTRO DE NOTAS DE MANUTENÇÃO (INFORMATIVO) - ADMINISTRAÇÃO")
+            with st.form(key="new_nota_informativo"):
+                nota_informativo_df = get_nota_informativo_projeto(selected_gid)
+                nota_informativo_map = dict(zip(nota_informativo_df['TX_DESCRICAO'], nota_informativo_df['GID'])) if not nota_informativo_df.empty else {}
+                nota_informativo_selecionado = st.selectbox("Descrição", options=list(nota_informativo_map.keys()) or [''])
+                cd_nota_informativo = nota_informativo_map.get(nota_informativo_selecionado, None)
+                cd_GID = st.text_input("GID")
+                cd_nota_manutencao = st.text_input("ID Nota Manutenção")
+                
+                submit_button = st.form_submit_button("Salvar Nota Informativo")
+                
+                if submit_button:
+                    nova_nota_informativo = {
+                        'CD_INFORMATIVO': cd_nota_informativo,
+                        'GID': cd_GID,
+                        'CD_NOTA_MANUTENCAO': cd_nota_manutencao,
+
+                    }
+                    create_data('timecenter.TB_NOTA_MANUTENCAO_INFORMATIVO', nova_nota_informativo)
+                    st.success("Nova Nota de Informativo cadastrada com sucesso!")
 
     with tab3:
-        st.write("LANÇAMENTO DE NOTAS DE MANUTENÇÃO (MATERIAL) - MANUTENÇÃO")
-        df_MATERIAL = read_data("timecenter.TB_NOTA_MANUTENCAO_MATERIAL")
+        # Criar as abas
+        tabmaterial1, tabmaterial2 = st.tabs([
+            "Lista de Dados Materiais",
+            "Cadastrar Material"
+        ])
 
-        if df_MATERIAL is None or df_MATERIAL.empty:
-            st.warning("Nenhum MATERIAL encontrado para a nota selecionada.")
-            return
+        with tabmaterial1:
+            st.write("LANÇAMENTO DE NOTAS DE MANUTENÇÃO (MATERIAL) - MANUTENÇÃO")
+            df_MATERIAL = read_data("timecenter.TB_NOTA_MANUTENCAO_MATERIAL")
 
-        # Verifique se 'GID' contém mais de um valor
-        if isinstance(nota_data['GID'], pd.Series):
-            # Se 'GID' for uma série (pode conter mais de um valor)
-            df_MATERIAL = df_MATERIAL[df_MATERIAL['CD_NOTA_MANUTENCAO'].isin(nota_data['GID'])]
-        else:
-            # Se 'GID' for um valor único (string ou número)
-            df_MATERIAL = df_MATERIAL[df_MATERIAL['CD_NOTA_MANUTENCAO'] == nota_data['GID']]
+            if df_MATERIAL is None or df_MATERIAL.empty:
+                st.warning("Nenhum MATERIAL encontrado para a nota selecionada.")
+                return
 
-        # Renomear as colunas
-        df_MATERIAL = df_MATERIAL.rename(columns={
-            'TX_IDENTIFICADOR': 'ID',
-            'TX_DESCRICAO': 'Descrição',
-            'VL_QUANTIDADE': 'Quantidade',
-            'VL_CUSTO_TOTAL': 'Custo Total',
-            'TX_NUMERO_RC': 'Número RC',
-            'DT_PEDIDO':'Data Pedido',
-            'TX_NUMERO_PEDIDO':'Número Pedido'
-        })
+            # Verifique se 'GID' contém mais de um valor
+            if isinstance(nota_data['GID'], pd.Series):
+                # Se 'GID' for uma série (pode conter mais de um valor)
+                df_MATERIAL = df_MATERIAL[df_MATERIAL['CD_NOTA_MANUTENCAO'].isin(nota_data['GID'])]
+            else:
+                # Se 'GID' for um valor único (string ou número)
+                df_MATERIAL = df_MATERIAL[df_MATERIAL['CD_NOTA_MANUTENCAO'] == nota_data['GID']]
 
-        # Formatar a coluna Data (DT_LANCAMENTO) para o formato dd/mm/aaaa
-        df_MATERIAL['Data Pedido'] = pd.to_datetime(df_MATERIAL['Data Pedido'], errors='coerce').dt.strftime('%d/%m/%Y')
+            # Renomear as colunas
+            df_MATERIAL = df_MATERIAL.rename(columns={
+                'TX_IDENTIFICADOR': 'ID',
+                'TX_DESCRICAO': 'Descrição',
+                'VL_QUANTIDADE': 'Quantidade',
+                'VL_CUSTO_TOTAL': 'Custo Total',
+                'TX_NUMERO_RC': 'Número RC',
+                'DT_PEDIDO':'Data Pedido',
+                'TX_NUMERO_PEDIDO':'Número Pedido'
+            })
 
-        # Exibir o DataFrame formatado
-        st.dataframe(df_MATERIAL[['ID', 'Descrição', 'Quantidade', 'Custo Total', 'Número RC', 'Data Pedido', 'Número Pedido']], 
-                     use_container_width=True, hide_index=True)
-    with tab4:
-        st.write("LANÇAMENTO DE NOTAS DE MANUTENÇÃO (RECURSO) - ADMINISTRAÇÃO")
-        df_RECURSO = read_data("timecenter.TB_NOTA_MANUTENCAO_RECURSO")
+            # Formatar a coluna Data (DT_LANCAMENTO) para o formato dd/mm/aaaa
+            df_MATERIAL['Data Pedido'] = pd.to_datetime(df_MATERIAL['Data Pedido'], errors='coerce').dt.strftime('%d/%m/%Y')
 
-        if df_RECURSO is None or df_RECURSO.empty:
-            st.warning("Nenhum RECURSO encontrado para a nota selecionada.")
-            return
-
-        # Verifique se 'GID' contém mais de um valor
-        if isinstance(nota_data['GID'], pd.Series):
-            # Se 'GID' for uma série (pode conter mais de um valor)
-            df_RECURSO = df_RECURSO[df_RECURSO['CD_NOTA_MANUTENCAO'].isin(nota_data['GID'])]
-        else:
-            # Se 'GID' for um valor único (string ou número)
-            df_RECURSO = df_RECURSO[df_RECURSO['CD_NOTA_MANUTENCAO'] == nota_data['GID']]
-
-        # Carregar os dados de timecenter.TB_CADASTRO_RECURSO para mapear os códigos
-        df_CADASTRO_RECURSO = read_data("timecenter.TB_CADASTRO_RECURSO")
-
-        if df_CADASTRO_RECURSO is not None and not df_CADASTRO_RECURSO.empty:
-            # Fazer a junção com base no campo CD_DESPESA
-            df_RECURSO = pd.merge(df_RECURSO, df_CADASTRO_RECURSO[['GID', 'TX_DESCRICAO']], 
-                                    left_on='CD_RECURSO', right_on='GID', how='left')
+            # Exibir o DataFrame formatado
+            st.dataframe(df_MATERIAL[['ID', 'Descrição', 'Quantidade', 'Custo Total', 'Número RC', 'Data Pedido', 'Número Pedido']], 
+                        use_container_width=True, hide_index=True)
             
-            # Substituir a coluna CD_DESPESA por TX_DESCRICAO
-            df_RECURSO['CD_RECURSO'] = df_RECURSO['TX_DESCRICAO']
+        with tabmaterial2:
+            st.write("FORMULÁRIO DE CADASTRO DE NOTAS DE MANUTENÇÃO (MATERIAL) - MANUTENÇÃO")
+            with st.form(key="new_nota_material"):
+                var_cd_gid_material = st.text_input("GID")
+                var_TX_IDENTIFICADOR_material = st.text_input("identificador")
+                var_CD_NOTA_MANUTENCAO_material = st.text_input("Nota de Manutenção")
+                var_TX_DESCRICAO_material = st.text_input("Descrição")
+                var_VL_QUANTIDADE_material = st.text_input("Quantidade")
+                var_VL_CUSTO_TOTAL_material = st.text_input("Custo Total")
+                var_TX_NUMERO_RC_material = st.text_input("Número da RC")
+                var_DT_PEDIDO_material = st.date_input("Data do Pedido", value=pd.to_datetime('today').date())
+                var_TX_NUMERO_PEDIDO_material = st.text_input("Número do Pedido")
+                
+                submit_button = st.form_submit_button("Salvar Nota material")
+                
+                if submit_button:
+                    nova_nota_material = {
+                        'GID': var_cd_gid_material,
+                        'TX_IDENTIFICADOR': var_TX_IDENTIFICADOR_material,
+                        'CD_NOTA_MANUTENCAO': var_CD_NOTA_MANUTENCAO_material,
+                        'TX_DESCRICAO': var_TX_DESCRICAO_material,
+                        'VL_QUANTIDADE': var_VL_QUANTIDADE_material,
+                        'VL_CUSTO_TOTAL': var_VL_CUSTO_TOTAL_material,
+                        'TX_NUMERO_RC': var_TX_NUMERO_RC_material,
+                        'DT_PEDIDO': var_DT_PEDIDO_material,
+                        'TX_NUMERO_PEDIDO': var_TX_NUMERO_PEDIDO_material               
 
-                # Adicionar a nova coluna 'HH' como o produto de 'VL_QUANTIDADE' e 'VL_DURACAO'
-        df_RECURSO['HH'] = df_RECURSO['VL_QUANTIDADE'] * df_RECURSO['VL_DURACAO']
-        
-        # Formatar a coluna 'HH' no formato brasileiro #.###0,00
-        df_RECURSO['HH'] = df_RECURSO['HH'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-        # Formatar a coluna 'HH' no formato brasileiro #.###0,00
-        df_RECURSO['VL_QUANTIDADE'] = df_RECURSO['VL_QUANTIDADE'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-        df_RECURSO['VL_DURACAO'] = df_RECURSO['VL_DURACAO'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-        df_RECURSO['VL_VALOR_CUSTO'] = df_RECURSO['VL_VALOR_CUSTO'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-        df_RECURSO['VL_CUSTO_TOTAL'] = df_RECURSO['VL_CUSTO_TOTAL'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+                    }
+                    create_data('timecenter.TB_NOTA_MANUTENCAO_material', nova_nota_material)
+                    st.success("Nova Nota de material cadastrada com sucesso!")
 
-        # Renomear as colunas
-        df_RECURSO = df_RECURSO.rename(columns={
-            'TX_DESCRICAO': 'Descrição',
-            'VL_QUANTIDADE': 'Quantidade',
-            'VL_DURACAO': 'Duração',
-            'VL_VALOR_CUSTO': 'Custo (R$)',
-            'VL_CUSTO_TOTAL': 'Custo Total'
-        })
+    with tab4:
+        # Criar as abas
+        tabrecurso1, tabrecurso2 = st.tabs([
+            "Lista de Dados Recursos",
+            "Cadastrar Recursos"
+        ])
 
-        # Exibir o DataFrame formatado
-        st.dataframe(df_RECURSO[['Descrição', 'Quantidade', 'Duração', 'HH', 'Custo (R$)', 'Custo Total']], 
-                     use_container_width=True, hide_index=True)
+        with tabrecurso1:
+            st.write("LANÇAMENTO DE NOTAS DE MANUTENÇÃO (RECURSO) - ADMINISTRAÇÃO")
+            df_RECURSO = read_data("timecenter.TB_NOTA_MANUTENCAO_RECURSO")
+
+            if df_RECURSO is None or df_RECURSO.empty:
+                st.warning("Nenhum RECURSO encontrado para a nota selecionada.")
+                return
+
+            # Verifique se 'GID' contém mais de um valor
+            if isinstance(nota_data['GID'], pd.Series):
+                # Se 'GID' for uma série (pode conter mais de um valor)
+                df_RECURSO = df_RECURSO[df_RECURSO['CD_NOTA_MANUTENCAO'].isin(nota_data['GID'])]
+            else:
+                # Se 'GID' for um valor único (string ou número)
+                df_RECURSO = df_RECURSO[df_RECURSO['CD_NOTA_MANUTENCAO'] == nota_data['GID']]
+
+            # Carregar os dados de timecenter.TB_CADASTRO_RECURSO para mapear os códigos
+            df_CADASTRO_RECURSO = read_data("timecenter.TB_CADASTRO_RECURSO")
+
+            if df_CADASTRO_RECURSO is not None and not df_CADASTRO_RECURSO.empty:
+                # Fazer a junção com base no campo CD_DESPESA
+                df_RECURSO = pd.merge(df_RECURSO, df_CADASTRO_RECURSO[['GID', 'TX_DESCRICAO']], 
+                                        left_on='CD_RECURSO', right_on='GID', how='left')
+                
+                # Substituir a coluna CD_DESPESA por TX_DESCRICAO
+                df_RECURSO['CD_RECURSO'] = df_RECURSO['TX_DESCRICAO']
+
+                    # Adicionar a nova coluna 'HH' como o produto de 'VL_QUANTIDADE' e 'VL_DURACAO'
+            df_RECURSO['HH'] = df_RECURSO['VL_QUANTIDADE'] * df_RECURSO['VL_DURACAO']
+            
+            # Formatar a coluna 'HH' no formato brasileiro #.###0,00
+            df_RECURSO['HH'] = df_RECURSO['HH'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+            # Formatar a coluna 'HH' no formato brasileiro #.###0,00
+            df_RECURSO['VL_QUANTIDADE'] = df_RECURSO['VL_QUANTIDADE'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+            df_RECURSO['VL_DURACAO'] = df_RECURSO['VL_DURACAO'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+            df_RECURSO['VL_VALOR_CUSTO'] = df_RECURSO['VL_VALOR_CUSTO'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+            df_RECURSO['VL_CUSTO_TOTAL'] = df_RECURSO['VL_CUSTO_TOTAL'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+
+            # Renomear as colunas
+            df_RECURSO = df_RECURSO.rename(columns={
+                'TX_DESCRICAO': 'Descrição',
+                'VL_QUANTIDADE': 'Quantidade',
+                'VL_DURACAO': 'Duração',
+                'VL_VALOR_CUSTO': 'Custo (R$)',
+                'VL_CUSTO_TOTAL': 'Custo Total'
+            })
+
+            # Exibir o DataFrame formatado
+            st.dataframe(df_RECURSO[['Descrição', 'Quantidade', 'Duração', 'HH', 'Custo (R$)', 'Custo Total']], 
+                        use_container_width=True, hide_index=True)
+            
+        with tabrecurso2:
+            st.write("FORMULÁRIO DE CADASTRO DE NOTAS DE MANUTENÇÃO (RECURSO) - ADMINISTRAÇÃO")
+            with st.form(key="new_nota_recurso"):
+                nota_recurso_df = get_nota_recurso_projeto(selected_gid)
+                nota_recurso_map = dict(zip(nota_recurso_df['TX_DESCRICAO'], nota_recurso_df['GID'])) if not nota_recurso_df.empty else {}
+                nota_recurso_selecionado = st.selectbox("Cód. Recurso", options=list(nota_recurso_map.keys()) or [''])
+                var_cd_nota_recurso = nota_recurso_map.get(nota_recurso_selecionado, None)
+                var_GID_recurso = st.text_input("GID")
+                var_cd_nota_manutencao_recurso = st.text_input("CD Nota Manutenção")
+                var_vl_quantidade_recurso = st.text_input("Quantidade")
+                var_vl_duracao_recurso = st.text_input("Duração (h)")
+                var_vl_valor_custo_recurso = st.text_input("Valor de Custo (R$)")
+                var_vl_custo_total_recurso = st.text_input("Valor Total (R$)")
+                
+                submit_button = st.form_submit_button("Salvar Nota Recurso")
+                
+                if submit_button:
+                    nova_nota_recurso = {
+                        'GID': var_GID_recurso,
+                        'CD_NOTA_MANUTENCAO': var_cd_nota_manutencao_recurso,
+                        'TX_DESCRICAO': var_cd_nota_recurso,
+                        'VL_QUANTIDADE': var_vl_quantidade_recurso,
+                        'VL_DURACAO': var_vl_duracao_recurso,
+                        'VL_VALOR_CUSTO': var_vl_valor_custo_recurso,
+                        'VL_CUSTO_TOTAL': var_vl_custo_total_recurso
+
+                    }
+                    create_data('timecenter.TB_NOTA_MANUTENCAO_RECURSO', nova_nota_recurso)
+                    st.success("Nova nota de recurso cadastrada com sucesso!")
     
     with tab5:
-        st.write("LANÇAMENTO DE NOTAS DE MANUTENÇÃO (APOIO) - ADMINISTRAÇÃO")
-        df_APOIO = read_data("timecenter.TB_NOTA_MANUTENCAO_APOIO")
+        # Criar as abas
+        tabapoio1, tabapoio2 = st.tabs([
+            "Lista de Dados Apoio",
+            "Cadastrar Apoio"
+        ])
 
-        if df_APOIO is None or df_APOIO.empty:
-            st.warning("Nenhum APOIO encontrado para a nota selecionada.")
-            return
+        with tabapoio1:
+            st.write("LANÇAMENTO DE NOTAS DE MANUTENÇÃO (APOIO) - ADMINISTRAÇÃO")
+            df_APOIO = read_data("timecenter.TB_NOTA_MANUTENCAO_APOIO")
 
-        # Verifique se 'GID' contém mais de um valor
-        if isinstance(nota_data['GID'], pd.Series):
-            # Se 'GID' for uma série (pode conter mais de um valor)
-            df_APOIO = df_APOIO[df_APOIO['CD_NOTA_MANUTENCAO'].isin(nota_data['GID'])]
-        else:
-            # Se 'GID' for um valor único (string ou número)
-            df_APOIO = df_APOIO[df_APOIO['CD_NOTA_MANUTENCAO'] == nota_data['GID']]
+            if df_APOIO is None or df_APOIO.empty:
+                st.warning("Nenhum APOIO encontrado para a nota selecionada.")
+                return
 
-        # Carregar os dados de timecenter.TB_CADASTRO_APOIO para mapear os códigos
-        df_CADASTRO_APOIO = read_data("timecenter.TB_CADASTRO_APOIO")
+            # Verifique se 'GID' contém mais de um valor
+            if isinstance(nota_data['GID'], pd.Series):
+                # Se 'GID' for uma série (pode conter mais de um valor)
+                df_APOIO = df_APOIO[df_APOIO['CD_NOTA_MANUTENCAO'].isin(nota_data['GID'])]
+            else:
+                # Se 'GID' for um valor único (string ou número)
+                df_APOIO = df_APOIO[df_APOIO['CD_NOTA_MANUTENCAO'] == nota_data['GID']]
 
-        if df_CADASTRO_APOIO is not None and not df_CADASTRO_APOIO.empty:
-            # Fazer a junção com base no campo CD_DESPESA
-            df_APOIO = pd.merge(df_APOIO, df_CADASTRO_APOIO[['GID', 'TX_DESCRICAO']], 
-                                    left_on='CD_APOIO', right_on='GID', how='left')
-            
-            # Substituir a coluna CD_DESPESA por TX_DESCRICAO
-            df_APOIO['CD_APOIO'] = df_APOIO['TX_DESCRICAO']
+            # Carregar os dados de timecenter.TB_CADASTRO_APOIO para mapear os códigos
+            df_CADASTRO_APOIO = read_data("timecenter.TB_CADASTRO_APOIO")
 
-        # Formatar a coluna 'HH' no formato brasileiro #.###0,00
-        df_APOIO['VL_QUANTIDADE'] = df_APOIO['VL_QUANTIDADE'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-        # Formatar a coluna 'VL_PERCENTUAL_CUSTO' no formato percentual
-        df_APOIO['VL_PERCENTUAL_CUSTO'] = df_APOIO['VL_PERCENTUAL_CUSTO'].apply(
-            lambda x: f"{x * 100:,.2f}%".replace(",", "X").replace(".", ",").replace("X", ".")
-        )
-        df_APOIO['VL_VALOR_CUSTO'] = df_APOIO['VL_VALOR_CUSTO'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-        df_APOIO['VL_CUSTO_TOTAL'] = df_APOIO['VL_CUSTO_TOTAL'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+            if df_CADASTRO_APOIO is not None and not df_CADASTRO_APOIO.empty:
+                # Fazer a junção com base no campo CD_DESPESA
+                df_APOIO = pd.merge(df_APOIO, df_CADASTRO_APOIO[['GID', 'TX_DESCRICAO']], 
+                                        left_on='CD_APOIO', right_on='GID', how='left')
+                
+                # Substituir a coluna CD_DESPESA por TX_DESCRICAO
+                df_APOIO['CD_APOIO'] = df_APOIO['TX_DESCRICAO']
 
-        # Renomear as colunas
-        df_APOIO = df_APOIO.rename(columns={
-            'TX_DESCRICAO': 'Descrição',
-            'VL_QUANTIDADE': 'Quantidade',
-            'VL_VALOR_CUSTO': 'Custo (R$)',
-            'VL_PERCENTUAL_CUSTO': 'Custo (%)',
-            'VL_CUSTO_TOTAL': 'Custo Total'
-        })
+            # Formatar a coluna 'HH' no formato brasileiro #.###0,00
+            df_APOIO['VL_QUANTIDADE'] = df_APOIO['VL_QUANTIDADE'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+            # Formatar a coluna 'VL_PERCENTUAL_CUSTO' no formato percentual
+            df_APOIO['VL_PERCENTUAL_CUSTO'] = df_APOIO['VL_PERCENTUAL_CUSTO'].apply(
+                lambda x: f"{x * 100:,.2f}%".replace(",", "X").replace(".", ",").replace("X", ".")
+            )
+            df_APOIO['VL_VALOR_CUSTO'] = df_APOIO['VL_VALOR_CUSTO'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+            df_APOIO['VL_CUSTO_TOTAL'] = df_APOIO['VL_CUSTO_TOTAL'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
 
-        # Exibir o DataFrame formatado
-        st.dataframe(df_APOIO[['Descrição', 'Quantidade', 'Custo (R$)', 'Custo (%)', 'Custo Total']], 
-                     use_container_width=True, hide_index=True)
+            # Renomear as colunas
+            df_APOIO = df_APOIO.rename(columns={
+                'TX_DESCRICAO': 'Descrição',
+                'VL_QUANTIDADE': 'Quantidade',
+                'VL_VALOR_CUSTO': 'Custo (R$)',
+                'VL_PERCENTUAL_CUSTO': 'Custo (%)',
+                'VL_CUSTO_TOTAL': 'Custo Total'
+            })
+
+            # Exibir o DataFrame formatado
+            st.dataframe(df_APOIO[['Descrição', 'Quantidade', 'Custo (R$)', 'Custo (%)', 'Custo Total']], 
+                        use_container_width=True, hide_index=True)
+
+        with tabapoio2:
+            st.write("FORMULÁRIO DE CADASTRO DE NOTAS DE MANUTENÇÃO (APOIO) - ADMINISTRAÇÃO")
+            with st.form(key="new_nota_apoio"):
+                nota_apoio_df = get_nota_apoio_projeto(selected_gid)
+                nota_apoio_map = dict(zip(nota_apoio_df['TX_DESCRICAO'], nota_apoio_df['GID'])) if not nota_apoio_df.empty else {}
+                nota_apoio_selecionado = st.selectbox("Cód. Apoio", options=list(nota_apoio_map.keys()) or [''])
+                var_cd_apoio = nota_apoio_map.get(nota_apoio_selecionado, None)
+                var_GID_apoio = st.text_input("GID")
+                var_cd_nota_manutencao_apoio = st.text_input("CD Nota Manutenção")
+                var_vl_quantidade_apoio = st.text_input("Quantidade")
+                var_vl_valor_custo_apoio = st.text_input("Valor de Custo (R$)")
+                var_vl_custo_total_apoio = st.text_input("Valor Total (R$)")
+                var_vl_percentual_custo_apoio = st.text_input("Percentual de Custo (%)")
+                
+                submit_button = st.form_submit_button("Salvar Nota Apoio")
+                
+                if submit_button:
+                    nova_nota_apoio = {
+                        'GID': var_GID_apoio,
+                        'CD_NOTA_MANUTENCAO': var_cd_nota_manutencao_apoio,
+                        'CD_APOIO': var_cd_apoio,
+                        'TX_DESCRICAO': var_cd_apoio,
+                        'VL_QUANTIDADE': var_vl_quantidade_apoio,
+                        'VL_VALOR_CUSTO': var_vl_valor_custo_apoio,
+                        'VL_CUSTO_TOTAL': var_vl_custo_total_apoio,
+                        'VL_PERCENTUAL_CUSTO': var_vl_percentual_custo_apoio
+
+                    }
+                    create_data('timecenter.TB_NOTA_MANUTENCAO_APOIO', nova_nota_apoio)
+                    st.success("Nova nota de recurso cadastrada com sucesso!")
     
 # Função principal
 def main():

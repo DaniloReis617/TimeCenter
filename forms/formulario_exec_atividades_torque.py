@@ -30,18 +30,26 @@ def show_exec_atividades_torque_form():
     st.write(f"QTD: {atividade_selecionada['QtRec']}")
     st.write(f"HH: {atividade_selecionada['Hh']}")
 
-    # Botões de ação
-    if st.button("Calcular"):
-        resultado = float(atividade_selecionada['QtRec']) * float(atividade_selecionada['Duracao'])
-        st.success(f"Tempo Estimado: {round(resultado, 2)} horas")
+    # Campo para inserir quantidade de M²
+    txtdiamentro = st.number_input("Diamentro:", min_value=0)
+    
+    col1, col2, col3, col4 =st.columns([1,1,1,7])
 
-    # Botão para resetar
-    if st.button("Reset"):
-        st.rerun()
+    with col1:
+        # Calcular Tempo Estimado
+        if st.button("Calcular"):
+            resultado = float(txtdiamentro) * float(atividade_selecionada['QtRec'])
+            st.success(f"Tempo Estimado: {round(resultado, 2)} horas")
+    
+    with col2:
+        # Botão de reset
+        if st.button("Reset"):
+            st.rerun()
+    with col3:
+        # Botão de voltar
+        if st.button("Voltar",key="btn_torque"):
+            st.session_state['show_form'] = False
 
-    # Botão para voltar
-    if st.button("Voltar",key="btn_torque"):
-        st.session_state['show_form'] = False
 
 # Função principal que chama o formulário
 def main():

@@ -35,18 +35,21 @@ def show_exec_atividades_boca_visita_form():
     st.write(f"Qt Rec. (Ca): {atividade_selecionada['QtRec']}")
     st.write(f"Hh: {atividade_selecionada['Hh']}")
 
-    # Botões de ação
-    if st.button("Calcular"):
-        resultado = float(atividade_selecionada['QtRec']) * float(atividade_selecionada['Duracao'])
-        st.success(f"Tempo Estimado: {round(resultado, 2)} horas")
+    col1, col2, col3, col4 =st.columns([1,1,1,7])
 
-    # Botão para resetar
-    if st.button("Reset"):
-        st.rerun()
-
-    # Botão para voltar
-    if st.button("Voltar",key="btn_Boca"):
-        st.session_state['show_form'] = False
+    with col1:
+        # Botões de ação
+        if st.button("Calcular"):
+            resultado = float(atividade_selecionada['QtRec']) * float(atividade_selecionada['Duracao'])
+            st.success(f"Tempo Estimado: {round(resultado, 2)} horas")
+    with col2:
+        # Botão para resetar
+        if st.button("Reset"):
+            st.rerun()
+    with col3:
+        # Botão para voltar
+        if st.button("Voltar",key="btn_Boca"):
+            st.session_state['show_form'] = False
 
 # Função principal que chama o formulário
 def main():
