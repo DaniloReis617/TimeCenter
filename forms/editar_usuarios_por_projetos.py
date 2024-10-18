@@ -90,10 +90,10 @@ def editar_projeto_usuario():
             "NR_NIVEL": nivel_reverso_mapping[nivel_acesso],
             "FL_STATUS": status_reverso_mapping[status_projeto]
         }
-
-        # Função para atualizar o projeto do usuário na tabela timecenter.TB_USUARIO_PROJETO
-        update_data("timecenter.TB_USUARIO_PROJETO", "CD_PROJETO", projeto_info['CD_PROJETO'], projeto_atualizado)
-        st.success(f"Projeto {projeto_selecionado} atualizado com sucesso para o usuário {usuario_selecionado}!")
+        with st.spinner("Salvando informações, por favor aguarde..."):
+            # Função para atualizar o projeto do usuário na tabela timecenter.TB_USUARIO_PROJETO
+            update_data("timecenter.TB_USUARIO_PROJETO", "CD_PROJETO", projeto_info['CD_PROJETO'], projeto_atualizado)
+            st.success(f"Projeto {projeto_selecionado} atualizado com sucesso para o usuário {usuario_selecionado}!")
 
 # Função principal para chamar a tela de edição
 def main():

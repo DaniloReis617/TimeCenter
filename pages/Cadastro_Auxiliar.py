@@ -4,6 +4,23 @@ import numpy as np
 import locale
 import io  # Importar o módulo io
 from utils import apply_custom_style_and_header, read_data, create_data, update_data
+from forms.Form_Cad_Aux_Cad_Apoio import cad_novo_apoio_adm
+from forms.Form_Cad_Aux_Cad_Area import cad_novo_area_adm
+from forms.Form_Cad_Aux_Cad_Despesa import cad_novo_despesa_adm
+from forms.Form_Cad_Aux_Cad_Escopo_Origem import cad_novo_escopo_origem_adm
+from forms.Form_Cad_Aux_Cad_Escopo_Tipo import cad_novo_escopo_tipo_adm
+from forms.Form_Cad_Aux_Cad_Especialidade import cad_novo_especialidade_adm
+from forms.Form_Cad_Aux_Cad_Executante import cad_novo_executante_adm
+from forms.Form_Cad_Aux_Cad_Familia_Equipamentos import cad_novo_familia_equip_adm
+from forms.Form_Cad_Aux_Cad_Informativo import cad_novo_informativo_adm
+from forms.Form_Cad_Aux_Cad_Planta import cad_novo_planta_adm
+from forms.Form_Cad_Aux_Cad_Recurso import cad_novo_recurso_adm
+from forms.Form_Cad_Aux_Cad_Servico import cad_novo_servico_adm
+from forms.Form_Cad_Aux_Cad_Setor_Responsavel import cad_novo_setor_responsavel_adm
+from forms.Form_Cad_Aux_Cad_Setor_Solicitante import cad_novo_setor_solicitante_adm
+from forms.Form_Cad_Aux_Cad_Sistema_Operacional import cad_novo_sistema_operacional_adm
+from forms.Form_Cad_Aux_Cad_Situacao_Motivo import cad_novo_situacao_motivo_adm
+from forms.Form_Cad_Lancamento_Despesa import cad_novo_lancamento_despesa_adm
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 import plotly.express as px
 
@@ -160,8 +177,15 @@ def show_Apoio():
         if Tipo_filter:
             df = df[df['TX_TIPO'].isin(Tipo_filter)]
 
-    # Exibir o DataFrame formatado
-    st.subheader("Cadastro de Apoio - Administração")
+    collayoutapoio1, collayoutapoio2 = st.columns([8, 2])
+    with collayoutapoio1:
+        # Exibir o DataFrame formatado
+        st.subheader("Cadastro de Apoio - Administração")
+
+    with collayoutapoio2:
+        if st.button("➕ Cadastrar Apoio",key="addApoio"):
+            cad_novo_apoio_adm()
+
     st.dataframe(df[['ID', 'TX_DESCRICAO', 'TX_TIPO', 'VL_VALOR_CUSTO', 'VL_PERCENTUAL_CUSTO']], use_container_width=True, hide_index=True)
 
 def show_Area():
@@ -212,8 +236,15 @@ def show_Area():
         if descricao_filter_Area:
             df = df[df['TX_DESCRICAO'].isin(descricao_filter_Area)]
 
-    # Exibir o DataFrame formatado
-    st.subheader("Cadastro de Area - Administração")
+    collayoutarea1, collayoutarea2 = st.columns([8, 2])
+    with collayoutarea1:
+        # Exibir o DataFrame formatado
+        st.subheader("Cadastro de Area - Administração")
+
+    with collayoutarea2:
+        if st.button("➕ Cadastrar area",key="addarea"):
+            cad_novo_area_adm()
+
     st.dataframe(df[['ID', 'TX_DESCRICAO', 'VL_QUANTIDADE_DIAS_EXECUCAO']], use_container_width=True, hide_index=True)
 
 def show_Escopo_Origem():
@@ -249,8 +280,15 @@ def show_Escopo_Origem():
         if descricao_filter_Escopo_Origem:
             df = df[df['TX_DESCRICAO'].isin(descricao_filter_Escopo_Origem)]
 
-    # Exibir o DataFrame formatado
-    st.subheader("Cadastro de Escopo de Origem - Administração")
+    collayoutescopo_origem1, collayoutescopo_origem2 = st.columns([8, 2])
+    with collayoutescopo_origem1:
+        # Exibir o DataFrame formatado
+        st.subheader("Cadastro de Escopo de Origem - Administração")
+
+    with collayoutescopo_origem2:
+        if st.button("➕ Cadastrar Escopo de Origem",key="addescopo_origem"):
+            cad_novo_escopo_origem_adm()  
+
     st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
 
 def show_Escopo_Tipo():
@@ -286,8 +324,15 @@ def show_Escopo_Tipo():
         if descricao_filter_Escopo_Tipo:
             df = df[df['TX_DESCRICAO'].isin(descricao_filter_Escopo_Tipo)]
 
-    # Exibir o DataFrame formatado
-    st.subheader("Cadastro de Tipo de Escopo - Administração")
+    collayout_escopo_tipo1, collayout_escopo_tipo2 = st.columns([8, 2])
+    with collayout_escopo_tipo1:
+        # Exibir o DataFrame formatado
+        st.subheader("Cadastro de Tipo de Escopo - Administração")
+
+    with collayout_escopo_tipo2:
+        if st.button("➕ Cadastrar Tipo de Escopo",key="add_escopo_tipo"):
+            cad_novo_escopo_tipo_adm() 
+
     st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
 
 def show_Especialidade():
@@ -323,8 +368,15 @@ def show_Especialidade():
         if descricao_filter_Especialidade:
             df = df[df['TX_DESCRICAO'].isin(descricao_filter_Especialidade)]
 
-    # Exibir o DataFrame formatado
-    st.subheader("Cadastro de Especialidade - Administração")
+    collayout_especialidade1, collayout_especialidade2 = st.columns([8, 2])
+    with collayout_especialidade1:
+        # Exibir o DataFrame formatado
+        st.subheader("Cadastro de Especialidade - Administração")
+
+    with collayout_especialidade2:
+        if st.button("➕ Cadastrar Especialidade",key="add_especialidade"):
+            cad_novo_especialidade_adm() 
+
     st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
 
 def show_Executante():
@@ -360,8 +412,15 @@ def show_Executante():
         if descricao_filter_Executante:
             df = df[df['TX_DESCRICAO'].isin(descricao_filter_Executante)]
 
-    # Exibir o DataFrame formatado
-    st.subheader("Cadastro de Executante - Administração")
+    collayout_executante1, collayout_executante2 = st.columns([8, 2])
+    with collayout_executante1:
+        # Exibir o DataFrame formatado
+        st.subheader("Cadastro de Executante - Administração")
+
+    with collayout_executante2:
+        if st.button("➕ Cadastrar Executante",key="add_executante"):
+            cad_novo_executante_adm()
+
     st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
 
 def show_Familia_Equipamentos():
@@ -396,6 +455,15 @@ def show_Familia_Equipamentos():
             df = df[df['ID'].isin(ID_filter_Familia_Equipamentos)]
         if descricao_filter_Familia_Equipamentos:
             df = df[df['TX_DESCRICAO'].isin(descricao_filter_Familia_Equipamentos)]
+
+    collayout_familia_equipamento1, collayout_familia_equipamento2 = st.columns([8, 2])
+    with collayout_familia_equipamento1:
+        # Exibir o DataFrame formatado
+        st.subheader("Cadastro de Familia Equipamentos - Administração")
+
+    with collayout_familia_equipamento2:
+        if st.button("➕ Cadastrar Familia Equipamentos",key="add_familia_equipamento"):
+            cad_novo_familia_equip_adm()
 
     # Exibir o DataFrame formatado
     st.subheader("Cadastro de Familia Equipamentos - Administração")
@@ -434,8 +502,15 @@ def show_INFORMATIVO():
         if descricao_filter_INFORMATIVO:
             df = df[df['TX_DESCRICAO'].isin(descricao_filter_INFORMATIVO)]
 
-    # Exibir o DataFrame formatado
-    st.subheader("Cadastro de Informativo - Administração")
+    collayout_informativo1, collayout_informativo2 = st.columns([8, 2])
+    with collayout_informativo1:
+        # Exibir o DataFrame formatado
+        st.subheader("Cadastro de Informativo - Administração")
+
+    with collayout_informativo2:
+        if st.button("➕ Cadastrar Informativo",key="add_informativo"):
+            cad_novo_informativo_adm()
+
     st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
 
 def show_PLANTA():
@@ -471,8 +546,15 @@ def show_PLANTA():
         if descricao_filter_PLANTA:
             df = df[df['TX_DESCRICAO'].isin(descricao_filter_PLANTA)]
 
-    # Exibir o DataFrame formatado
-    st.subheader("Cadastro de Planta - Administração")
+    collayout_planta1, collayout_planta2 = st.columns([8, 2])
+    with collayout_planta1:
+        # Exibir o DataFrame formatado
+        st.subheader("Cadastro de Planta - Administração")
+
+    with collayout_planta2:
+        if st.button("➕ Cadastrar Planta",key="add_planta"):
+            cad_novo_planta_adm()
+
     st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
 
 def show_RECURSO():
@@ -523,8 +605,15 @@ def show_RECURSO():
         if descricao_filter_RECURSO:
             df = df[df['TX_DESCRICAO'].isin(descricao_filter_RECURSO)]
 
-    # Exibir o DataFrame formatado
-    st.subheader("Cadastro de Recurso - Administração")
+    collayout_recurso1, collayout_recurso2 = st.columns([8, 2])
+    with collayout_recurso1:
+        # Exibir o DataFrame formatado
+        st.subheader("Cadastro de Recurso - Administração")
+
+    with collayout_recurso2:
+        if st.button("➕ Cadastrar Recurso",key="add_recurso"):
+            cad_novo_recurso_adm()
+
     st.dataframe(df[['ID', 'TX_DESCRICAO', 'VL_VALOR_CUSTO']], use_container_width=True, hide_index=True)
 
 def show_SERVICO():
@@ -560,8 +649,15 @@ def show_SERVICO():
         if descricao_filter_SERVICO:
             df = df[df['TX_DESCRICAO'].isin(descricao_filter_SERVICO)]
 
-    # Exibir o DataFrame formatado
-    st.subheader("Cadastro de Serviços - Administração")
+    collayout_servico1, collayout_servico2 = st.columns([8, 2])
+    with collayout_servico1:
+        # Exibir o DataFrame formatado
+        st.subheader("Cadastro de Serviços - Administração")
+
+    with collayout_servico2:
+        if st.button("➕ Cadastrar Serviços",key="add_servico"):
+            cad_novo_servico_adm()
+
     st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
 
 def show_SETOR_RESPONSAVEL():
@@ -597,8 +693,15 @@ def show_SETOR_RESPONSAVEL():
         if descricao_filter_SETOR_RESPONSAVEL:
             df = df[df['TX_DESCRICAO'].isin(descricao_filter_SETOR_RESPONSAVEL)]
 
-    # Exibir o DataFrame formatado
-    st.subheader("Cadastro de Setor Responsável - Administração")
+    collayout_setor_responsavel1, collayout_setor_responsavel2 = st.columns([8, 2])
+    with collayout_setor_responsavel1:
+        # Exibir o DataFrame formatado
+        st.subheader("Cadastro de Setor Responsável - Administração")
+
+    with collayout_setor_responsavel2:
+        if st.button("➕ Cadastrar Setor Responsável",key="add_setor_responsavel"):
+            cad_novo_setor_responsavel_adm()
+
     st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
 
 def show_SETOR_SOLICITANTE():
@@ -633,6 +736,15 @@ def show_SETOR_SOLICITANTE():
             df = df[df['ID'].isin(ID_filter_SETOR_SOLICITANTE)]
         if descricao_filter_SETOR_SOLICITANTE:
             df = df[df['TX_DESCRICAO'].isin(descricao_filter_SETOR_SOLICITANTE)]
+
+    collayout_setor_solicitante1, collayout_setor_solicitante2 = st.columns([8, 2])
+    with collayout_setor_solicitante1:
+        # Exibir o DataFrame formatado
+        st.subheader("Cadastro de Setor Solicitante - Administração")
+
+    with collayout_setor_solicitante2:
+        if st.button("➕ Cadastrar Setor Solicitante",key="add_setor_solicitante"):
+            cad_novo_setor_solicitante_adm()
 
     # Exibir o DataFrame formatado
     st.subheader("Cadastro de Setor Solicitante - Administração")
@@ -671,8 +783,15 @@ def show_SITUACAO_MOTIVO():
         if descricao_filter_SITUACAO_MOTIVO:
             df = df[df['TX_DESCRICAO'].isin(descricao_filter_SITUACAO_MOTIVO)]
 
-    # Exibir o DataFrame formatado
-    st.subheader("Cadastro de Situação Motivo - Administração")
+    collayout_situacao_motivo1, collayout_situacao_motivo2 = st.columns([8, 2])
+    with collayout_situacao_motivo1:
+        # Exibir o DataFrame formatado
+        st.subheader("Cadastro de Situação Motivo - Administração")
+
+    with collayout_situacao_motivo2:
+        if st.button("➕ Cadastrar Situação Motivo",key="add_situacao_motivo"):
+            cad_novo_situacao_motivo_adm()
+
     st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
 
 def show_SISTEMA_OPERACIONAL():
@@ -708,8 +827,15 @@ def show_SISTEMA_OPERACIONAL():
         if descricao_filter_SISTEMA_OPERACIONAL:
             df = df[df['TX_DESCRICAO'].isin(descricao_filter_SISTEMA_OPERACIONAL)]
 
-    # Exibir o DataFrame formatado
-    st.subheader("Cadastro de Sistema Operacional - Administração")
+    collayout_sistema_operacional1, collayout_sistema_operacional2 = st.columns([8, 2])
+    with collayout_sistema_operacional1:
+        # Exibir o DataFrame formatado
+        st.subheader("Cadastro de Sistema Operacional - Administração")
+
+    with collayout_sistema_operacional2:
+        if st.button("➕ Cadastrar Sistema Operacional",key="add_sistema_operacional"):
+            cad_novo_sistema_operacional_adm()
+
     st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
 
 def show_DESPESA():
@@ -745,8 +871,15 @@ def show_DESPESA():
         if descricao_filter_DESPESA:
             df = df[df['TX_DESCRICAO'].isin(descricao_filter_DESPESA)]
 
-    # Exibir o DataFrame formatado
-    st.subheader("Cadastro de Despesa - Administração")
+    collayout_despesa1, collayout_despesa2 = st.columns([8, 2])
+    with collayout_despesa1:
+        # Exibir o DataFrame formatado
+        st.subheader("Cadastro de Despesa - Administração")
+
+    with collayout_despesa2:
+        if st.button("➕ Cadastrar Despesa",key="add_despesa"):
+            cad_novo_despesa_adm()
+
     st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
 
 def show_Lancamento_de_Despesas():
@@ -784,16 +917,16 @@ def show_Lancamento_de_Despesas():
     if df_cadastro_despesa is not None and not df_cadastro_despesa.empty:
         # Fazer a junção com base no campo CD_DESPESA
         df_lancamento = pd.merge(df_lancamento, df_cadastro_despesa[['GID', 'TX_DESCRICAO']], 
-                                 left_on='CD_INFORMATIVO', right_on='GID', how='left')
+                                 left_on='CD_DESPESA', right_on='GID', how='left')
 
         # Substituir a coluna CD_DESPESA por TX_DESCRICAO
-        df_lancamento['CD_INFORMATIVO'] = df_lancamento['TX_DESCRICAO']
+        df_lancamento['CD_DESPESA'] = df_lancamento['TX_DESCRICAO']
 
     # Renomear as colunas
     df_lancamento = df_lancamento.rename(columns={
         'ID': 'ID',
         'DT_LANCAMENTO': 'Data',
-        'CD_DESPESA': 'Despesa',
+        'TX_DESCRICAO': 'Despesa',
         'VL_VALOR_CUSTO': 'Valor',
         'TX_OBSERVACAO': 'Observação'
     })
@@ -803,11 +936,33 @@ def show_Lancamento_de_Despesas():
 
     # Filtros para a tabela de dados
     with st.expander("Filtros"):
-        ID_filter_Lancamento_de_Despesas = st.multiselect("ID", options=sorted(df_lancamento['ID'].unique()))
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            ID_filter_Lancamento_de_Despesas = st.multiselect("ID", options=sorted(df_lancamento['ID'].unique()), key="rowID")
+
+        with col2:
+            descricao_filter_Lancamento_de_Despesas = st.multiselect("Descrição", options=sorted(df_lancamento['Despesa'].unique()), key="rowdescricao")
+
+        with col3:
+            data_filter_Lancamento_de_Despesas = st.multiselect("Data", options=sorted(df_lancamento['Data'].unique()), key="rowdate")
+
 
         # Aplicar os filtros
         if ID_filter_Lancamento_de_Despesas:
             df_lancamento = df_lancamento[df_lancamento['ID'].isin(ID_filter_Lancamento_de_Despesas)]
+        if descricao_filter_Lancamento_de_Despesas:
+            df_lancamento = df_lancamento[df_lancamento['Despesa'].isin(descricao_filter_Lancamento_de_Despesas)]
+        if data_filter_Lancamento_de_Despesas:
+            df_lancamento = df_lancamento[df_lancamento['Data'].isin(descricao_filter_Lancamento_de_Despesas)]
+
+    collayout_lancamento_despesa1, collayout_lancamento_despesa2 = st.columns([8, 2])
+    with collayout_lancamento_despesa1:
+        # Exibir o DataFrame formatado
+        st.subheader("Cadastro de Lançamentos de Despesas - Administração")
+
+    with collayout_lancamento_despesa2:
+        if st.button("➕ Cadastrar Lançamentos de Despesas",key="add_lancamento_despesa"):
+            cad_novo_lancamento_despesa_adm()
 
     # Exibir o DataFrame formatado
     st.subheader("Lançamento de Despesas - Administração")

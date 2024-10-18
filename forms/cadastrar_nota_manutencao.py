@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import uuid
 from utils import (create_data, read_data,
                    convert_to_native_types, 
                    get_servicos_projeto, 
@@ -62,6 +63,10 @@ def cadastrar_nota_manutencao():
         with col1:
             # Campo oculto do projeto
             cd_projeto = selected_gid
+
+            # Gerar um novo GUID
+            var_Novo_GID = uuid.uuid4()
+            cd_GID = st.text_input("GID", value=str(var_Novo_GID), disabled=True)
 
             # Campo do ID gerado automaticamente
             tx_ID = st.text_input("ID", value=str(novo_id), disabled=True)
@@ -206,7 +211,8 @@ def cadastrar_nota_manutencao():
 
     if submit_button:
         new_data = {
-            "ID": novo_id,
+            "ID": tx_ID,
+            "GID":str(cd_GID),
             "CD_PROJETO": str(cd_projeto),
             "DT_NOTA": dt_data.strftime('%Y-%m-%d'),
             "DT_HR_CADASTRO": dt_hr_cadastro.strftime('%Y-%m-%d %H:%M:%S'),
@@ -245,8 +251,9 @@ def cadastrar_nota_manutencao():
         new_data = convert_to_native_types(new_data)
         
         try:
-            create_data('timecenter.TB_NOTA_MANUTENCAO', new_data)
-            st.success("Nota cadastrada com sucesso!")
+            with st.spinner("Salvando informações, por favor aguarde..."):
+                create_data('timecenter.TB_NOTA_MANUTENCAO', new_data)
+                st.success("Nota cadastrada com sucesso!")
         except Exception as e:
             st.error(f"Erro ao realizar o novo registro na tabela timecenter.TB_NOTA_MANUTENCAO: {e}")
 

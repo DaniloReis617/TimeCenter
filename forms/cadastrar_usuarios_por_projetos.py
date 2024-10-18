@@ -55,10 +55,10 @@ def add_projeto_usuario():
                 "NR_NIVEL": nivel_reverso_mapping[nivel_acesso],
                 "FL_STATUS": status_reverso_mapping[status_projeto]
             }
-
-            # Cadastrar o projeto para o usuário na tabela timecenter.TB_USUARIO_PROJETO
-            create_data("timecenter.TB_USUARIO_PROJETO", novo_projeto_usuario)
-            st.success(f"Projeto {projeto_selecionado} cadastrado com sucesso para o usuário {usuario_selecionado_cadastro}!")
+            with st.spinner("Salvando informações, por favor aguarde..."):
+                # Cadastrar o projeto para o usuário na tabela timecenter.TB_USUARIO_PROJETO
+                create_data("timecenter.TB_USUARIO_PROJETO", novo_projeto_usuario)
+                st.success(f"Projeto {projeto_selecionado} cadastrado com sucesso para o usuário {usuario_selecionado_cadastro}!")
 
 # Função principal para chamar o formulário
 def main():

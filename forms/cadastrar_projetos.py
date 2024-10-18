@@ -1,10 +1,13 @@
 # forms/cadastrar_projeto.py
 import streamlit as st
+import uuid
 from utils import create_data
 
 @st.dialog("Cadastro")
 def add_projeto():
     with st.form("form_add_project"):
+        var_Novo_GID = uuid.uuid4()
+        cd_GID = str(var_Novo_GID)
         nova_descricao = st.text_input("Descrição do Projeto")
         nova_data_inicio = st.date_input("Data de Início")
         nova_data_termino = st.date_input("Data de Término")
@@ -17,6 +20,7 @@ def add_projeto():
         
         if submit_button:
             novo_projeto = {
+                "GID":str(cd_GID),                
                 'TX_DESCRICAO': nova_descricao,
                 'DT_INICIO': nova_data_inicio,
                 'DT_TERMINO': nova_data_termino,
@@ -25,6 +29,7 @@ def add_projeto():
                 'FL_STATUS': novo_status,
                 'TX_INFORMACAO': novas_informacoes
             }
-            create_data('timecenter.TB_PROJETO', novo_projeto)
-            st.success("Projeto adicionado com sucesso!")
-            st.session_state['refresh_projetos'] = True
+            with st.spinner("Salvando informações, por favor aguarde..."):
+                create_data('timecenter.TB_PROJETO', novo_projeto)
+                st.success("Projeto adicionado com sucesso!")
+                st.session_state['refresh_projetos'] = True

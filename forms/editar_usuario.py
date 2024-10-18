@@ -31,6 +31,7 @@ def edit_usuario():
                     "NR_NIVEL": nivel_reverso_mapping[nivel],
                     "FL_STATUS": status_reverso_mapping[status]
                 }
-                update_data("timecenter.TB_USUARIO", "TX_LOGIN", usuario_info['TX_LOGIN'], dados_atualizados)
-                st.success(f"Usuário {login} atualizado com sucesso!")
+                with st.spinner("Salvando informações, por favor aguarde..."):
+                    update_data("timecenter.TB_USUARIO", "TX_LOGIN", usuario_info['TX_LOGIN'], dados_atualizados)
+                    st.success(f"Usuário {login} atualizado com sucesso!")
 

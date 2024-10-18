@@ -1,3 +1,4 @@
+# utils.py
 import pyodbc
 import os
 import pandas as pd
@@ -306,7 +307,7 @@ def get_nota_informativo_projeto(projeto_gid):
     
 def get_nota_recurso_projeto(projeto_gid):
     query = """
-    SELECT GID, TX_DESCRICAO 
+    SELECT GID, TX_DESCRICAO, VL_VALOR_CUSTO 
     FROM timecenter.TB_CADASTRO_RECURSO 
     WHERE CD_PROJETO = ?
     ORDER BY TX_DESCRICAO
@@ -325,7 +326,7 @@ def get_nota_recurso_projeto(projeto_gid):
     
 def get_nota_apoio_projeto(projeto_gid):
     query = """
-    SELECT GID, TX_DESCRICAO 
+    SELECT GID, TX_DESCRICAO, VL_VALOR_CUSTO, VL_PERCENTUAL_CUSTO  
     FROM timecenter.TB_CADASTRO_APOIO 
     WHERE CD_PROJETO = ?
     ORDER BY TX_DESCRICAO
@@ -517,6 +518,25 @@ def get_escopo_tipo_projeto(projeto_gid):
     query = """
     SELECT GID, TX_DESCRICAO 
     FROM timecenter.TB_CADASTRO_ESCOPO_TIPO
+    WHERE CD_PROJETO = ?
+    ORDER BY TX_DESCRICAO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar os tipos de escopo: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+    
+def get_lancamento_despesas(projeto_gid):
+    query = """
+    SELECT GID, TX_DESCRICAO 
+    FROM timecenter.TB_CADASTRO_DESPESA
     WHERE CD_PROJETO = ?
     ORDER BY TX_DESCRICAO
     """

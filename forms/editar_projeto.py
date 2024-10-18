@@ -43,7 +43,8 @@ def edit_projeto():
                     'FL_STATUS': status_reverso_mapping[edit_status],
                     'TX_INFORMACAO': edit_informacoes
                 }
-                update_data('timecenter.TB_PROJETO', 'GID', projeto_info['GID'], updated_project)
-                st.success("Projeto atualizado com sucesso!")
-                st.session_state['refresh_projetos'] = True
+                with st.spinner("Salvando informações, por favor aguarde..."):
+                    update_data('timecenter.TB_PROJETO', 'GID', projeto_info['GID'], updated_project)
+                    st.success("Projeto atualizado com sucesso!")
+                    st.session_state['refresh_projetos'] = True
 
