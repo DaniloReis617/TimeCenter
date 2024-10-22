@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from utils import apply_custom_style_and_header, get_all_projetos, get_projetos_por_usuario
+from utils import apply_custom_style_and_header, get_all_projetos, get_projetos_por_usuario, get_descricao_projetos
 
 def home_screen():
     apply_custom_style_and_header("Tela Home")
@@ -18,6 +18,7 @@ def home_screen():
     user_details = st.session_state.get('user_details', None)
     
     if user_details:
+        user_login = user_details['login']
         user_id = user_details['id']
         user_gid = user_details['gid']
         user_profile = user_details['perfil']
@@ -28,7 +29,20 @@ def home_screen():
         else:
             # Obter projetos do usuário logado
             projetos_df = get_projetos_por_usuario(user_gid)
-        
+            if projetos_df.empty:
+                st.warning(f"Este usuário ({user_login}) não tem projetos.")
+                return
+            
+            # Obter descrições dos projetos
+            projetos_desc_df = get_descricao_projetos(projetos_df['CD_PROJETO'].unique().tolist())
+            
+            # Fazer o merge com base na coluna GID, mantendo os GIDs do projeto e usuário separados temporariamente
+            projetos_df = projetos_df.merge(projetos_desc_df, left_on='CD_PROJETO', right_on='GID', suffixes=('_usuario', ''))
+
+            # Remover a coluna GID do usuário (GID_usuario), mantendo apenas o GID do projeto
+            if 'GID_usuario' in projetos_df.columns:
+                projetos_df = projetos_df.drop(columns=['GID_usuario'])
+
         if not projetos_df.empty:
             # Dropdown para selecionar um projeto
             projeto_selecionado = st.selectbox(
@@ -38,6 +52,7 @@ def home_screen():
             )
             # Encontrar o registro completo do projeto selecionado
             projeto_info = projetos_df.loc[projetos_df['TX_DESCRICAO'] == projeto_selecionado].iloc[0]
+            
             # Armazenar as informações do projeto no estado da sessão
             st.session_state['projeto_info'] = projeto_info.to_dict()
         else:

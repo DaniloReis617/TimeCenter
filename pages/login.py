@@ -31,7 +31,7 @@ def handle_login(username):
         return
     
     # Verifica se o domínio do email é timenow.com.br
-    if not username.endswith("@timenow.com.br"):
+    if not username.lower().endswith("@timenow.com.br"):
         st.error("Por favor, use um email com o domínio @timenow.com.br.")
         return
     

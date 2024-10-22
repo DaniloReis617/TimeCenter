@@ -112,7 +112,7 @@ def edit_nota_manutencao():
                     #cd_projeto = selected_gid
 
                     # Mostrar o ID da nota
-                    txt_GID = st.text_input("GID da Nota", value=var_Novo_GID_Nota_Manutencao, disabled=True)
+                    txt_GID = var_Novo_GID_Nota_Manutencao
 
                     # Mostrar o ID da nota
                     txt_ID = st.text_input("ID da Nota", value=nota_data['ID'], disabled=True)
@@ -126,9 +126,9 @@ def edit_nota_manutencao():
                     # Novo campo para DT_HR_CADASTRO
                     dt_hr_cadastro_row = nota_data.get('DT_HR_CADASTRO', None)
                     if pd.isnull(dt_hr_cadastro_row) or isinstance(dt_hr_cadastro_row, str):
-                        dt_hr_cadastro = st.date_input("Data de Cadastro", value=pd.to_datetime('today').date(), disabled=True)
+                        dt_hr_cadastro = pd.to_datetime('today').date()
                     else:
-                        dt_hr_cadastro = st.date_input("Data de Cadastro", value=pd.to_datetime(dt_hr_cadastro_row).date(), disabled=True)
+                        dt_hr_cadastro = pd.to_datetime(dt_hr_cadastro_row).date()
                     
                     
                     situacao_map = {'P': 'Pendente', 'A': 'Aprovado', 'R': 'Reprovado'}
@@ -146,9 +146,9 @@ def edit_nota_manutencao():
                     # Novo campo para DT_HR_ALTERACAO
                     dt_hr_alteracao_row = nota_data.get('DT_HR_ALTERACAO', None)
                     if pd.isnull(dt_hr_alteracao_row) or isinstance(dt_hr_alteracao_row, str):
-                        dt_hr_alteracao = st.date_input("Data de Alteração", value=pd.to_datetime('today').date(), disabled=True)
+                        dt_hr_alteracao = pd.to_datetime('today').date()
                     else:
-                        dt_hr_alteracao = st.date_input("Data de Alteração", value=pd.to_datetime(dt_hr_alteracao_row).date(), disabled=True)
+                        dt_hr_alteracao = pd.to_datetime(dt_hr_alteracao_row).date()
 
                     # Serviços
                     servicos_df = get_servicos_projeto(selected_gid)

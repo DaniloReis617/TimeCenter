@@ -66,7 +66,7 @@ def cadastrar_nota_manutencao():
 
             # Gerar um novo GUID
             var_Novo_GID = uuid.uuid4()
-            cd_GID = st.text_input("GID", value=str(var_Novo_GID), disabled=True)
+            cd_GID = str(var_Novo_GID)
 
             # Campo do ID gerado automaticamente
             tx_ID = st.text_input("ID", value=str(novo_id), disabled=True)
@@ -74,7 +74,7 @@ def cadastrar_nota_manutencao():
             dt_data = st.date_input("Data da Nota", value=pd.to_datetime('today').date())
 
             # Novo campo para DT_HR_CADASTRO
-            dt_hr_cadastro = st.date_input("Data de Cadastro", value=pd.to_datetime('today').date(), disabled=True)
+            dt_hr_cadastro = pd.to_datetime('today').date()
 
 
             situacao_map = {'P': 'Pendente', 'A': 'Aprovado', 'R': 'Reprovado'}
@@ -96,7 +96,7 @@ def cadastrar_nota_manutencao():
 
         with col2:
 
-            dt_hr_alteracao = st.date_input("Data de Alteração", value=pd.to_datetime('today').date(), disabled=True)
+            dt_hr_alteracao = pd.to_datetime('today').date()
             
             servicos_df = get_servicos_projeto(selected_gid)
             servico_map = dict(zip(servicos_df['TX_DESCRICAO'], servicos_df['GID'])) if not servicos_df.empty else {}
