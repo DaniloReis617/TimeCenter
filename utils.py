@@ -583,138 +583,6 @@ def get_all_projetos():
     return projetos_df
 
 
-# Atividades de Execução
-atividades_execucao = pd.DataFrame([
-    {"ID": 1, "Atividades": "RAQUETEAMENTO / DESRAQ. DE UNIÕES FLANGEADAS"},
-    {"ID": 2, "Atividades": "FECHAM/TORQUE UNIÕES FLANGEADAS"},
-    {"ID": 3, "Atividades": "ABERTURA / FECHAMENTO DE BOCA DE VISITA"},
-    {"ID": 4, "Atividades": "BANDEJAMENTO"},
-    {"ID": 5, "Atividades": "REMOÇÃO / INSTALAÇÃO DE VÁLVULAS FLANGEADAS"},
-    {"ID": 6, "Atividades": "TROCADORES DE CALOR"},
-    {"ID": 7, "Atividades": "PADRÃO ENSAIOS NÃO DESTRUTIVOS (END's)"},
-    {"ID": 8, "Atividades": "SERVIÇO DE LIMPEZA COM HIDROJATO"}
-])
-
-def get_atividades_execucao():
-    return atividades_execucao
-
-# Serviço de Pintura
-servico_pintura = pd.DataFrame([
-    {"Etapa": "Preparação de Superfície", "Tipo": "Ferramenta manual", "m2_dia": 6, "Pintores": 1, "Ajudante": None},
-    {"Etapa": "Preparação de Superfície", "Tipo": "Ferramenta mecânica", "m2_dia": 10, "Pintores": 1, "Ajudante": None},
-    {"Etapa": "Preparação de Superfície", "Tipo": "Jateamento abrasivo (cabine de jato)", "m2_dia": 30, "Pintores": 2, "Ajudante": 1},
-    {"Etapa": "Preparação de Superfície", "Tipo": "Hidrojateamento (pistola)", "m2_dia": 20, "Pintores": 2, "Ajudante": 1},
-    {"Etapa": "Preparação de Superfície", "Tipo": "Hidrojateamento (robô)", "m2_dia": 35, "Pintores": 2, "Ajudante": 1},
-    {"Etapa": "Método de Aplicação", "Tipo": "Pistola convencional", "m2_dia": 75, "Pintores": 2, "Ajudante": 1},
-    {"Etapa": "Método de Aplicação", "Tipo": "Pitola air less", "m2_dia": 160, "Pintores": 2, "Ajudante": 1},
-    {"Etapa": "Método de Aplicação", "Tipo": "Rolo", "m2_dia": 30, "Pintores": 1, "Ajudante": None},
-    {"Etapa": "Método de Aplicação", "Tipo": "Trincha (stripe coat)", "m2_dia": 20, "Pintores": 1, "Ajudante": None}
-])
-
-def get_servico_pintura():
-    return servico_pintura
-
-# Descrição e Quantidade
-descricao_quant = pd.DataFrame([
-    {"Descricao": "Silicato de Cálcio", "Tipo": "Tubulação até 4\"", "Quant_ml": 18, "Qt_Rec_Is_Fu": 2},
-    {"Descricao": "Silicato de Cálcio", "Tipo": "Tubulação de 5\" a 8\"", "Quant_ml": 15, "Qt_Rec_Is_Fu": 2},
-    {"Descricao": "Silicato de Cálcio", "Tipo": "Tubulação de 10\" até 16\"", "Quant_ml": 12, "Qt_Rec_Is_Fu": 2},
-    {"Descricao": "Silicato de Cálcio", "Tipo": "Tubulação de 18\" até 24\"", "Quant_ml": 10, "Qt_Rec_Is_Fu": 2},
-    {"Descricao": "Silicato de Cálcio", "Tipo": "Instalação funilaria", "Quant_ml": 20, "Qt_Rec_Is_Fu": 2},
-    {"Descricao": "Manta de Fibra Cerâmica", "Tipo": "Tubulação até 4\"", "Quant_ml": 40, "Qt_Rec_Is_Fu": 2},
-    {"Descricao": "Manta de Fibra Cerâmica", "Tipo": "Tubulação de 5\" a 8\"", "Quant_ml": 36, "Qt_Rec_Is_Fu": 2},
-    {"Descricao": "Manta de Fibra Cerâmica", "Tipo": "Tubulação de 10\" até 16\"", "Quant_ml": 30, "Qt_Rec_Is_Fu": 2},
-    {"Descricao": "Manta de Fibra Cerâmica", "Tipo": "Tubulação de 18\" até 24\"", "Quant_ml": 20, "Qt_Rec_Is_Fu": 2},
-    {"Descricao": "Manta de Fibra Cerâmica", "Tipo": "Instalação funilaria", "Quant_ml": 20, "Qt_Rec_Is_Fu": 2}
-])
-
-def get_descricao_quant():
-    return descricao_quant
-
-# Execução Atividades Raqueteamento e Desraqueteamento
-exec_atividades_raqueteamento = pd.DataFrame([
-    {"ClassePressao": "150#", "Diametro": "Até 4\"", "Atividade": "Raqueteamento", "Duracao": "1,0", "QtRec": 2, "Hh": "2,0"},
-    {"ClassePressao": "150#", "Diametro": "Até 4\"", "Atividade": "Desraqueteamento", "Duracao": "0,8", "QtRec": 2, "Hh": "1,6"},
-    {"ClassePressao": "150#", "Diametro": "6\" a 8\"", "Atividade": "Raqueteamento", "Duracao": "1,5", "QtRec": 2, "Hh": "3,0"},
-    {"ClassePressao": "150#", "Diametro": "6\" a 8\"", "Atividade": "Desraqueteamento", "Duracao": "1,2", "QtRec": 2, "Hh": "2,4"},
-    {"ClassePressao": "150#", "Diametro": "10\" a 18\"", "Atividade": "Raqueteamento", "Duracao": "2,0", "QtRec": 2, "Hh": "4,0"},
-    {"ClassePressao": "150#", "Diametro": "10\" a 18\"", "Atividade": "Desraqueteamento", "Duracao": "1,6", "QtRec": 2, "Hh": "3,2"},
-    {"ClassePressao": "150#", "Diametro": "20\" a 30\"", "Atividade": "Raqueteamento", "Duracao": "3,0", "QtRec": 2, "Hh": "6,0"},
-    {"ClassePressao": "150#", "Diametro": "20\" a 30\"", "Atividade": "Desraqueteamento", "Duracao": "2,4", "QtRec": 2, "Hh": "4,8"},
-    {"ClassePressao": "150#", "Diametro": "Acima de 30\"", "Atividade": "Raqueteamento", "Duracao": "4,0", "QtRec": 2, "Hh": "8,0"},
-    {"ClassePressao": "150#", "Diametro": "Acima de 30\"", "Atividade": "Desraqueteamento", "Duracao": "3,2", "QtRec": 2, "Hh": "6,4"}
-])
-
-def get_exec_atividades_raqueteamento():
-    return exec_atividades_raqueteamento
-
-# Execução Atividades Fechamento Torque
-exec_atividades_torque = pd.DataFrame([
-    {"ClassePressao": "150#", "Diametro": "Até 1.1/2\"", "Duracao": "0.5", "QtRec": 1, "Hh": "0.5"},
-    {"ClassePressao": "150#", "Diametro": "2\" a 2.1/2\"", "Duracao": "0.8", "QtRec": 2, "Hh": "1.5"},
-    {"ClassePressao": "150#", "Diametro": "3\"", "Duracao": "1.0", "QtRec": 2, "Hh": "2.0"},
-    {"ClassePressao": "150#", "Diametro": "4\"", "Duracao": "1.0", "QtRec": 2, "Hh": "2.0"},
-    {"ClassePressao": "150#", "Diametro": "6\"", "Duracao": "1.0", "QtRec": 2, "Hh": "2.0"}
-])
-
-def get_exec_atividades_torque():
-    return exec_atividades_torque
-
-# Execução Abertura Fechamento Boca Visita
-exec_atividades_boca_visita = pd.DataFrame([
-    {"ClassePressao": "150#", "Diametro": "18\"", "Atividade": "Abertura", "Duracao": "1.0", "QtRec": 2, "Hh": "2.0"},
-    {"ClassePressao": "150#", "Diametro": "18\"", "Atividade": "Fechamento", "Duracao": "1.5", "QtRec": 2, "Hh": "3.0"},
-    {"ClassePressao": "150#", "Diametro": "20\"", "Atividade": "Abertura", "Duracao": "1.5", "QtRec": 2, "Hh": "3.0"},
-    {"ClassePressao": "150#", "Diametro": "20\"", "Atividade": "Fechamento", "Duracao": "2.0", "QtRec": 2, "Hh": "4.0"}
-])
-
-def get_exec_atividades_boca_visita():
-    return exec_atividades_boca_visita
-
-# Execução Bandejamento
-exec_bandejamento = pd.DataFrame([
-    {"Descricao": "Abrir Alçapão de Torre (por Alçapão)", "Duracao": "0.25", "QtRec": "2", "Hh": "0.5"},
-    {"Descricao": "Fechar Alçapão de Torre (por Alçapão)", "Duracao": "0.25", "QtRec": "2", "Hh": "0.5"},
-    {"Descricao": "Remover Bandejas de Torre de Diâmetro até 1500 mm", "Duracao": "2.5", "QtRec": "3", "Hh": "7.5"},
-    {"Descricao": "Remover Bandejas de Torre de Diâmetro de 1501 mm até 2500 mm", "Duracao": "4.0", "QtRec": "5", "Hh": "20.0"}
-])
-
-def get_exec_bandejamento():
-    return exec_bandejamento
-
-# Remoção e Instalação de Válvulas
-remocao_instalacao_valvulas = pd.DataFrame([
-    {"ClassePressao": "150#", "Diametro": "Até 2\"", "Atividade": "Remoção", "Duracao": 0.5, "QtRec": 2, "Hh": 1.0},
-    {"ClassePressao": "150#", "Diametro": "Até 2\"", "Atividade": "Instalação", "Duracao": 0.7, "QtRec": 2, "Hh": 1.4},
-    {"ClassePressao": "150#", "Diametro": "3\"", "Atividade": "Remoção", "Duracao": 0.8, "QtRec": 2, "Hh": 1.6},
-    {"ClassePressao": "150#", "Diametro": "3\"", "Atividade": "Instalação", "Duracao": 1.6, "QtRec": 2, "Hh": 3.2}
-])
-
-def get_remocao_instalacao_valvulas():
-    return remocao_instalacao_valvulas
-
-# Trocadores de Calor
-trocadores_calor = pd.DataFrame([
-    {"Descricao": "Abrir tampa", "Dimensoes": "Até 500 tubos", "Duracao": "2", "Rec": 2},
-    {"Descricao": "Abrir tampa", "Dimensoes": "501 a 1000 tubos", "Duracao": "2,5", "Rec": 2},
-    {"Descricao": "Abrir tampa", "Dimensoes": "1001 a 1500 tubos", "Duracao": "3", "Rec": 2},
-    {"Descricao": "Abrir tampa", "Dimensoes": "Acima de 1500 tubos", "Duracao": "3,5", "Rec": 2},
-    {"Descricao": "Fechar tampa", "Dimensoes": "Até 500 tubos", "Duracao": "2,5", "Rec": 2}
-])
-
-def get_trocadores_calor():
-    return trocadores_calor
-
-# Serviço Limpeza Hidrojato
-servico_limpeza_hidrojato = pd.DataFrame([
-    {"Descricao": "Limpeza Padrão", "CapBomba": "A partir de 10.000 PSI", "TempoPorTubo": 1},
-    {"Descricao": "Limp. Para IRIS", "CapBomba": "A partir de 20.000 PSI", "TempoPorTubo": 2}
-])
-
-def get_servico_limpeza_hidrojato():
-    return servico_limpeza_hidrojato
-
-
 # Função para aplicar estilo customizado e criar o cabeçalho
 def apply_custom_style_and_header(title):
     st.markdown("""
@@ -725,9 +593,7 @@ def apply_custom_style_and_header(title):
             font-family: Arial, sans-serif;
         }
         .stButton button {
-            width: auto;
-            padding: 5px 10px;
-            background-color: #f44336;
+            background-color: rgb(55, 100, 88);  /* Nova cor do botão */
             color: white;
             border: none;
             cursor: pointer;
@@ -735,7 +601,12 @@ def apply_custom_style_and_header(title):
             border-radius: 5px;
         }
         .stButton button:hover {
-            background-color: #e57373;
+            background-color: rgb(45, 90, 78);  /* Cor mais escura ao passar o mouse */
+            color: white;  /* Texto permanece branco */
+        }
+        .stButton button:active {
+            background-color: rgb(45, 90, 78);  /* Manter a mesma cor quando clicado */
+            color: white;  /* Texto permanece branco quando clicado */
         }
         .header-container {
             display: flex;

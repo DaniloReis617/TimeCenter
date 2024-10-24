@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import base64
+from utils import apply_custom_style_and_header
 from forms.formulario_pintura import show_servico_pintura_form  # Importando o formulário de pintura
 from forms.formulario_exec_atividades_raqueteamento import show_exec_atividades_form  # Importando o formulário de execução de atividades
 from forms.formulario_exec_atividades_torque import show_exec_atividades_torque_form 
@@ -9,10 +10,10 @@ from forms.formulario_exec_atividades_Trocadores_De_Calor import show_exec_ativi
 from forms.formulario_exec_atividades_Remocao_Instalacao_Valvulas import show_exec_atividades_Remocao_Instalacao_Valvulas_form 
 from forms.formulario_exec_atividades_Servico_Limpeza_Hidrojato import show_exec_atividades_Servico_Limpeza_Hidrojato_form 
 from forms.formulario_exec_atividades_bandejamento import show_exec_atividades_bandejamento_form 
-
+from forms.formulario_exec_atividades_Ensaios_END import show_exec_atividades_END_form 
 
 def cronogramas_screen():
-    st.title("Tela de Cronogramas")
+    apply_custom_style_and_header("Tela de Cronogramas")
 
     if 'projeto_info' in st.session_state:
         projeto_info = st.session_state['projeto_info']
@@ -194,6 +195,7 @@ def cronogramas_screen():
                             show_exec_atividades_Trocadores_De_Calor_form()
                         elif atividade_selecionada == "PADRÃO ENSAIOS NÃO DESTRUTIVOS (END's)":
                             st.expander("Calculo de PADRÃO ENSAIOS NÃO DESTRUTIVOS (END's)")
+                            show_exec_atividades_END_form()
                         elif atividade_selecionada == "SERVIÇO DE LIMPEZA COM HIDROJATO":
                             st.expander("Calculo de SERVIÇO DE LIMPEZA COM HIDROJATO")
                             show_exec_atividades_Servico_Limpeza_Hidrojato_form()
