@@ -37,7 +37,7 @@ def cad_novo_recurso_adm():
             "GID":str(cd_GID),
             "CD_PROJETO": str(cd_projeto),
             "TX_DESCRICAO": str(var_tx_descricao),
-            'VL_VALOR_CUSTO': str(var_vl_valor_custo)
+            'VL_VALOR_CUSTO': float(var_vl_valor_custo.replace(",", "."))
         }
         
         try:

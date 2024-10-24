@@ -39,10 +39,8 @@ def editar_projeto_usuario():
         st.error("Não foi possível associar descrições aos projetos do usuário.")
         return
 
-    # Exibir as colunas disponíveis para diagnóstico
-    st.write("Colunas disponíveis no DataFrame de projetos após o merge:", projetos_usuario_desc_df.columns.tolist())
-
     with st.form(key="form_edicao_projeto"):
+
         # Selecionar o projeto a ser editado
         projeto_selecionado = st.selectbox(
             "Selecione um projeto para editar", 

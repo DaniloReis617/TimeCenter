@@ -186,7 +186,16 @@ def show_Apoio():
         if st.button("➕ Cadastrar Apoio",key="addApoio"):
             cad_novo_apoio_adm()
 
-    st.dataframe(df[['ID', 'TX_DESCRICAO', 'TX_TIPO', 'VL_VALOR_CUSTO', 'VL_PERCENTUAL_CUSTO']], use_container_width=True, hide_index=True)
+
+    # Renomear as colunas
+    df = df.rename(columns={
+        'ID': 'ID',
+        'TX_DESCRICAO': 'Descrição',
+        'TX_TIPO':'Tipo',
+        'VL_VALOR_CUSTO': 'Valor',
+        'VL_PERCENTUAL_CUSTO': 'Percentual'
+    })
+    st.dataframe(df[['ID', 'Descrição', 'Tipo', 'Valor', 'Percentual']], use_container_width=True, hide_index=True)
 
 def show_Area():
     if 'projeto_info' in st.session_state:
@@ -245,7 +254,14 @@ def show_Area():
         if st.button("➕ Cadastrar area",key="addarea"):
             cad_novo_area_adm()
 
-    st.dataframe(df[['ID', 'TX_DESCRICAO', 'VL_QUANTIDADE_DIAS_EXECUCAO']], use_container_width=True, hide_index=True)
+
+    # Renomear as colunas
+    df = df.rename(columns={
+        'ID': 'ID',
+        'TX_DESCRICAO': 'Descrição',
+        'VL_QUANTIDADE_DIAS_EXECUCAO':'QTD.Dias'
+    })
+    st.dataframe(df[['ID', 'Descrição', 'QTD.Dias']], use_container_width=True, hide_index=True)
 
 def show_Escopo_Origem():
     if 'projeto_info' in st.session_state:
@@ -289,7 +305,13 @@ def show_Escopo_Origem():
         if st.button("➕ Cadastrar Escopo de Origem",key="addescopo_origem"):
             cad_novo_escopo_origem_adm()  
 
-    st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
+
+    # Renomear as colunas
+    df = df.rename(columns={
+        'ID': 'ID',
+        'TX_DESCRICAO': 'Descrição'
+    })
+    st.dataframe(df[['ID', 'Descrição']], use_container_width=True, hide_index=True)
 
 def show_Escopo_Tipo():
     if 'projeto_info' in st.session_state:
@@ -333,7 +355,13 @@ def show_Escopo_Tipo():
         if st.button("➕ Cadastrar Tipo de Escopo",key="add_escopo_tipo"):
             cad_novo_escopo_tipo_adm() 
 
-    st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
+
+    # Renomear as colunas
+    df = df.rename(columns={
+        'ID': 'ID',
+        'TX_DESCRICAO': 'Descrição'
+    })
+    st.dataframe(df[['ID', 'Descrição']], use_container_width=True, hide_index=True)
 
 def show_Especialidade():
     if 'projeto_info' in st.session_state:
@@ -377,7 +405,13 @@ def show_Especialidade():
         if st.button("➕ Cadastrar Especialidade",key="add_especialidade"):
             cad_novo_especialidade_adm() 
 
-    st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
+
+    # Renomear as colunas
+    df = df.rename(columns={
+        'ID': 'ID',
+        'TX_DESCRICAO': 'Descrição'
+    })
+    st.dataframe(df[['ID', 'Descrição']], use_container_width=True, hide_index=True)
 
 def show_Executante():
     if 'projeto_info' in st.session_state:
@@ -421,7 +455,13 @@ def show_Executante():
         if st.button("➕ Cadastrar Executante",key="add_executante"):
             cad_novo_executante_adm()
 
-    st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
+
+    # Renomear as colunas
+    df = df.rename(columns={
+        'ID': 'ID',
+        'TX_DESCRICAO': 'Descrição'
+    })
+    st.dataframe(df[['ID', 'Descrição']], use_container_width=True, hide_index=True)
 
 def show_Familia_Equipamentos():
     if 'projeto_info' in st.session_state:
@@ -465,9 +505,15 @@ def show_Familia_Equipamentos():
         if st.button("➕ Cadastrar Familia Equipamentos",key="add_familia_equipamento"):
             cad_novo_familia_equip_adm()
 
+
+    # Renomear as colunas
+    df = df.rename(columns={
+        'ID': 'ID',
+        'TX_DESCRICAO': 'Descrição'
+    })
     # Exibir o DataFrame formatado
     st.subheader("Cadastro de Familia Equipamentos - Administração")
-    st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
+    st.dataframe(df[['ID', 'Descrição']], use_container_width=True, hide_index=True)
 
 def show_INFORMATIVO():
     if 'projeto_info' in st.session_state:
@@ -511,7 +557,12 @@ def show_INFORMATIVO():
         if st.button("➕ Cadastrar Informativo",key="add_informativo"):
             cad_novo_informativo_adm()
 
-    st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
+    # Renomear as colunas
+    df = df.rename(columns={
+        'ID': 'ID',
+        'TX_DESCRICAO': 'Descrição'
+    })
+    st.dataframe(df[['ID', 'Descrição']], use_container_width=True, hide_index=True)
 
 def show_PLANTA():
     if 'projeto_info' in st.session_state:
@@ -555,7 +606,13 @@ def show_PLANTA():
         if st.button("➕ Cadastrar Planta",key="add_planta"):
             cad_novo_planta_adm()
 
-    st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
+
+    # Renomear as colunas
+    df = df.rename(columns={
+        'ID': 'ID',
+        'TX_DESCRICAO': 'Descrição'
+    })
+    st.dataframe(df[['ID', 'Descrição']], use_container_width=True, hide_index=True)
 
 def show_RECURSO():
     if 'projeto_info' in st.session_state:
@@ -614,7 +671,13 @@ def show_RECURSO():
         if st.button("➕ Cadastrar Recurso",key="add_recurso"):
             cad_novo_recurso_adm()
 
-    st.dataframe(df[['ID', 'TX_DESCRICAO', 'VL_VALOR_CUSTO']], use_container_width=True, hide_index=True)
+    # Renomear as colunas
+    df = df.rename(columns={
+        'ID': 'ID',
+        'TX_DESCRICAO': 'Descrição',
+        'VL_VALOR_CUSTO':'Valor'
+    })
+    st.dataframe(df[['ID', 'Descrição', 'Valor']], use_container_width=True, hide_index=True)
 
 def show_SERVICO():
     if 'projeto_info' in st.session_state:
@@ -658,7 +721,12 @@ def show_SERVICO():
         if st.button("➕ Cadastrar Serviços",key="add_servico"):
             cad_novo_servico_adm()
 
-    st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
+    # Renomear as colunas
+    df = df.rename(columns={
+        'ID': 'ID',
+        'TX_DESCRICAO': 'Descrição'
+    })
+    st.dataframe(df[['ID', 'Descrição']], use_container_width=True, hide_index=True)
 
 def show_SETOR_RESPONSAVEL():
     if 'projeto_info' in st.session_state:
@@ -702,7 +770,12 @@ def show_SETOR_RESPONSAVEL():
         if st.button("➕ Cadastrar Setor Responsável",key="add_setor_responsavel"):
             cad_novo_setor_responsavel_adm()
 
-    st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
+    # Renomear as colunas
+    df = df.rename(columns={
+        'ID': 'ID',
+        'TX_DESCRICAO': 'Descrição'
+    })
+    st.dataframe(df[['ID', 'Descrição']], use_container_width=True, hide_index=True)
 
 def show_SETOR_SOLICITANTE():
     if 'projeto_info' in st.session_state:
@@ -746,9 +819,14 @@ def show_SETOR_SOLICITANTE():
         if st.button("➕ Cadastrar Setor Solicitante",key="add_setor_solicitante"):
             cad_novo_setor_solicitante_adm()
 
+    # Renomear as colunas
+    df = df.rename(columns={
+        'ID': 'ID',
+        'TX_DESCRICAO': 'Descrição'
+    })
     # Exibir o DataFrame formatado
     st.subheader("Cadastro de Setor Solicitante - Administração")
-    st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
+    st.dataframe(df[['ID', 'Descrição']], use_container_width=True, hide_index=True)
 
 def show_SITUACAO_MOTIVO():
     if 'projeto_info' in st.session_state:
@@ -792,7 +870,13 @@ def show_SITUACAO_MOTIVO():
         if st.button("➕ Cadastrar Situação Motivo",key="add_situacao_motivo"):
             cad_novo_situacao_motivo_adm()
 
-    st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
+    # Renomear as colunas
+    df = df.rename(columns={
+        'ID': 'ID',
+        'TX_DESCRICAO': 'Descrição'
+    })
+
+    st.dataframe(df[['ID', 'Descrição']], use_container_width=True, hide_index=True)
 
 def show_SISTEMA_OPERACIONAL():
     if 'projeto_info' in st.session_state:
@@ -836,7 +920,12 @@ def show_SISTEMA_OPERACIONAL():
         if st.button("➕ Cadastrar Sistema Operacional",key="add_sistema_operacional"):
             cad_novo_sistema_operacional_adm()
 
-    st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
+    # Renomear as colunas
+    df = df.rename(columns={
+        'ID': 'ID',
+        'TX_DESCRICAO': 'Descrição'
+    })
+    st.dataframe(df[['ID', 'Descrição']], use_container_width=True, hide_index=True)
 
 def show_DESPESA():
     if 'projeto_info' in st.session_state:
@@ -880,7 +969,12 @@ def show_DESPESA():
         if st.button("➕ Cadastrar Despesa",key="add_despesa"):
             cad_novo_despesa_adm()
 
-    st.dataframe(df[['ID', 'TX_DESCRICAO']], use_container_width=True, hide_index=True)
+    # Renomear as colunas
+    df = df.rename(columns={
+        'ID': 'ID',
+        'TX_DESCRICAO': 'Descrição'
+    })
+    st.dataframe(df[['ID', 'Descrição']], use_container_width=True, hide_index=True)
 
 def show_Lancamento_de_Despesas():
     if 'projeto_info' in st.session_state:
