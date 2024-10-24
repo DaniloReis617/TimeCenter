@@ -5,6 +5,11 @@ from forms.formulario_pintura import show_servico_pintura_form  # Importando o f
 from forms.formulario_exec_atividades_raqueteamento import show_exec_atividades_form  # Importando o formulário de execução de atividades
 from forms.formulario_exec_atividades_torque import show_exec_atividades_torque_form 
 from forms.formulario_exec_atividades_boca_visita import show_exec_atividades_boca_visita_form 
+from forms.formulario_exec_atividades_Trocadores_De_Calor import show_exec_atividades_Trocadores_De_Calor_form 
+from forms.formulario_exec_atividades_Remocao_Instalacao_Valvulas import show_exec_atividades_Remocao_Instalacao_Valvulas_form 
+from forms.formulario_exec_atividades_Servico_Limpeza_Hidrojato import show_exec_atividades_Servico_Limpeza_Hidrojato_form 
+from forms.formulario_exec_atividades_bandejamento import show_exec_atividades_bandejamento_form 
+
 
 def cronogramas_screen():
     st.title("Tela de Cronogramas")
@@ -180,14 +185,18 @@ def cronogramas_screen():
                             show_exec_atividades_boca_visita_form()
                         elif atividade_selecionada == "BANDEJAMENTO":
                             st.expander("Calculo de BANDEJAMENTO")
+                            show_exec_atividades_bandejamento_form()
                         elif atividade_selecionada == "REMOÇÃO / INSTALAÇÃO DE VÁLVULAS FLANGEADAS":
                             st.expander("Calculo de REMOÇÃO / INSTALAÇÃO DE VÁLVULAS FLANGEADAS")
+                            show_exec_atividades_Remocao_Instalacao_Valvulas_form()
                         elif atividade_selecionada == "TROCADORES DE CALOR":
                             st.expander("Calculo de TROCADORES DE CALOR")
+                            show_exec_atividades_Trocadores_De_Calor_form()
                         elif atividade_selecionada == "PADRÃO ENSAIOS NÃO DESTRUTIVOS (END's)":
                             st.expander("Calculo de PADRÃO ENSAIOS NÃO DESTRUTIVOS (END's)")
                         elif atividade_selecionada == "SERVIÇO DE LIMPEZA COM HIDROJATO":
                             st.expander("Calculo de SERVIÇO DE LIMPEZA COM HIDROJATO")
+                            show_exec_atividades_Servico_Limpeza_Hidrojato_form()
 
 
 def app():

@@ -35,24 +35,13 @@ def show_servico_pintura_form():
     # Campo para inserir quantidade de M²
     qtd_m2 = st.number_input("QTD M²:", min_value=0)
     
-    col1, col2, col3, col4 =st.columns([1,1,1,7])
-
-    with col1:
-        # Calcular Tempo Estimado
-        if st.button("Calcular"):
-            # Calcular a produtividade por hora
-            produtividade_por_hora = servico_selecionado['m2_dia'] / 8
-            tempo_estimado = qtd_m2 / produtividade_por_hora if qtd_m2 > 0 else 0
-            st.success(f"Tempo Estimado: {round(tempo_estimado, 2)} horas")
+    # Calcular Tempo Estimado
+    if st.button("Calcular"):
+        # Calcular a produtividade por hora
+        produtividade_por_hora = servico_selecionado['m2_dia'] / 8
+        tempo_estimado = qtd_m2 / produtividade_por_hora if qtd_m2 > 0 else 0
+        st.success(f"Tempo Estimado: {round(tempo_estimado, 2)} horas")
     
-    with col2:
-        # Botão de reset
-        if st.button("Reset"):
-            st.rerun()
-    with col3:
-        # Botão de voltar
-        if st.button("Voltar"):
-            st.session_state['show_form'] = False
 
 # Função principal que chama o formulário
 def main():
