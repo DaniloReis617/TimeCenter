@@ -16,7 +16,7 @@ def login():
                 st.image("./assets/logo_timenow_vertical_cor.png", width=200)
 
             st.write("Bem-vindo ao Time Center, por favor realize o seu login!")
-            with st.form(key="form_login", clear_on_submit=True):
+            with st.form(key="form_login", clear_on_submit=True, enter_to_submit=False):
                 username = st.text_input("Email", placeholder="Digite seu Email")
                 submit_button = st.form_submit_button('Entrar')
                 

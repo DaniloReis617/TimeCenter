@@ -50,7 +50,7 @@ def escopo_screen():
         st.write("Conteúdo da aba Gestão das Alterações do Escopo")
 
 @st.cache_data
-def load_data(selected_gid):
+def load_tela_escopo_data(selected_gid):
     # Obter os dados da tabela
     df = get_vw_nota_manutencao_hh_data()
 
@@ -62,10 +62,8 @@ def load_data(selected_gid):
     if df.empty:
         return df
 
-    # Remover a coluna GID_PROJETO
-    df = df.drop(columns=['GID_PROJETO'])
-
-    # Limpeza e tratamento das colunas
+    # Remover as colunas 'GID_PROJETO' e 'TX_NOME_SOLICITANTE' em uma única operação
+    df = df.drop(columns=['GID_PROJETO', 'TX_NOME_SOLICITANTE'])
 
     # Converter a coluna VL_HH_TOTAL para float
     df['VL_HH_TOTAL'] = pd.to_numeric(df['VL_HH_TOTAL'], errors='coerce').fillna(0.0)
@@ -83,7 +81,7 @@ def load_data(selected_gid):
     df['ID_NOTA_MANUTENCAO'] = df['ID_NOTA_MANUTENCAO'].astype(int)
 
     # Converter colunas categóricas para string
-    categorical_cols = ['TX_NOTA', 'TX_ORDEM', 'TX_TAG', 'TX_FAMILIA_EQUIPAMENTOS', 'TX_NOME_SOLICITANTE', 'TX_DESCRICAO_SERVICO', 'TX_ESCOPO_TIPO', 'TX_SITUACAO']
+    categorical_cols = ['TX_NOTA', 'TX_ORDEM', 'TX_TAG', 'TX_FAMILIA_EQUIPAMENTOS', 'TX_DESCRICAO_SERVICO', 'TX_ESCOPO_TIPO', 'TX_SITUACAO']
     df[categorical_cols] = df[categorical_cols].astype(str)
 
     return df
@@ -97,7 +95,7 @@ def gestao_notas_ordens_screen():
         return
 
     try:
-        df = load_data(selected_gid)
+        df = load_tela_escopo_data(selected_gid)
 
         if df.empty:
             st.warning("Nenhum dado foi encontrado para o projeto selecionado.")
@@ -113,17 +111,17 @@ def gestao_notas_ordens_screen():
         with col2:  
             #with st.popover("Cadastrar Nova Nota de Manutenção",use_container_width=True):
             if st.button("➕ Cadastrar Nota",key="addNota"):
-                cadastrar_nota_manutencao()
+                cadastrar_nota_manutencao()               
         
         with col3:
             if st.button("✏️ Editar Nota",key="EditNota"):
-                edit_nota_manutencao()
+                edit_nota_manutencao()              
 
         with col4:
             if st.button("🔄 Atualizar Dados",key="AtualizarPageNota"):
                 # Invalida o cache e recarrega os dados
-                load_data.clear()
-                load_data(selected_gid)
+                load_tela_escopo_data.clear()
+                load_tela_escopo_data(selected_gid)
 
         # Filtros para a tabela de dados
         with st.expander("Filtros"):
@@ -163,15 +161,39 @@ def gestao_notas_ordens_screen():
         col3.metric("Total de HH", f"{total_hh}")
         col4.metric("Custo Total", f"R$ {custo_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
 
+        # Renomear as colunas
+        df = df.rename(columns={
+            'ID_NOTA_MANUTENCAO': 'ID',
+            'TX_NOTA': 'NOTA',
+            'TX_ORDEM':'ORDEM',
+            'TX_TAG':'TAG',
+            'TX_FAMILIA_EQUIPAMENTOS':'FAMILIA DE EQUIP.',
+            'TX_DESCRICAO_SERVICO':'SERVIÇO',
+            'VL_HH_TOTAL':'HH',
+            'VL_CUSTO_TOTAL':'VALOR TOTAL',
+            'TX_ESCOPO_TIPO':'TIPO ESCOPO',
+            'TX_SITUACAO':'SITUAÇÃO'
+        })
+
+        # Filtrar somente as colunas renomeadas
+        df_renomeado = df[['ID', 'NOTA', 'ORDEM', 'TAG', 'FAMILIA DE EQUIP.', 'SERVIÇO', 'HH', 'VALOR TOTAL', 'TIPO ESCOPO', 'SITUAÇÃO']]
+
         # Limitar o número de registros para melhorar o desempenho
         max_rows = 1000
-        if len(df) > max_rows:
-            st.warning(f"O conjunto de dados é grande ({len(df)} registros). Exibindo os primeiros {max_rows} registros.")
-            df_display = df.head(max_rows)
+        if len(df_renomeado) > max_rows:
+            st.warning(f"O conjunto de dados é grande ({len(df_renomeado)} registros). Exibindo os primeiros {max_rows} registros.")
+            df_display = df_renomeado.head(max_rows)
         else:
-            df_display = df
+            df_display = df_renomeado
+
+        # Garantir que a coluna ID seja exibida como string, sem formatação extra
+        df_display['ID'] = df_display['ID'].astype(str)
+
+        # Formatar a coluna VALOR TOTAL para exibir com "R$"
+        df_display['VALOR TOTAL'] = df_display['VALOR TOTAL'].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+
         
-        col1, col2 = st.columns([9,1])
+        col1, col2 = st.columns([8,1.2])
         with col1:
             # Personalizar a tabela usando AgGrid
             st.markdown("### Detalhes das Notas e Ordens")
@@ -203,26 +225,8 @@ def gestao_notas_ordens_screen():
                 mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             )
 
-
-        gb = GridOptionsBuilder.from_dataframe(df_display)
-        gb.configure_pagination(paginationAutoPageSize=True)  # Paginação
-        gb.configure_default_column(groupable=False, value=True, enableRowGroup=False, editable=False)
-        gb.configure_column("VL_HH_TOTAL", type=["numericColumn"], precision=2)
-        gb.configure_column("VL_CUSTO_TOTAL", type=["numericColumn"], precision=2)
-        grid_options = gb.build()
-
-        grid_response = AgGrid(
-            df_display,
-            gridOptions=grid_options,
-            data_return_mode='AS_INPUT',
-            update_mode=GridUpdateMode.NO_UPDATE,
-            fit_columns_on_grid_load=True,
-            theme='alpine',
-            enable_enterprise_modules=False,
-            height=730,
-            width='100%',
-            reload_data=True
-        )
+        # Exibir a tabela usando st.dataframe
+        st.dataframe(df_display, use_container_width=True, hide_index=True)  # Exibir o DataFrame
 
     except Exception as e:
         st.error(f"Ocorreu um erro ao carregar os dados. Por favor, tente novamente mais tarde. Erro: {e}")

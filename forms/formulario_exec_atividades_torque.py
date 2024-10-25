@@ -117,8 +117,6 @@ def show_exec_atividades_torque_form():
     if st.button("Calcular"):
         resultado = float(txtdiamentro) * float(atividade_selecionada['QtRec'].replace(',', '.'))
         st.success(f"Tempo Estimado: {round(resultado, 2)} horas")
-    
-
 
 # Função principal que chama o formulário
 def main():

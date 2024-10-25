@@ -41,6 +41,11 @@ def show_servico_pintura_form():
         produtividade_por_hora = servico_selecionado['m2_dia'] / 8
         tempo_estimado = qtd_m2 / produtividade_por_hora if qtd_m2 > 0 else 0
         st.success(f"Tempo Estimado: {round(tempo_estimado, 2)} horas")
+
+    # Botão de reset
+    if st.button("Voltar"):
+        st.session_state['show_form'] = False
+        st.rerun()
     
 
 # Função principal que chama o formulário

@@ -11,6 +11,9 @@ from forms.formulario_exec_atividades_Remocao_Instalacao_Valvulas import show_ex
 from forms.formulario_exec_atividades_Servico_Limpeza_Hidrojato import show_exec_atividades_Servico_Limpeza_Hidrojato_form 
 from forms.formulario_exec_atividades_bandejamento import show_exec_atividades_bandejamento_form 
 from forms.formulario_exec_atividades_Ensaios_END import show_exec_atividades_END_form 
+from forms.formulario_isolamento_termico import show_isolamento_termico_form
+from forms.formulario_pre_soldagem import show_pre_soldagem_form
+from forms.formulario_soldagem_tubulacao import show_soldagem_tubulacao_form  
 
 def cronogramas_screen():
     apply_custom_style_and_header("Tela de Cronogramas")
@@ -28,6 +31,14 @@ def cronogramas_screen():
     # Controle para exibir o formulário de execução de atividades
     if 'show_form_execucao' not in st.session_state:
         st.session_state['show_form_execucao'] = False
+
+    # Controle para exibir o formulário de isolamento
+    if 'show_form_servico_isolamento' not in st.session_state:
+        st.session_state['show_form_servico_isolamento'] = False
+
+    # Controle para exibir o formulário de isolamento
+    if 'show_form_caldeiraria_solda' not in st.session_state:
+        st.session_state['show_form_caldeiraria_solda'] = False
 
     # Variável para controlar a atividade selecionada
     if 'selected_activity' not in st.session_state:
@@ -50,7 +61,7 @@ def cronogramas_screen():
     
     # Conteúdo da aba 3 - Calculadora de Métricas
     with tab3:
-        if not st.session_state['show_form'] and not st.session_state['show_form_execucao']:
+        if not st.session_state['show_form'] and not st.session_state['show_form_execucao'] and not st.session_state['show_form_servico_isolamento'] and not st.session_state['show_form_caldeiraria_solda']:
             st.header("Calculadora de Métricas")
 
             # Pasta de imagens
@@ -108,7 +119,9 @@ def cronogramas_screen():
                 # Container 3 (Serviço de Isolamento)
                 with col3:
                     display_image(images["Serviço de Isolamento"], "Serviço de Isolamento")
-                    st.button("Serviço de Isolamento", use_container_width=True)
+                    if st.button("Serviço de Isolamento", use_container_width=True, key='isolamento_btn'):
+                        st.session_state['show_form_servico_isolamento'] = True
+                        st.rerun()  # Atualiza a interface imediatamente
                 
                 # Container 4 (Serviço de Andaime)
                 with col4:
@@ -122,7 +135,9 @@ def cronogramas_screen():
                 # Container 5 (Caldeiraria e Solda)
                 with col5:
                     display_image(images["Caldeiraria e Solda"], "Caldeiraria e Solda")
-                    st.button("Caldeiraria e Solda", use_container_width=True)
+                    if st.button("Caldeiraria e Solda", use_container_width=True, key='caldeiraria_solda_btn'):
+                            st.session_state['show_form_caldeiraria_solda'] = True
+                            st.rerun()  # Atualiza a interface imediatamente
                 
                 # Container 6 (Item em Destaque)
                 with col6:
@@ -138,6 +153,9 @@ def cronogramas_screen():
 
         elif st.session_state['show_form']:
             show_servico_pintura_form()
+
+        elif st.session_state['show_form_servico_isolamento']:
+            show_isolamento_termico_form()
         
         elif st.session_state['show_form_execucao']:
 
@@ -199,6 +217,43 @@ def cronogramas_screen():
                         elif atividade_selecionada == "SERVIÇO DE LIMPEZA COM HIDROJATO":
                             st.expander("Calculo de SERVIÇO DE LIMPEZA COM HIDROJATO")
                             show_exec_atividades_Servico_Limpeza_Hidrojato_form()
+
+        elif st.session_state['show_form_caldeiraria_solda']:
+
+            # Container maior que pega a tela inteira
+            with st.container():
+                # Criando duas colunas dentro do container
+                col1, col2 = st.columns([1, 3])  # Coluna 1 menor e coluna 2 maior
+                
+                # Primeiro container dentro da primeira coluna para o rádio
+                with col1:
+                    with st.container():
+                        # Mostrar a galeria de atividades
+                        st.subheader("Selecione uma Atividade para Caldeiraria e Solda")
+                        atividades_caldeiraria_solda = [
+                            "PREPARAÇÃO PARA SOLDAGEM",
+                            "SOLDAGEM DE TUBULAÇÃO"
+                        ]
+                        
+                        # Substituindo os botões por um rádio
+                        atividade_selecionada_caldeiraria_solda = st.radio("Selecione a atividade", atividades_caldeiraria_solda)
+
+                        # Botão de reset
+                        if st.button("Voltar"):
+                            st.session_state['show_form_caldeiraria_solda'] = False
+                            st.rerun()
+
+                        # Segundo container na segunda coluna para mostrar o resultado
+                with col2:
+                    with st.container():
+                        st.subheader("Resultado da Seleção")
+                        # Lógica de navegação com base na opção selecionada
+                        if atividade_selecionada_caldeiraria_solda == "PREPARAÇÃO PARA SOLDAGEM":
+                            st.expander("Calculo de Preparação para Soldagem")
+                            show_pre_soldagem_form()
+                        elif atividade_selecionada_caldeiraria_solda == "SOLDAGEM DE TUBULAÇÃO":
+                            st.expander("Calculo de Soldagm de Tubulação")
+                            show_soldagem_tubulacao_form()
 
 
 def app():
