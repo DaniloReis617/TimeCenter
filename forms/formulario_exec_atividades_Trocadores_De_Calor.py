@@ -66,14 +66,11 @@ def show_exec_atividades_Trocadores_De_Calor_form():
     
     # Exibir os resultados da consulta
     st.write(f"Duração (hs): {atividade_selecionada['Duracao']}")
-    st.write(f"Qt Rec: {atividade_selecionada['Rec']}")
-
-    # Campo para inserir quantidade de M²
-    QT_REC = st.number_input("Qt Rec:", min_value=1)
+    st.write(f"Qtde Recurso: {atividade_selecionada['Rec']}")
     
     # Calcular Tempo Estimado
-    if st.button("Calcular"):
-        resultado = float(QT_REC) * float(atividade_selecionada['Duracao'].replace(',', '.'))
+    if st.button("Calcular Tempo Estimado"):
+        resultado = float(atividade_selecionada['Rec']) * float(atividade_selecionada['Duracao'].replace(',', '.'))
         st.success(f"Tempo Estimado: {round(resultado, 2)} horas")
 
 # Função principal que chama o formulário

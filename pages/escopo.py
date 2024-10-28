@@ -63,7 +63,7 @@ def load_tela_escopo_data(selected_gid):
         return df
 
     # Remover as colunas 'GID_PROJETO' e 'TX_NOME_SOLICITANTE' em uma única operação
-    df = df.drop(columns=['GID_PROJETO', 'TX_NOME_SOLICITANTE'])
+    df = df.drop(columns=['TX_NOME_SOLICITANTE'])
 
     # Converter a coluna VL_HH_TOTAL para float
     df['VL_HH_TOTAL'] = pd.to_numeric(df['VL_HH_TOTAL'], errors='coerce').fillna(0.0)
@@ -85,6 +85,11 @@ def load_tela_escopo_data(selected_gid):
     df[categorical_cols] = df[categorical_cols].astype(str)
 
     return df
+
+def exibir_detalhes_da_linha(row):
+    """Exibe os detalhes de uma linha selecionada."""
+    st.subheader("Detalhes da Nota Selecionada")
+    st.write(row)
 
 def gestao_notas_ordens_screen():
     if 'projeto_info' in st.session_state:
@@ -109,7 +114,6 @@ def gestao_notas_ordens_screen():
             # Exibir as métricas com st.metric
             st.markdown("### Resumo do Projeto")
         with col2:  
-            #with st.popover("Cadastrar Nova Nota de Manutenção",use_container_width=True):
             if st.button("➕ Cadastrar Nota",key="addNota"):
                 cadastrar_nota_manutencao()               
         
@@ -175,6 +179,11 @@ def gestao_notas_ordens_screen():
             'TX_SITUACAO':'SITUAÇÃO'
         })
 
+        # Garantir que as colunas 'HH' e 'VALOR TOTAL' são numéricas para formatação
+        df['HH'] = pd.to_numeric(df['HH'], errors='coerce').fillna(0.0)
+        df['VALOR TOTAL'] = pd.to_numeric(df['VALOR TOTAL'], errors='coerce').fillna(0.0)
+
+
         # Filtrar somente as colunas renomeadas
         df_renomeado = df[['ID', 'NOTA', 'ORDEM', 'TAG', 'FAMILIA DE EQUIP.', 'SERVIÇO', 'HH', 'VALOR TOTAL', 'TIPO ESCOPO', 'SITUAÇÃO']]
 
@@ -189,44 +198,58 @@ def gestao_notas_ordens_screen():
         # Garantir que a coluna ID seja exibida como string, sem formatação extra
         df_display['ID'] = df_display['ID'].astype(str)
 
+        df_display['HH'] = df_display['HH'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+
         # Formatar a coluna VALOR TOTAL para exibir com "R$"
         df_display['VALOR TOTAL'] = df_display['VALOR TOTAL'].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
 
+        # Exibir a tabela com cabeçalhos e botões
+        col_id, col_nota, col_ordem, col_tag, col_familia, col_servico, col_hh, col_valor, col_escopo, col_situacao, col_acao = st.columns(
+            [0.5, 1, 1, 1, 1.5, 2, 0.5, 1, 1, 1, 1]
+        )
         
-        col1, col2 = st.columns([8,1.2])
-        with col1:
-            # Personalizar a tabela usando AgGrid
-            st.markdown("### Detalhes das Notas e Ordens")
-        
-        with col2:
-            # Criar um buffer em memória para o arquivo Excel
-            buffer = io.BytesIO()
-            with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-                df.to_excel(writer, index=False, sheet_name='Dados')
-                # Ajustar a largura das colunas
-                worksheet = writer.sheets['Dados']
-                for column in worksheet.columns:
-                    max_length = 0
-                    column_letter = column[0].column_letter
-                    for cell in column:
-                        try:
-                            if len(str(cell.value)) > max_length:
-                                max_length = len(str(cell.value))
-                        except:
-                            pass
-                    adjusted_width = (max_length + 2)
-                    worksheet.column_dimensions[column_letter].width = adjusted_width
-            buffer.seek(0)
+        col_id.markdown("**ID**")
+        col_nota.markdown("**NOTA**")
+        col_ordem.markdown("**ORDEM**")
+        col_tag.markdown("**TAG**")
+        col_familia.markdown("**FAMÍLIA DE EQUIP.**")
+        col_servico.markdown("**SERVIÇO**")
+        col_hh.markdown("**HH**")
+        col_valor.markdown("**VALOR TOTAL**")
+        col_escopo.markdown("**TIPO ESCOPO**")
+        col_situacao.markdown("**SITUAÇÃO**")
+        col_acao.markdown("**Ações**")
 
-            st.download_button(
-                label="Baixar dados em Excel",
-                data=buffer,
-                file_name='dados_projeto.xlsx',
-                mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            )
+        # Exibir cada linha
+        for index, row in df.head(15).iterrows():
+            with st.container():
+                col_id, col_nota, col_ordem, col_tag, col_familia, col_servico, col_hh, col_valor, col_escopo, col_situacao, col_acao = st.columns(
+                    [0.5, 1, 1, 1, 1.5, 2, 0.5, 1, 1, 1, 1]
+                )
+                col_id.write(row['ID'])
+                col_nota.write(row['NOTA'])
+                col_ordem.write(row['ORDEM'])
+                col_tag.write(row['TAG'])
+                col_familia.write(row['FAMILIA DE EQUIP.'])
+                col_servico.write(row['SERVIÇO'])
+                col_hh.write(row['HH'])
+                col_valor.write(row['VALOR TOTAL'])
+                col_escopo.write(row['TIPO ESCOPO'])
+                col_situacao.write(row['SITUAÇÃO'])
 
-        # Exibir a tabela usando st.dataframe
-        st.dataframe(df_display, use_container_width=True, hide_index=True)  # Exibir o DataFrame
+                # Botões de ação
+                with col_acao:
+                    col_btn1, col_btn2 = st.columns(2)
+                    with col_btn1:
+                        if st.button("✏️", key=f"EditNota_{index}"):
+                            st.session_state["linha_selecionada"] = row  # Armazena a linha selecionada no session_state
+                    with col_btn2:
+                        if st.button("🗑️", key=f"ExcluirNota_{index}"):
+                            delete_data(row['ID'])
+
+        # Exibir detalhes da linha selecionada, se houver
+        if "linha_selecionada" in st.session_state:
+            exibir_detalhes_da_linha(st.session_state["linha_selecionada"])
 
     except Exception as e:
         st.error(f"Ocorreu um erro ao carregar os dados. Por favor, tente novamente mais tarde. Erro: {e}")

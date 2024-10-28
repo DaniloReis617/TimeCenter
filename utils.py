@@ -135,7 +135,7 @@ def read_data(table_name, filter_condition=''):
 def get_vw_nota_manutencao_hh_data():
     """Lê a tabela VW_NOTA_MANUTENCAO_HH e retorna as colunas específicas."""
     query = """
-        SELECT GID_PROJETO, ID_NOTA_MANUTENCAO, TX_NOTA, TX_ORDEM, TX_TAG, TX_FAMILIA_EQUIPAMENTOS, 
+        SELECT GID_PROJETO, GID_NOTA_MANUTENCAO, ID_NOTA_MANUTENCAO, TX_NOTA, TX_ORDEM, TX_TAG, TX_FAMILIA_EQUIPAMENTOS, 
         TX_NOME_SOLICITANTE, TX_DESCRICAO_SERVICO, VL_HH_TOTAL, VL_CUSTO_TOTAL, 
         TX_ESCOPO_TIPO, TX_SITUACAO FROM Dbo.VW_NOTA_MANUTENCAO_HH
     """
@@ -193,10 +193,6 @@ def update_data(table_name, id_column, id_value, updated_data):
         set_clause = ', '.join([f"{col} = ?" for col in updated_data.keys()])
         query = f"UPDATE {table_name} SET {set_clause} WHERE {id_column} = ?"
         params = list(updated_data.values()) + [id_value]
-
-        # Captura e exibe a query e os parâmetros antes de executar
-        #st.write(f"Query: {query}")
-        #st.write(f"Parâmetros: {params}")
 
         # Tenta executar a query
         success = execute_write_query(query, params)
