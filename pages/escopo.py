@@ -267,14 +267,20 @@ def gestao_notas_ordens_screen(df, projeto_info):
                     with col_btn1:
                         if st.button("✏️", key=f"EditNota_{index}"):
                             st.session_state["nota_selecionada"] = row['GID_NOTA_MANUTENCAO']  # Armazena a linha selecionada no session_state
-                            edit_nota_manutencao()              
+                            edit_nota_manutencao()  
 
-                    with col_btn2:
-                        if st.button("🗑️", key=f"ExcluirNota_{index}"):
-                            delete_data("timecenter.TB_NOTA_MANUTENCAO", "GID", row['GID_NOTA_MANUTENCAO'])
-                            st.success(f"Item excluído de ID: {row['ID']}")
+                    # Obter detalhes do usuário logado
+                    user_details = st.session_state.get('user_details', None)
 
+                    # Verificar os detalhes do usuário
+                    if user_details:
+                        user_profile = user_details['perfil']
 
+                        if user_profile in ['Super Usuário', 'Administrador']:
+                            with col_btn2:
+                                if st.button("🗑️", key=f"ExcluirNota_{index}"):
+                                    delete_data("timecenter.TB_NOTA_MANUTENCAO", "GID", row['GID_NOTA_MANUTENCAO'])
+                                    st.success(f"Item excluído de ID: {row['ID']}")
 
 def app():
     escopo_screen()

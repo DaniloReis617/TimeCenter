@@ -47,11 +47,33 @@ def home_screen():
     user_details = st.session_state.get('user_details', None)
     
     if user_details:
+        user_login = user_details['login']
+        user_id = user_details['id']
         user_gid = user_details['gid']
         user_profile = user_details['perfil']
         
+        if user_profile in ['Super Usuário', 'Administrador']:
+            # Obter todos os projetos ativos
+            projetos_df = get_all_projetos()
+        else:
+            # Obter projetos do usuário logado
+            projetos_df = get_projetos_por_usuario(user_gid)
+            if projetos_df.empty:
+                st.warning(f"Este usuário ({user_login}) não tem projetos.")
+                return
+            
+            # Obter descrições dos projetos
+            projetos_desc_df = get_descricao_projetos(projetos_df['CD_PROJETO'].unique().tolist())
+            
+            # Fazer o merge com base na coluna GID, mantendo os GIDs do projeto e usuário separados temporariamente
+            projetos_df = projetos_df.merge(projetos_desc_df, left_on='CD_PROJETO', right_on='GID', suffixes=('_usuario', ''))
+
+            # Remover a coluna GID do usuário (GID_usuario), mantendo apenas o GID do projeto
+            if 'GID_usuario' in projetos_df.columns:
+                projetos_df = projetos_df.drop(columns=['GID_usuario'])
+        
         # Filtrar projetos de acordo com o perfil do usuário
-        projetos_df = get_all_projetos() if user_profile in ['Super Usuário', 'Administrador'] else get_projetos_por_usuario(user_gid)
+        #projetos_df = get_all_projetos() if user_profile in ['Super Usuário', 'Administrador'] else get_projetos_por_usuario(user_gid)
         
         if not projetos_df.empty:
             # Inclui uma opção em branco para o selectbox
