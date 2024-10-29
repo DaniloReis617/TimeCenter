@@ -449,19 +449,23 @@ def edit_nota_manutencao():
                 st.write("FORMULÁRIO DE CADASTRO DE NOTAS DE MANUTENÇÃO (MATERIAL) - MANUTENÇÃO")
                 var_Novo_GID_Nota_Material = str(uuid.uuid4())
                 with st.form(key="new_nota_material"):
-                    var_cd_gid_material = var_Novo_GID_Nota_Material
-                    var_TX_IDENTIFICADOR_material = st.text_input("Identificador")
-                    var_CD_NOTA_MANUTENCAO_material = var_Novo_GID_Nota_Manutencao
-                    var_TX_DESCRICAO_material = st.text_input("Descrição")
-                    var_VL_QUANTIDADE_material = st.text_input("Quantidade")
-                    if not var_VL_QUANTIDADE_material.isdigit():
-                        st.warning("A quantidade deve ser um número.")
-                    var_VL_CUSTO_TOTAL_material = st.text_input("Custo Total")
-                    if not var_VL_CUSTO_TOTAL_material.isdigit():
-                        st.warning("O custo total deve ser um número.")
-                    var_TX_NUMERO_RC_material = st.text_input("Número da RC")
-                    var_DT_PEDIDO_material = st.date_input("Data do Pedido", value=pd.to_datetime('today').date())
-                    var_TX_NUMERO_PEDIDO_material = st.text_input("Número do Pedido")
+
+                    collayout_material1, collayout_material2 = st.columns(2)
+                    with collayout_material1:
+                        var_cd_gid_material = var_Novo_GID_Nota_Material
+                        var_TX_IDENTIFICADOR_material = st.text_input("Identificador")
+                        var_CD_NOTA_MANUTENCAO_material = var_Novo_GID_Nota_Manutencao
+                        var_TX_DESCRICAO_material = st.text_input("Descrição")
+                        var_VL_QUANTIDADE_material = st.text_input("Quantidade")
+                        if not var_VL_QUANTIDADE_material.isdigit():
+                            st.warning("A quantidade deve ser um número.")
+                    with collayout_material2:                    
+                        var_VL_CUSTO_TOTAL_material = st.text_input("Custo Total")
+                        if not var_VL_CUSTO_TOTAL_material.isdigit():
+                            st.warning("O custo total deve ser um número.")
+                        var_TX_NUMERO_RC_material = st.text_input("Número da RC")
+                        var_DT_PEDIDO_material = st.date_input("Data do Pedido", value=pd.to_datetime('today').date())
+                        var_TX_NUMERO_PEDIDO_material = st.text_input("Número do Pedido")
                     
                     submit_button = st.form_submit_button("Salvar Nota material")
                     
@@ -544,61 +548,65 @@ def edit_nota_manutencao():
                 st.write("FORMULÁRIO DE CADASTRO DE NOTAS DE MANUTENÇÃO (RECURSO) - ADMINISTRAÇÃO")
                 var_Novo_GID_Nota_Recurso = str(uuid.uuid4())
                 with st.form(key="new_nota_recurso"):
-                    # Função para carregar os dados dos recursos do projeto
-                    nota_recurso_df = project_data['recurso']
-                    nota_recurso_map = dict(zip(nota_recurso_df['TX_DESCRICAO'], nota_recurso_df['GID'])) if not nota_recurso_df.empty else {}
-                    # Selecionar o código do recurso
-                    nota_recurso_selecionado = st.selectbox("Cód. Recurso", options=list(nota_recurso_map.keys()) or [''])
-                    var_cd_nota_recurso = nota_recurso_map.get(nota_recurso_selecionado, None)
-                    # Inicializar valores padrão
-                    var_vl_valor_custo_recurso = 0.0
-                    var_vl_quantidade_recurso = 0.0
-                    var_vl_duracao_recurso = 0.0
-                    var_vl_custo_total_recurso = 0.0
 
-                    # Carregar o valor do recurso selecionado
-                    if nota_recurso_selecionado:
-                        # Acessar os dados do recurso selecionado
-                        recurso_selecionado_data = nota_recurso_df[nota_recurso_df['TX_DESCRICAO'] == nota_recurso_selecionado]
-                        
-                        # Se o recurso foi encontrado, carregar o valor de custo
-                        if not recurso_selecionado_data.empty:
-                            var_vl_valor_custo_recurso = recurso_selecionado_data.iloc[0]['VL_VALOR_CUSTO']
+                    collayout_recurso1, collayout_recurso2 = st.columns(2)
+                    with collayout_recurso1:
+                        # Função para carregar os dados dos recursos do projeto
+                        nota_recurso_df = project_data['recurso']
+                        nota_recurso_map = dict(zip(nota_recurso_df['TX_DESCRICAO'], nota_recurso_df['GID'])) if not nota_recurso_df.empty else {}
+                        # Selecionar o código do recurso
+                        nota_recurso_selecionado = st.selectbox("Cód. Recurso", options=list(nota_recurso_map.keys()) or [''])
+                        var_cd_nota_recurso = nota_recurso_map.get(nota_recurso_selecionado, None)
+                        # Inicializar valores padrão
+                        var_vl_valor_custo_recurso = 0.0
+                        var_vl_quantidade_recurso = 0.0
+                        var_vl_duracao_recurso = 0.0
+                        var_vl_custo_total_recurso = 0.0
 
-                    # Exibir os campos com os valores calculados
-                    var_GID_recurso = var_Novo_GID_Nota_Recurso
-                    var_cd_nota_manutencao_recurso = var_Novo_GID_Nota_Manutencao
+                        # Carregar o valor do recurso selecionado
+                        if nota_recurso_selecionado:
+                            # Acessar os dados do recurso selecionado
+                            recurso_selecionado_data = nota_recurso_df[nota_recurso_df['TX_DESCRICAO'] == nota_recurso_selecionado]
+                            
+                            # Se o recurso foi encontrado, carregar o valor de custo
+                            if not recurso_selecionado_data.empty:
+                                var_vl_valor_custo_recurso = recurso_selecionado_data.iloc[0]['VL_VALOR_CUSTO']
 
-                    # Campo de Quantidade
-                    var_vl_quantidade_recurso = st.text_input("Quantidade", value=str(var_vl_quantidade_recurso))
-                    if not var_vl_quantidade_recurso.isdigit():
-                        st.warning("A quantidade deve ser um número.")
-                        var_vl_quantidade_recurso = 0.0  # Valor padrão se não for um número
+                        # Exibir os campos com os valores calculados
+                        var_GID_recurso = var_Novo_GID_Nota_Recurso
+                        var_cd_nota_manutencao_recurso = var_Novo_GID_Nota_Manutencao
 
-                    # Campo de Duração (horas)
-                    var_vl_duracao_recurso = st.text_input("Duração (h)", value=str(var_vl_duracao_recurso))
-                    if not var_vl_duracao_recurso.isdigit():
-                        st.warning("A duração deve ser um número.")
-                        var_vl_duracao_recurso = 0.0  # Valor padrão se não for um número
+                        # Campo de Quantidade
+                        var_vl_quantidade_recurso = st.text_input("Quantidade", value=str(var_vl_quantidade_recurso))
+                        if not var_vl_quantidade_recurso.isdigit():
+                            st.warning("A quantidade deve ser um número.")
+                            var_vl_quantidade_recurso = 0.0  # Valor padrão se não for um número
 
-                    # Campo de Valor de Custo (preenchido automaticamente com o valor do recurso selecionado)
-                    var_vl_valor_custo_recurso = st.text_input("Valor de Custo (R$)", value=str(var_vl_valor_custo_recurso))
+                    with collayout_recurso2:
+                        # Campo de Duração (horas)
+                        var_vl_duracao_recurso = st.text_input("Duração (h)", value=str(var_vl_duracao_recurso))
+                        if not var_vl_duracao_recurso.isdigit():
+                            st.warning("A duração deve ser um número.")
+                            var_vl_duracao_recurso = 0.0  # Valor padrão se não for um número
 
-                    # Calcular o valor total com base em quantidade, duração e valor de custo
-                    try:
-                        var_vl_quantidade_recurso = float(var_vl_quantidade_recurso)
-                        var_vl_duracao_recurso = float(var_vl_duracao_recurso)
-                        var_vl_valor_custo_recurso = float(var_vl_valor_custo_recurso)
+                        # Campo de Valor de Custo (preenchido automaticamente com o valor do recurso selecionado)
+                        var_vl_valor_custo_recurso = st.text_input("Valor de Custo (R$)", value=str(var_vl_valor_custo_recurso))
 
-                        # Cálculo do valor total
-                        var_vl_custo_total_recurso = var_vl_quantidade_recurso * var_vl_duracao_recurso * var_vl_valor_custo_recurso
+                        # Calcular o valor total com base em quantidade, duração e valor de custo
+                        try:
+                            var_vl_quantidade_recurso = float(var_vl_quantidade_recurso)
+                            var_vl_duracao_recurso = float(var_vl_duracao_recurso)
+                            var_vl_valor_custo_recurso = float(var_vl_valor_custo_recurso)
 
-                    except ValueError:
-                        st.warning("Por favor, insira valores válidos para quantidade, duração e valor de custo.")
-                        var_vl_custo_total_recurso = 0.0  # Valor padrão se houver erro
+                            # Cálculo do valor total
+                            var_vl_custo_total_recurso = var_vl_quantidade_recurso * var_vl_duracao_recurso * var_vl_valor_custo_recurso
 
-                    # Exibir o resultado do cálculo
-                    st.text_input("Valor Total (R$)", value=f"{var_vl_custo_total_recurso:.2f}", disabled=True)                
+                        except ValueError:
+                            st.warning("Por favor, insira valores válidos para quantidade, duração e valor de custo.")
+                            var_vl_custo_total_recurso = 0.0  # Valor padrão se houver erro
+
+                        # Exibir o resultado do cálculo
+                        st.text_input("Valor Total (R$)", value=f"{var_vl_custo_total_recurso:.2f}", disabled=True)                
                     
                     submit_button = st.form_submit_button("Salvar Nota Recurso")
                     
@@ -677,59 +685,62 @@ def edit_nota_manutencao():
                 st.write("FORMULÁRIO DE CADASTRO DE NOTAS DE MANUTENÇÃO (APOIO) - ADMINISTRAÇÃO")
                 var_Novo_GID_Nota_Apoio = str(uuid.uuid4())
                 with st.form(key="new_nota_apoio"):
-                    # Função para carregar os dados dos apoios do projeto
-                    nota_apoio_df = project_data['apoio']
-                    nota_apoio_map = dict(zip(nota_apoio_df['TX_DESCRICAO'], nota_apoio_df['GID'])) if not nota_apoio_df.empty else {}
-                    # Selecionar o código de apoio
-                    nota_apoio_selecionado = st.selectbox("Cód. Apoio", options=list(nota_apoio_map.keys()) or [''])
-                    var_cd_apoio = nota_apoio_map.get(nota_apoio_selecionado, None)
 
-                    # Inicializar variáveis
-                    var_vl_valor_custo_apoio = 0.00
-                    var_vl_percentual_custo_apoio = 0.00
-                    var_vl_quantidade_apoio = 0.00
-                    var_vl_custo_total_apoio = 0.00
+                    collayout_apoio1, collayout_apoio2 = st.columns(2)
+                    with collayout_apoio1:
+                        # Função para carregar os dados dos apoios do projeto
+                        nota_apoio_df = project_data['apoio']
+                        nota_apoio_map = dict(zip(nota_apoio_df['TX_DESCRICAO'], nota_apoio_df['GID'])) if not nota_apoio_df.empty else {}
+                        # Selecionar o código de apoio
+                        nota_apoio_selecionado = st.selectbox("Cód. Apoio", options=list(nota_apoio_map.keys()) or [''])
+                        var_cd_apoio = nota_apoio_map.get(nota_apoio_selecionado, None)
 
-                    # Carregar o valor do apoio selecionado
-                    if nota_apoio_selecionado:
-                        # Acessar os dados do apoio selecionado
-                        apoio_selecionado_data = nota_apoio_df[nota_apoio_df['TX_DESCRICAO'] == nota_apoio_selecionado]
-                        
-                        # Se o apoio foi encontrado, carregar o valor de custo e o percentual de custo
-                        if not apoio_selecionado_data.empty:
-                            var_vl_valor_custo_apoio = apoio_selecionado_data.iloc[0]['VL_VALOR_CUSTO']
-                            var_vl_percentual_custo_apoio = apoio_selecionado_data.iloc[0]['VL_PERCENTUAL_CUSTO']
+                        # Inicializar variáveis
+                        var_vl_valor_custo_apoio = 0.00
+                        var_vl_percentual_custo_apoio = 0.00
+                        var_vl_quantidade_apoio = 0.00
+                        var_vl_custo_total_apoio = 0.00
 
-                    # Exibir os campos com os valores preenchidos
-                    var_GID_apoio = var_Novo_GID_Nota_Apoio
-                    var_cd_nota_manutencao_apoio = var_Novo_GID_Nota_Manutencao
+                        # Carregar o valor do apoio selecionado
+                        if nota_apoio_selecionado:
+                            # Acessar os dados do apoio selecionado
+                            apoio_selecionado_data = nota_apoio_df[nota_apoio_df['TX_DESCRICAO'] == nota_apoio_selecionado]
+                            
+                            # Se o apoio foi encontrado, carregar o valor de custo e o percentual de custo
+                            if not apoio_selecionado_data.empty:
+                                var_vl_valor_custo_apoio = apoio_selecionado_data.iloc[0]['VL_VALOR_CUSTO']
+                                var_vl_percentual_custo_apoio = apoio_selecionado_data.iloc[0]['VL_PERCENTUAL_CUSTO']
 
-                    # Campo de Quantidade
-                    var_vl_quantidade_apoio = st.text_input("Quantidade", value=str(var_vl_quantidade_apoio))
-                    if not var_vl_quantidade_apoio.isdigit():
-                        st.warning("A quantidade deve ser um número.")
-                        var_vl_quantidade_apoio = 0.00  # Valor padrão se não for um número
+                        # Exibir os campos com os valores preenchidos
+                        var_GID_apoio = var_Novo_GID_Nota_Apoio
+                        var_cd_nota_manutencao_apoio = var_Novo_GID_Nota_Manutencao
 
-                    # Campo de Valor de Custo (preenchido automaticamente com o valor do apoio selecionado)
-                    var_vl_valor_custo_apoio = st.text_input("Valor de Custo (R$)", value=f"{var_vl_valor_custo_apoio:.2f}", disabled=True)
+                        # Campo de Quantidade
+                        var_vl_quantidade_apoio = st.text_input("Quantidade", value=str(var_vl_quantidade_apoio))
+                        if not var_vl_quantidade_apoio.isdigit():
+                            st.warning("A quantidade deve ser um número.")
+                            var_vl_quantidade_apoio = 0.00  # Valor padrão se não for um número
+                    with collayout_apoio2:
+                        # Campo de Valor de Custo (preenchido automaticamente com o valor do apoio selecionado)
+                        var_vl_valor_custo_apoio = st.text_input("Valor de Custo (R$)", value=f"{var_vl_valor_custo_apoio:.2f}", disabled=True)
 
-                    # Campo de Percentual de Custo (preenchido automaticamente com o percentual de custo)
-                    var_vl_percentual_custo_apoio = st.text_input("Percentual de Custo (%)", value=f"{var_vl_percentual_custo_apoio:.2f}", disabled=True)
+                        # Campo de Percentual de Custo (preenchido automaticamente com o percentual de custo)
+                        var_vl_percentual_custo_apoio = st.text_input("Percentual de Custo (%)", value=f"{var_vl_percentual_custo_apoio:.2f}", disabled=True)
 
-                    # Calcular o valor total com base em quantidade e valor de custo
-                    try:
-                        var_vl_quantidade_apoio = float(var_vl_quantidade_apoio)
-                        var_vl_valor_custo_apoio = float(var_vl_valor_custo_apoio)
+                        # Calcular o valor total com base em quantidade e valor de custo
+                        try:
+                            var_vl_quantidade_apoio = float(var_vl_quantidade_apoio)
+                            var_vl_valor_custo_apoio = float(var_vl_valor_custo_apoio)
 
-                        # Cálculo do valor total
-                        var_vl_custo_total_apoio = var_vl_quantidade_apoio * var_vl_valor_custo_apoio
+                            # Cálculo do valor total
+                            var_vl_custo_total_apoio = var_vl_quantidade_apoio * var_vl_valor_custo_apoio
 
-                    except ValueError:
-                        st.warning("Por favor, insira valores válidos para quantidade e valor de custo.")
-                        var_vl_custo_total_apoio = 0.00  # Valor padrão se houver erro
+                        except ValueError:
+                            st.warning("Por favor, insira valores válidos para quantidade e valor de custo.")
+                            var_vl_custo_total_apoio = 0.00  # Valor padrão se houver erro
 
-                    # Exibir o resultado do cálculo
-                    st.text_input("Valor Total (R$)", value=f"{var_vl_custo_total_apoio:.2f}", disabled=True)               
+                        # Exibir o resultado do cálculo
+                        st.text_input("Valor Total (R$)", value=f"{var_vl_custo_total_apoio:.2f}", disabled=True)               
                     
                     submit_button = st.form_submit_button("Salvar Nota Apoio")
                     
