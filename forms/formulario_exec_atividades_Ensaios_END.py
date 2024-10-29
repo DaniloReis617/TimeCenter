@@ -49,7 +49,7 @@ def show_exec_atividades_END_form():
     # Exibir os resultados da consulta
     st.write(f"Tempo de Execução (min): {ensaio_selecionado['Tempo (min)']}")
     st.write(f"Preparação Equipamento (h): {ensaio_selecionado['Preparação Equip. (h)']}")
-    st.write(f"Rec. (Ca): {ensaio_selecionado['Rec. (Ca)']}")
+    st.write(f"Qtde de Recurso: {ensaio_selecionado['Rec. (Ca)']}")
     st.write(f"Preparação Superfície (min): {ensaio_selecionado['Prep. Superf. Tempo (min)']}")
 
     # Campo para inserir a quantidade de Tubos

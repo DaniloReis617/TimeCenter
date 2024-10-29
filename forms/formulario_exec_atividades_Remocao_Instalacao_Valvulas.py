@@ -124,16 +124,9 @@ def show_exec_atividades_Remocao_Instalacao_Valvulas_form():
     
     # Exibir os resultados da consulta
     st.write(f"Duração (hs): {atividade_selecionada['Duracao']}")
-    st.write(f"Qt Rec. (Ca): {atividade_selecionada['QtRec']}")
-    st.write(f"Hh: {atividade_selecionada['Hh']}")
-
-    # Campo para inserir quantidade de M²
-    var_diamentro = st.number_input("Diamentro:", min_value=1)
-
-    # Botões de ação
-    if st.button("Calcular"):
-        resultado = float(var_diamentro) * float(atividade_selecionada['QtRec'].replace(',', '.'))
-        st.success(f"Tempo Estimado: {round(resultado, 2)} horas")
+    st.write(f"Qtde Recursos: {atividade_selecionada['QtRec']}")
+    #st.write(f"Hh: {atividade_selecionada['Hh']}")
+    st.success(f"Tempo Estimado: {round(float(atividade_selecionada['Hh'].replace(',', '.')), 2)} horas")
 
 # Função principal que chama o formulário
 def main():

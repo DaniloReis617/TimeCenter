@@ -33,7 +33,7 @@ def show_servico_pintura_form():
     st.text(f"Ajudantes: {servico_selecionado['Ajudante'] if servico_selecionado['Ajudante'] is not None else 0}")
     
     # Campo para inserir quantidade de M²
-    qtd_m2 = st.number_input("QTD M²:", min_value=1)
+    qtd_m2 = st.number_input("Qtde M²:", min_value=1)
     
     # Calcular Tempo Estimado
     if st.button("Calcular"):

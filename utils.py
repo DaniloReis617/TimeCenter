@@ -132,15 +132,44 @@ def read_data(table_name, filter_condition=''):
     data_df = execute_read_query(query)
     return data_df
 
-def get_vw_nota_manutencao_hh_data():
-    """Lê a tabela VW_NOTA_MANUTENCAO_HH e retorna as colunas específicas."""
+def get_vw_nota_manutencao_hh_data(projeto_gid):
+    """Lê a tabela VW_NOTA_MANUTENCAO_HH e retorna todas colunas."""
     query = """
-        SELECT GID_PROJETO, GID_NOTA_MANUTENCAO, ID_NOTA_MANUTENCAO, TX_NOTA, TX_ORDEM, TX_TAG, TX_FAMILIA_EQUIPAMENTOS, 
-        TX_NOME_SOLICITANTE, TX_DESCRICAO_SERVICO, VL_HH_TOTAL, VL_CUSTO_TOTAL, 
-        TX_ESCOPO_TIPO, TX_SITUACAO FROM Dbo.VW_NOTA_MANUTENCAO_HH
+    SELECT * 
+    FROM Dbo.VW_NOTA_MANUTENCAO_HH
+    WHERE GID_PROJETO = ?
+    ORDER BY ID_NOTA_MANUTENCAO
     """
-    data_df = execute_read_query(query)
-    return data_df
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar as Notas de manutenção: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+
+def get_nota_manutencao_geral(projeto_gid):
+    query = """
+    SELECT * 
+    FROM timecenter.TB_NOTA_MANUTENCAO
+    WHERE CD_PROJETO = ?
+    ORDER BY ID
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar as Notas de manutenção: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
 
 def create_data(table_name, new_data):
     """Insere um novo registro em uma tabela e traz mais informações em caso de erro."""

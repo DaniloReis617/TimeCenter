@@ -6,12 +6,15 @@ from utils import (get_servicos_projeto, get_nota_informativo_projeto, get_nota_
                    get_setor_responsavel_projeto, get_familia_equipamentos_projeto, get_plantas_projeto,
                    get_especialidades_projeto, get_areas_projeto, get_sistemas_operacionais_projeto,
                    get_escopo_origem_projeto, get_escopo_tipo_projeto, get_executantes_projeto, 
-                   get_vw_nota_manutencao_hh_data)
+                   get_vw_nota_manutencao_hh_data, get_nota_manutencao_geral,read_data)
 
+# Função para carregar os dados com base no GID_PROJETO
 @st.cache_data
 def load_project_data(selected_gid):
     """Carrega todos os dados relacionados ao projeto selecionado."""
     return {
+        'visualizar_notas_de_manutencao':get_vw_nota_manutencao_hh_data(selected_gid),
+        'notas_de_manutencao_geral':get_nota_manutencao_geral(selected_gid),
         'servicos': get_servicos_projeto(selected_gid),
         'informativo': get_nota_informativo_projeto(selected_gid),
         'recurso': get_nota_recurso_projeto(selected_gid),
@@ -28,18 +31,6 @@ def load_project_data(selected_gid):
         'escopo_tipo': get_escopo_tipo_projeto(selected_gid),
         'executantes': get_executantes_projeto(selected_gid)
     }
-
-@st.cache_data
-def load_tela_escopo_data(selected_gid):
-    """Carrega os dados específicos da tela de escopo para o projeto selecionado."""
-    df = get_vw_nota_manutencao_hh_data()
-
-    if df is None or df.empty:
-        return pd.DataFrame()  # Retorna um DataFrame vazio
-
-    # Filtra os dados para o GID_PROJETO específico
-    df = df[df['GID_PROJETO'] == selected_gid]
-    return df
 
 def home_screen():
     apply_custom_style_and_header("Tela Home")
@@ -84,22 +75,16 @@ def home_screen():
 
                     # Carregar e armazenar todos os dados do projeto selecionado após a seleção
                     project_data = load_project_data(selected_gid)
-                    progress_bar.progress(50)  # Atualiza a barra para 50%
-
-                    tela_escopo_data = load_tela_escopo_data(selected_gid)
                     progress_bar.progress(100)  # Atualiza a barra para 100%
 
                 # Armazenar os dados no estado da sessão
                 st.session_state['project_data'] = project_data
-                st.session_state['tela_escopo_data'] = tela_escopo_data
                 
-                st.success("Dados do projeto carregados com sucesso!")
+                # Acessar as notas de manutenção diretamente
+                visualizar_notas_df = st.session_state['project_data']['visualizar_notas_de_manutencao']
+                notas_geral_df = st.session_state['project_data']['notas_de_manutencao_geral']
                 
-                # Exibir os nomes dos DataFrames carregados
-                st.subheader("DataFrames carregados:")
-                loaded_dataframes = list(project_data.keys()) + ['tela_escopo_data']
-                st.write(", ".join(loaded_dataframes))  # Exibe os nomes dos DataFrames
-                
+                st.success("Dados do projeto carregados com sucesso!")                
         else:
             st.warning("Este usuário não possui projetos ativos.")
     else:

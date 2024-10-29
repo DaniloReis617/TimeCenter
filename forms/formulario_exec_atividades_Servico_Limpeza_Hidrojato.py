@@ -23,15 +23,15 @@ def show_exec_atividades_Servico_Limpeza_Hidrojato_form():
                                                           (exec_atividades_Servico_Limpeza_Hidrojato['CapBomba'] == CapBomba)].iloc[0]
     
     # Exibir os resultados da consulta
-    st.write(f"Duração (hs): {atividade_selecionada['TempoPorTubo']}")
+    st.write(f"Duração de limpeza por tubos(min): {atividade_selecionada['TempoPorTubo']}")
 
     # Campo para inserir quantidade de M²
-    var_Tempo_Por_Tubo = st.number_input("Qt Rec:", min_value=1)
+    var_Tempo_Por_Tubo = st.number_input("Qtde de Tubos:", min_value=1)
     
     # Calcular Tempo Estimado
     if st.button("Calcular"):
         resultado = float(var_Tempo_Por_Tubo) * float(atividade_selecionada['TempoPorTubo'])
-        st.success(f"Tempo Estimado: {round(resultado, 2)} horas")
+        st.success(f"Tempo Estimado: {round(resultado, 2)} minutos")
 
 # Função principal que chama o formulário
 def main():

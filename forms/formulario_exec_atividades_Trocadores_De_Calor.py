@@ -66,7 +66,7 @@ def show_exec_atividades_Trocadores_De_Calor_form():
     
     # Exibir os resultados da consulta
     st.write(f"Duração (hs): {atividade_selecionada['Duracao']}")
-    st.write(f"Qtde Recurso: {atividade_selecionada['Rec']}")
+    st.write(f"Qtde Recursos: {atividade_selecionada['Rec']}")
     
     # Calcular Tempo Estimado
     if st.button("Calcular Tempo Estimado"):

@@ -4,106 +4,51 @@ import pandas as pd
 import uuid
 from utils import (update_data, read_data,
                    create_data,
-                   convert_to_native_types, 
-                   get_servicos_projeto, 
-                   get_situacao_motivo_projeto, 
-                   get_setor_solicitante_projeto, 
-                   get_setor_responsavel_projeto, 
-                   get_familia_equipamentos_projeto,
-                   get_plantas_projeto,
-                   get_especialidades_projeto,
-                   get_areas_projeto,
-                   get_sistemas_operacionais_projeto,
-                   get_escopo_origem_projeto,
-                   get_escopo_tipo_projeto,
-                   get_executantes_projeto,
-                   get_nota_informativo_projeto,
-                   get_nota_recurso_projeto,
-                   get_nota_apoio_projeto
+                   convert_to_native_types
 )
-
-# Função para carregar os dados com base no GID_PROJETO
-@st.cache_data
-def load_data(selected_gid):
-    df = read_data("timecenter.TB_NOTA_MANUTENCAO")
-
-    if df is None or df.empty:
-        return pd.DataFrame()
-
-    df = df[df['CD_PROJETO'] == selected_gid]
-    df['ID'] = df['ID'].astype(int)
-    df = df.sort_values(by='ID', ascending=False)
-    
-    return df
 
 @st.dialog("Editar Nota", width="large")
 def edit_nota_manutencao():
-    # Verifica se o projeto foi selecionado
-    if 'projeto_info' in st.session_state:
-        projeto_info = st.session_state['projeto_info']
-        selected_gid = projeto_info['GID']
-    else:
-        st.warning("Selecione um projeto na tela inicial.")
-        return
+    # Verifica se o projeto e a nota específica estão selecionados no `session_state`
+    if 'project_data' in st.session_state and 'nota_selecionada' in st.session_state:
+        project_data = st.session_state['project_data']
+        notas_df = project_data['notas_de_manutencao_geral']
+        gid_nota_selecionada = str(st.session_state['nota_selecionada'])
 
-    # Carregar os dados associados ao projeto
-    df = load_data(selected_gid)
+        # Realiza o filtro
+        nota_data = notas_df[notas_df['GID'].astype(str) == gid_nota_selecionada]
 
-    if df.empty:
-        st.warning("Nenhuma nota encontrada para o projeto selecionado.")
-        return
+        # Checa se encontrou a nota selecionada
+        if nota_data.empty:
+            st.warning("Nota selecionada não encontrada.")
+            return
 
-    # Filtrar valores None da coluna TX_NOTA
-    #df = df[df['TX_NOTA'].notna()]
+        # Transformar `nota_data` em uma Series para fácil acesso aos valores
+        nota_data = nota_data.iloc[0]
 
-    # Substituir valores nulos por uma string padrão, como "Nota não definida"
-    df['TX_NOTA'] = df['TX_NOTA'].fillna('Nota não definida')
+        # Inicializar var_Novo_GID_Nota_Manutencao com um valor padrão como None
+        var_Novo_GID_Nota_Manutencao = None
 
-    # Seleção do TX_NOTA
-    st.subheader("Selecione a Nota de Manutenção para Editar")
-    tx_nota_selected = st.multiselect("Nota de Manutenção", options=sorted(df['TX_NOTA']), key="filtertxnota")
-
-    # Carregar os dados da nota selecionada
-    nota_data = df[df['TX_NOTA'].isin(tx_nota_selected)]
-
-    # Inicializar var_Novo_GID_Nota_Manutencao com um valor padrão como None
-    var_Novo_GID_Nota_Manutencao = None
-
-    # Verificar se nota_data não está vazio antes de tentar acessar a coluna GID
-    if not nota_data.empty:
-        # Acessar o primeiro valor de GID
-        gid_value = nota_data.iloc[0]['GID']
+        # Acessar o valor de GID na `Series` nota_data
+        gid_value = nota_data['GID']
 
         # Verificar se o valor de GID é vazio ou ausente
         if pd.isna(gid_value) or gid_value == '':
             var_Novo_GID_Nota_Manutencao = str(uuid.uuid4())  # Gerar um novo GUID
-            st.write(f"Novo GID gerado: {var_Novo_GID_Nota_Manutencao}")
         else:
             var_Novo_GID_Nota_Manutencao = str(gid_value)  # Usar o valor existente do GID
-    else:
-        # Se não houver notas selecionadas, gerar um novo GID
-        var_Novo_GID_Nota_Manutencao = str(uuid.uuid4())
 
-    # Garantir que var_Novo_GID_Nota_Manutencao tenha um valor
-    if var_Novo_GID_Nota_Manutencao is None:
-        var_Novo_GID_Nota_Manutencao = str(uuid.uuid4())  # Garantir que tenha um valor GUID válido
+        # Criar as abas
+        tab1, tab2, tab3, tab4, tab5 = st.tabs([
+            "Editar Notas e Ordens",
+            "Informativo",
+            "Material",
+            "Recurso",
+            "Apoio"
+        ])
 
-
-    # Criar as abas
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "Editar Notas e Ordens",
-        "Informativo",
-        "Material",
-        "Recurso",
-        "Apoio"
-    ])
-
-    # Conteúdo da aba 1
-    with tab1: 
-
-        if not nota_data.empty:
-            nota_data = nota_data.iloc[0]
-            
+        # Conteúdo da aba 1
+        with tab1:
             # Formulário de edição
             with st.form(key="edit_nota_form"):
                 col1, col2 = st.columns(2)
@@ -112,7 +57,7 @@ def edit_nota_manutencao():
                     #cd_projeto = selected_gid
 
                     # Mostrar o ID da nota
-                    txt_GID = var_Novo_GID_Nota_Manutencao
+                    #txt_GID = var_Novo_GID_Nota_Manutencao
 
                     # Mostrar o ID da nota
                     txt_ID = st.text_input("ID da Nota", value=nota_data['ID'], disabled=True)
@@ -151,7 +96,7 @@ def edit_nota_manutencao():
                         dt_hr_alteracao = pd.to_datetime(dt_hr_alteracao_row).date()
 
                     # Serviços
-                    servicos_df = get_servicos_projeto(selected_gid)
+                    servicos_df = project_data['servicos']
                     if servicos_df.empty:
                         st.selectbox("Código do Serviço", options=[])
                         cd_servico = None
@@ -165,7 +110,7 @@ def edit_nota_manutencao():
                         tx_descricao_servico = st.text_area("Descrição do Serviço", nota_data.get('TX_DESCRICAO_SERVICO', ''), height=150)
 
                     # Motivos de Situação
-                    situacao_motivo_df = get_situacao_motivo_projeto(selected_gid)
+                    situacao_motivo_df = project_data['situacao_motivo']
                     if situacao_motivo_df.empty:
                         st.selectbox("Motivo da Situação", options=[])
                         cd_situacao_motivo = None
@@ -180,7 +125,7 @@ def edit_nota_manutencao():
                 st.header("Solicitante e Responsável")
                 col1, col2 = st.columns(2)
                 with col1:
-                    setores_solicitantes_df = get_setor_solicitante_projeto(selected_gid)
+                    setores_solicitantes_df = project_data['setor_solicitante']
                     if setores_solicitantes_df.empty:
                         st.selectbox("Setor Solicitante", options=[])
                         cd_setor_solicitante = None
@@ -193,7 +138,7 @@ def edit_nota_manutencao():
                     tx_nome_solicitante = st.text_input("Nome do Solicitante", nota_data.get('TX_NOME_SOLICITANTE', ''))
 
                 with col2:
-                    setores_responsaveis_df = get_setor_responsavel_projeto(selected_gid)
+                    setores_responsaveis_df = project_data['setor_responsavel']
                     if setores_responsaveis_df.empty:
                         st.selectbox("Setor Responsável", options=[])
                         cd_setor_responsavel = None
@@ -208,7 +153,7 @@ def edit_nota_manutencao():
                 st.header("Detalhes Técnicos")
                 col1, col2 = st.columns(2)
                 with col1:
-                    familias_equipamentos_df = get_familia_equipamentos_projeto(selected_gid)
+                    familias_equipamentos_df = project_data['familia_equipamentos']
                     if familias_equipamentos_df.empty:
                         st.selectbox("Família de Equipamentos", options=[])
                         cd_familia_equipamentos = None
@@ -219,7 +164,7 @@ def edit_nota_manutencao():
                         familia_equipamentos_selecionada = st.selectbox("Família de Equipamentos", options=list(familia_equipamentos_map.keys()), index=list(familia_equipamentos_map.keys()).index(familia_atual) if familia_atual else 0)
                         cd_familia_equipamentos = familia_equipamentos_map[familia_equipamentos_selecionada]
 
-                    plantas_df = get_plantas_projeto(selected_gid)
+                    plantas_df = project_data['plantas']
                     if plantas_df.empty:
                         st.selectbox("Código da Planta", options=[])
                         cd_planta = None
@@ -230,7 +175,7 @@ def edit_nota_manutencao():
                         planta_selecionada = st.selectbox("Código da Planta", options=list(planta_map.keys()), index=list(planta_map.keys()).index(planta_atual) if planta_atual else 0)
                         cd_planta = planta_map[planta_selecionada]
 
-                    especialidades_df = get_especialidades_projeto(selected_gid)
+                    especialidades_df = project_data['especialidades']
                     if especialidades_df.empty:
                         st.selectbox("Código da Especialidade", options=[])
                         cd_especialidade = None
@@ -244,7 +189,7 @@ def edit_nota_manutencao():
                     tx_rec_inspecao = st.text_input("Recomendação de Inspeção", nota_data.get('TX_REC_INSPECAO', ''))
 
                 with col2:
-                    areas_df = get_areas_projeto(selected_gid)
+                    areas_df = project_data['areas']
                     if areas_df.empty:
                         st.selectbox("Código da Área", options=[])
                         cd_area = None
@@ -255,7 +200,7 @@ def edit_nota_manutencao():
                         area_selecionada = st.selectbox("Código da Área", options=list(area_map.keys()), index=list(area_map.keys()).index(area_atual) if area_atual else 0)
                         cd_area = area_map[area_selecionada]
 
-                    sistemas_operacionais_df = get_sistemas_operacionais_projeto(selected_gid)
+                    sistemas_operacionais_df = project_data['sistemas_operacionais']
                     if sistemas_operacionais_df.empty:
                         st.selectbox("Sistema Operacional 1", options=[])
                         cd_sistema_operacional_1 = None
@@ -276,7 +221,7 @@ def edit_nota_manutencao():
                 st.header("Escopo e Situação")
                 col1, col2 = st.columns(2)
                 with col1:
-                    escopo_origem_df = get_escopo_origem_projeto(selected_gid)
+                    escopo_origem_df = project_data['escopo_origem']
                     if escopo_origem_df.empty:
                         st.selectbox("Origem do Escopo", options=[])
                         cd_escopo_origem = None
@@ -287,7 +232,7 @@ def edit_nota_manutencao():
                         escopo_origem_selecionado = st.selectbox("Origem do Escopo", options=list(escopo_origem_map.keys()), index=list(escopo_origem_map.keys()).index(escopo_origem_atual) if escopo_origem_atual else 0)
                         cd_escopo_origem = escopo_origem_map[escopo_origem_selecionado]
 
-                    escopo_tipo_df = get_escopo_tipo_projeto(selected_gid)
+                    escopo_tipo_df = project_data['escopo_tipo']
                     if escopo_tipo_df.empty:
                         st.selectbox("Tipo de Escopo", options=[])
                         cd_escopo_tipo = None
@@ -309,7 +254,7 @@ def edit_nota_manutencao():
                 st.header("Executantes")
                 col1, col2 = st.columns(2)
                 with col1:
-                    executantes_df = get_executantes_projeto(selected_gid)
+                    executantes_df = project_data['executantes']
                     if executantes_df.empty:
                         st.selectbox("Código do Executante 1", options=[])
                         cd_executante_1 = None
@@ -346,7 +291,7 @@ def edit_nota_manutencao():
             if submit_button:
                 updated_data = {
                     #"CD_PROJETO": str(cd_projeto),
-                    "GID":str(txt_GID) if txt_GID else None,
+                    #"GID":str(txt_GID) if txt_GID else None,
                     "ID":str(txt_ID) if txt_ID else None,
                     "DT_NOTA": dt_data.strftime('%Y-%m-%d'),
                     "DT_HR_CADASTRO": dt_hr_cadastro.strftime('%Y-%m-%d %H:%M:%S'),
@@ -392,420 +337,420 @@ def edit_nota_manutencao():
                 except Exception as e:
                     st.error(f"Erro ao atualizar a nota: {e}")
 
-    # Conteúdo das outras abas
-    with tab2:
-        # Criar as abas
-        tabinformativo1, tabinformativo2 = st.tabs([
-            "Lista de Dados Informativos",
-            "Cadastrar Informativo"
-        ])
+        # Conteúdo das outras abas
+        with tab2:
+            # Criar as abas
+            tabinformativo1, tabinformativo2 = st.tabs([
+                "Lista de Dados Informativos",
+                "Cadastrar Informativo"
+            ])
 
-        with tabinformativo1:
-            st.write("LANÇAMENTO DE NOTAS DE MANUTENÇÃO (INFORMATIVO) - ADMINISTRAÇÃO")
-            df_INFORMATIVO = read_data("timecenter.TB_NOTA_MANUTENCAO_INFORMATIVO")
+            with tabinformativo1:
+                st.write("LANÇAMENTO DE NOTAS DE MANUTENÇÃO (INFORMATIVO) - ADMINISTRAÇÃO")
+                df_INFORMATIVO = read_data("timecenter.TB_NOTA_MANUTENCAO_INFORMATIVO")
 
-            if df_INFORMATIVO is None or df_INFORMATIVO.empty:
-                st.warning("Nenhum informativo encontrado para a nota selecionada.")
-                return
+                if df_INFORMATIVO is None or df_INFORMATIVO.empty:
+                    st.warning("Nenhum informativo encontrado para a nota selecionada.")
+                    return
 
-            # Verifique se 'GID' contém mais de um valor
-            if isinstance(nota_data['GID'], pd.Series):
-                # Se 'GID' for uma série (pode conter mais de um valor)
-                df_INFORMATIVO = df_INFORMATIVO[df_INFORMATIVO['CD_NOTA_MANUTENCAO'].isin(nota_data['GID'])]
-            else:
-                # Se 'GID' for um valor único (string ou número)
-                df_INFORMATIVO = df_INFORMATIVO[df_INFORMATIVO['CD_NOTA_MANUTENCAO'] == nota_data['GID']]
+                # Verifique se 'GID' contém mais de um valor
+                if isinstance(nota_data['GID'], pd.Series):
+                    # Se 'GID' for uma série (pode conter mais de um valor)
+                    df_INFORMATIVO = df_INFORMATIVO[df_INFORMATIVO['CD_NOTA_MANUTENCAO'].isin(nota_data['GID'])]
+                else:
+                    # Se 'GID' for um valor único (string ou número)
+                    df_INFORMATIVO = df_INFORMATIVO[df_INFORMATIVO['CD_NOTA_MANUTENCAO'] == nota_data['GID']]
 
-            # Carregar os dados de timecenter.TB_CADASTRO_INFORMATIVO para mapear os códigos
-            df_cadastro_INFORMATIVO = read_data("timecenter.TB_CADASTRO_INFORMATIVO")
+                # Carregar os dados de timecenter.TB_CADASTRO_INFORMATIVO para mapear os códigos
+                df_cadastro_INFORMATIVO = read_data("timecenter.TB_CADASTRO_INFORMATIVO")
 
-            if df_cadastro_INFORMATIVO is not None and not df_cadastro_INFORMATIVO.empty:
-                # Fazer a junção com base no campo CD_DESPESA
-                df_INFORMATIVO = pd.merge(df_INFORMATIVO, df_cadastro_INFORMATIVO[['GID', 'TX_DESCRICAO']], 
-                                        left_on='CD_INFORMATIVO', right_on='GID', how='left')
-                
-                # Substituir a coluna CD_DESPESA por TX_DESCRICAO
-                df_INFORMATIVO['CD_INFORMATIVO'] = df_INFORMATIVO['TX_DESCRICAO']
-
-            # Renomear as colunas
-            df_INFORMATIVO = df_INFORMATIVO.rename(columns={
-                'TX_DESCRICAO': 'Descrição'
-            })
-
-            # Exibir o DataFrame formatado
-            st.dataframe(df_INFORMATIVO[['Descrição']], use_container_width=True, hide_index=True)
-
-        with tabinformativo2:
-            st.write("FORMULÁRIO DE CADASTRO DE NOTAS DE MANUTENÇÃO (INFORMATIVO) - ADMINISTRAÇÃO")
-            var_Novo_GID_Nota_Informativo = str(uuid.uuid4())
-            with st.form(key="new_nota_informativo"):
-                nota_informativo_df = get_nota_informativo_projeto(selected_gid)
-                nota_informativo_map = dict(zip(nota_informativo_df['TX_DESCRICAO'], nota_informativo_df['GID'])) if not nota_informativo_df.empty else {}
-                nota_informativo_selecionado = st.selectbox("Descrição", options=list(nota_informativo_map.keys()) or [''])
-                cd_nota_informativo = nota_informativo_map.get(nota_informativo_selecionado, None)
-                cd_GID_informativo = var_Novo_GID_Nota_Informativo
-                cd_nota_manutencao_informativo = var_Novo_GID_Nota_Manutencao
-                
-                submit_button = st.form_submit_button("Salvar Nota Informativo")
-                
-                if submit_button:
-                    nova_nota_informativo = {
-                        'CD_INFORMATIVO': cd_nota_informativo,
-                        'GID': cd_GID_informativo,
-                        'CD_NOTA_MANUTENCAO': cd_nota_manutencao_informativo,
-
-                    }
-                    with st.spinner("Salvando informações, por favor aguarde..."):
-                        create_data('timecenter.TB_NOTA_MANUTENCAO_INFORMATIVO', nova_nota_informativo)
-                        st.success("Nova Nota de Informativo cadastrada com sucesso!")
-
-    with tab3:
-        # Criar as abas
-        tabmaterial1, tabmaterial2 = st.tabs([
-            "Lista de Dados Materiais",
-            "Cadastrar Material"
-        ])
-
-        with tabmaterial1:
-            st.write("LANÇAMENTO DE NOTAS DE MANUTENÇÃO (MATERIAL) - MANUTENÇÃO")
-            df_MATERIAL = read_data("timecenter.TB_NOTA_MANUTENCAO_MATERIAL")
-
-            if df_MATERIAL is None or df_MATERIAL.empty:
-                st.warning("Nenhum MATERIAL encontrado para a nota selecionada.")
-                return
-
-            # Verifique se 'GID' contém mais de um valor
-            if isinstance(nota_data['GID'], pd.Series):
-                # Se 'GID' for uma série (pode conter mais de um valor)
-                df_MATERIAL = df_MATERIAL[df_MATERIAL['CD_NOTA_MANUTENCAO'].isin(nota_data['GID'])]
-            else:
-                # Se 'GID' for um valor único (string ou número)
-                df_MATERIAL = df_MATERIAL[df_MATERIAL['CD_NOTA_MANUTENCAO'] == nota_data['GID']]
-
-            # Renomear as colunas
-            df_MATERIAL = df_MATERIAL.rename(columns={
-                'TX_IDENTIFICADOR': 'ID',
-                'TX_DESCRICAO': 'Descrição',
-                'VL_QUANTIDADE': 'Quantidade',
-                'VL_CUSTO_TOTAL': 'Custo Total',
-                'TX_NUMERO_RC': 'Número RC',
-                'DT_PEDIDO':'Data Pedido',
-                'TX_NUMERO_PEDIDO':'Número Pedido'
-            })
-
-            # Formatar a coluna Data (DT_LANCAMENTO) para o formato dd/mm/aaaa
-            df_MATERIAL['Data Pedido'] = pd.to_datetime(df_MATERIAL['Data Pedido'], errors='coerce').dt.strftime('%d/%m/%Y')
-
-            # Exibir o DataFrame formatado
-            st.dataframe(df_MATERIAL[['ID', 'Descrição', 'Quantidade', 'Custo Total', 'Número RC', 'Data Pedido', 'Número Pedido']], 
-                        use_container_width=True, hide_index=True)
-            
-        with tabmaterial2:
-            st.write("FORMULÁRIO DE CADASTRO DE NOTAS DE MANUTENÇÃO (MATERIAL) - MANUTENÇÃO")
-            var_Novo_GID_Nota_Material = str(uuid.uuid4())
-            with st.form(key="new_nota_material"):
-                var_cd_gid_material = var_Novo_GID_Nota_Material
-                var_TX_IDENTIFICADOR_material = st.text_input("Identificador")
-                var_CD_NOTA_MANUTENCAO_material = var_Novo_GID_Nota_Manutencao
-                var_TX_DESCRICAO_material = st.text_input("Descrição")
-                var_VL_QUANTIDADE_material = st.text_input("Quantidade")
-                if not var_VL_QUANTIDADE_material.isdigit():
-                    st.warning("A quantidade deve ser um número.")
-                var_VL_CUSTO_TOTAL_material = st.text_input("Custo Total")
-                if not var_VL_CUSTO_TOTAL_material.isdigit():
-                    st.warning("O custo total deve ser um número.")
-                var_TX_NUMERO_RC_material = st.text_input("Número da RC")
-                var_DT_PEDIDO_material = st.date_input("Data do Pedido", value=pd.to_datetime('today').date())
-                var_TX_NUMERO_PEDIDO_material = st.text_input("Número do Pedido")
-                
-                submit_button = st.form_submit_button("Salvar Nota material")
-                
-                if submit_button:
-                    nova_nota_material = {
-                        'GID': var_cd_gid_material,
-                        'TX_IDENTIFICADOR': var_TX_IDENTIFICADOR_material,
-                        'CD_NOTA_MANUTENCAO': var_CD_NOTA_MANUTENCAO_material,
-                        'TX_DESCRICAO': var_TX_DESCRICAO_material,
-                        'VL_QUANTIDADE': var_VL_QUANTIDADE_material,
-                        'VL_CUSTO_TOTAL': var_VL_CUSTO_TOTAL_material,
-                        'TX_NUMERO_RC': var_TX_NUMERO_RC_material,
-                        'DT_PEDIDO': var_DT_PEDIDO_material,
-                        'TX_NUMERO_PEDIDO': var_TX_NUMERO_PEDIDO_material               
-
-                    }
-                    with st.spinner("Salvando informações, por favor aguarde..."):
-                        create_data('timecenter.TB_NOTA_MANUTENCAO_material', nova_nota_material)
-                        st.success("Nova Nota de material cadastrada com sucesso!")
-
-    with tab4:
-        # Criar as abas
-        tabrecurso1, tabrecurso2 = st.tabs([
-            "Lista de Dados Recursos",
-            "Cadastrar Recursos"
-        ])
-
-        with tabrecurso1:
-            st.write("LANÇAMENTO DE NOTAS DE MANUTENÇÃO (RECURSO) - ADMINISTRAÇÃO")
-            df_RECURSO = read_data("timecenter.TB_NOTA_MANUTENCAO_RECURSO")
-
-            if df_RECURSO is None or df_RECURSO.empty:
-                st.warning("Nenhum RECURSO encontrado para a nota selecionada.")
-                return
-
-            # Verifique se 'GID' contém mais de um valor
-            if isinstance(nota_data['GID'], pd.Series):
-                # Se 'GID' for uma série (pode conter mais de um valor)
-                df_RECURSO = df_RECURSO[df_RECURSO['CD_NOTA_MANUTENCAO'].isin(nota_data['GID'])]
-            else:
-                # Se 'GID' for um valor único (string ou número)
-                df_RECURSO = df_RECURSO[df_RECURSO['CD_NOTA_MANUTENCAO'] == nota_data['GID']]
-
-            # Carregar os dados de timecenter.TB_CADASTRO_RECURSO para mapear os códigos
-            df_CADASTRO_RECURSO = read_data("timecenter.TB_CADASTRO_RECURSO")
-
-            if df_CADASTRO_RECURSO is not None and not df_CADASTRO_RECURSO.empty:
-                # Fazer a junção com base no campo CD_DESPESA
-                df_RECURSO = pd.merge(df_RECURSO, df_CADASTRO_RECURSO[['GID', 'TX_DESCRICAO']], 
-                                        left_on='CD_RECURSO', right_on='GID', how='left')
-                
-                # Substituir a coluna CD_DESPESA por TX_DESCRICAO
-                df_RECURSO['CD_RECURSO'] = df_RECURSO['TX_DESCRICAO']
-
-                    # Adicionar a nova coluna 'HH' como o produto de 'VL_QUANTIDADE' e 'VL_DURACAO'
-            df_RECURSO['HH'] = df_RECURSO['VL_QUANTIDADE'] * df_RECURSO['VL_DURACAO']
-            
-            # Formatar a coluna 'HH' no formato brasileiro #.###0,00
-            df_RECURSO['HH'] = df_RECURSO['HH'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-            # Formatar a coluna 'HH' no formato brasileiro #.###0,00
-            df_RECURSO['VL_QUANTIDADE'] = df_RECURSO['VL_QUANTIDADE'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-            df_RECURSO['VL_DURACAO'] = df_RECURSO['VL_DURACAO'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-            df_RECURSO['VL_VALOR_CUSTO'] = df_RECURSO['VL_VALOR_CUSTO'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-            df_RECURSO['VL_CUSTO_TOTAL'] = df_RECURSO['VL_CUSTO_TOTAL'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-
-            # Renomear as colunas
-            df_RECURSO = df_RECURSO.rename(columns={
-                'TX_DESCRICAO': 'Descrição',
-                'VL_QUANTIDADE': 'Quantidade',
-                'VL_DURACAO': 'Duração',
-                'VL_VALOR_CUSTO': 'Custo (R$)',
-                'VL_CUSTO_TOTAL': 'Custo Total'
-            })
-
-            # Exibir o DataFrame formatado
-            st.dataframe(df_RECURSO[['Descrição', 'Quantidade', 'Duração', 'HH', 'Custo (R$)', 'Custo Total']], 
-                        use_container_width=True, hide_index=True)
-            
-        with tabrecurso2:
-            st.write("FORMULÁRIO DE CADASTRO DE NOTAS DE MANUTENÇÃO (RECURSO) - ADMINISTRAÇÃO")
-            var_Novo_GID_Nota_Recurso = str(uuid.uuid4())
-            with st.form(key="new_nota_recurso"):
-                # Função para carregar os dados dos recursos do projeto
-                nota_recurso_df = get_nota_recurso_projeto(selected_gid)
-                nota_recurso_map = dict(zip(nota_recurso_df['TX_DESCRICAO'], nota_recurso_df['GID'])) if not nota_recurso_df.empty else {}
-                # Selecionar o código do recurso
-                nota_recurso_selecionado = st.selectbox("Cód. Recurso", options=list(nota_recurso_map.keys()) or [''])
-                var_cd_nota_recurso = nota_recurso_map.get(nota_recurso_selecionado, None)
-                # Inicializar valores padrão
-                var_vl_valor_custo_recurso = 0.0
-                var_vl_quantidade_recurso = 0.0
-                var_vl_duracao_recurso = 0.0
-                var_vl_custo_total_recurso = 0.0
-
-                # Carregar o valor do recurso selecionado
-                if nota_recurso_selecionado:
-                    # Acessar os dados do recurso selecionado
-                    recurso_selecionado_data = nota_recurso_df[nota_recurso_df['TX_DESCRICAO'] == nota_recurso_selecionado]
+                if df_cadastro_INFORMATIVO is not None and not df_cadastro_INFORMATIVO.empty:
+                    # Fazer a junção com base no campo CD_DESPESA
+                    df_INFORMATIVO = pd.merge(df_INFORMATIVO, df_cadastro_INFORMATIVO[['GID', 'TX_DESCRICAO']], 
+                                            left_on='CD_INFORMATIVO', right_on='GID', how='left')
                     
-                    # Se o recurso foi encontrado, carregar o valor de custo
-                    if not recurso_selecionado_data.empty:
-                        var_vl_valor_custo_recurso = recurso_selecionado_data.iloc[0]['VL_VALOR_CUSTO']
+                    # Substituir a coluna CD_DESPESA por TX_DESCRICAO
+                    df_INFORMATIVO['CD_INFORMATIVO'] = df_INFORMATIVO['TX_DESCRICAO']
 
-                # Exibir os campos com os valores calculados
-                var_GID_recurso = var_Novo_GID_Nota_Recurso
-                var_cd_nota_manutencao_recurso = var_Novo_GID_Nota_Manutencao
+                # Renomear as colunas
+                df_INFORMATIVO = df_INFORMATIVO.rename(columns={
+                    'TX_DESCRICAO': 'Descrição'
+                })
 
-                # Campo de Quantidade
-                var_vl_quantidade_recurso = st.text_input("Quantidade", value=str(var_vl_quantidade_recurso))
-                if not var_vl_quantidade_recurso.isdigit():
-                    st.warning("A quantidade deve ser um número.")
-                    var_vl_quantidade_recurso = 0.0  # Valor padrão se não for um número
+                # Exibir o DataFrame formatado
+                st.dataframe(df_INFORMATIVO[['Descrição']], use_container_width=True, hide_index=True)
 
-                # Campo de Duração (horas)
-                var_vl_duracao_recurso = st.text_input("Duração (h)", value=str(var_vl_duracao_recurso))
-                if not var_vl_duracao_recurso.isdigit():
-                    st.warning("A duração deve ser um número.")
-                    var_vl_duracao_recurso = 0.0  # Valor padrão se não for um número
-
-                # Campo de Valor de Custo (preenchido automaticamente com o valor do recurso selecionado)
-                var_vl_valor_custo_recurso = st.text_input("Valor de Custo (R$)", value=str(var_vl_valor_custo_recurso))
-
-                # Calcular o valor total com base em quantidade, duração e valor de custo
-                try:
-                    var_vl_quantidade_recurso = float(var_vl_quantidade_recurso)
-                    var_vl_duracao_recurso = float(var_vl_duracao_recurso)
-                    var_vl_valor_custo_recurso = float(var_vl_valor_custo_recurso)
-
-                    # Cálculo do valor total
-                    var_vl_custo_total_recurso = var_vl_quantidade_recurso * var_vl_duracao_recurso * var_vl_valor_custo_recurso
-
-                except ValueError:
-                    st.warning("Por favor, insira valores válidos para quantidade, duração e valor de custo.")
-                    var_vl_custo_total_recurso = 0.0  # Valor padrão se houver erro
-
-                # Exibir o resultado do cálculo
-                st.text_input("Valor Total (R$)", value=f"{var_vl_custo_total_recurso:.2f}", disabled=True)                
-                
-                submit_button = st.form_submit_button("Salvar Nota Recurso")
-                
-                if submit_button:
-                    nova_nota_recurso = {
-                        'GID': var_GID_recurso,
-                        'CD_NOTA_MANUTENCAO': var_cd_nota_manutencao_recurso,
-                        'CD_RECURSO': var_cd_nota_recurso,
-                        'VL_QUANTIDADE': var_vl_quantidade_recurso,
-                        'VL_DURACAO': var_vl_duracao_recurso,
-                        'VL_VALOR_CUSTO': var_vl_valor_custo_recurso,
-                        'VL_CUSTO_TOTAL': var_vl_custo_total_recurso
-
-                    }
-                    with st.spinner("Salvando informações, por favor aguarde..."):
-                        create_data('timecenter.TB_NOTA_MANUTENCAO_RECURSO', nova_nota_recurso)
-                        st.success("Nova nota de recurso cadastrada com sucesso!")
-    
-    with tab5:
-        # Criar as abas
-        tabapoio1, tabapoio2 = st.tabs([
-            "Lista de Dados Apoio",
-            "Cadastrar Apoio"
-        ])
-
-        with tabapoio1:
-            st.write("LANÇAMENTO DE NOTAS DE MANUTENÇÃO (APOIO) - ADMINISTRAÇÃO")
-            df_APOIO = read_data("timecenter.TB_NOTA_MANUTENCAO_APOIO")
-
-            if df_APOIO is None or df_APOIO.empty:
-                st.warning("Nenhum APOIO encontrado para a nota selecionada.")
-                return
-
-            # Verifique se 'GID' contém mais de um valor
-            if isinstance(nota_data['GID'], pd.Series):
-                # Se 'GID' for uma série (pode conter mais de um valor)
-                df_APOIO = df_APOIO[df_APOIO['CD_NOTA_MANUTENCAO'].isin(nota_data['GID'])]
-            else:
-                # Se 'GID' for um valor único (string ou número)
-                df_APOIO = df_APOIO[df_APOIO['CD_NOTA_MANUTENCAO'] == nota_data['GID']]
-
-            # Carregar os dados de timecenter.TB_CADASTRO_APOIO para mapear os códigos
-            df_CADASTRO_APOIO = read_data("timecenter.TB_CADASTRO_APOIO")
-
-            if df_CADASTRO_APOIO is not None and not df_CADASTRO_APOIO.empty:
-                # Fazer a junção com base no campo CD_DESPESA
-                df_APOIO = pd.merge(df_APOIO, df_CADASTRO_APOIO[['GID', 'TX_DESCRICAO']], 
-                                        left_on='CD_APOIO', right_on='GID', how='left')
-                
-                # Substituir a coluna CD_DESPESA por TX_DESCRICAO
-                df_APOIO['CD_APOIO'] = df_APOIO['TX_DESCRICAO']
-
-            # Formatar a coluna 'HH' no formato brasileiro #.###0,00
-            df_APOIO['VL_QUANTIDADE'] = df_APOIO['VL_QUANTIDADE'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-            # Formatar a coluna 'VL_PERCENTUAL_CUSTO' no formato percentual
-            df_APOIO['VL_PERCENTUAL_CUSTO'] = df_APOIO['VL_PERCENTUAL_CUSTO'].apply(
-                lambda x: f"{x * 100:,.2f}%".replace(",", "X").replace(".", ",").replace("X", ".")
-            )
-            df_APOIO['VL_VALOR_CUSTO'] = df_APOIO['VL_VALOR_CUSTO'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-            df_APOIO['VL_CUSTO_TOTAL'] = df_APOIO['VL_CUSTO_TOTAL'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-
-            # Renomear as colunas
-            df_APOIO = df_APOIO.rename(columns={
-                'TX_DESCRICAO': 'Descrição',
-                'VL_QUANTIDADE': 'Quantidade',
-                'VL_VALOR_CUSTO': 'Custo (R$)',
-                'VL_PERCENTUAL_CUSTO': 'Custo (%)',
-                'VL_CUSTO_TOTAL': 'Custo Total'
-            })
-
-            # Exibir o DataFrame formatado
-            st.dataframe(df_APOIO[['Descrição', 'Quantidade', 'Custo (R$)', 'Custo (%)', 'Custo Total']], 
-                        use_container_width=True, hide_index=True)
-
-        with tabapoio2:
-            st.write("FORMULÁRIO DE CADASTRO DE NOTAS DE MANUTENÇÃO (APOIO) - ADMINISTRAÇÃO")
-            var_Novo_GID_Nota_Apoio = str(uuid.uuid4())
-            with st.form(key="new_nota_apoio"):
-                # Função para carregar os dados dos apoios do projeto
-                nota_apoio_df = get_nota_apoio_projeto(selected_gid)
-                nota_apoio_map = dict(zip(nota_apoio_df['TX_DESCRICAO'], nota_apoio_df['GID'])) if not nota_apoio_df.empty else {}
-                # Selecionar o código de apoio
-                nota_apoio_selecionado = st.selectbox("Cód. Apoio", options=list(nota_apoio_map.keys()) or [''])
-                var_cd_apoio = nota_apoio_map.get(nota_apoio_selecionado, None)
-
-                # Inicializar variáveis
-                var_vl_valor_custo_apoio = 0.00
-                var_vl_percentual_custo_apoio = 0.00
-                var_vl_quantidade_apoio = 0.00
-                var_vl_custo_total_apoio = 0.00
-
-                # Carregar o valor do apoio selecionado
-                if nota_apoio_selecionado:
-                    # Acessar os dados do apoio selecionado
-                    apoio_selecionado_data = nota_apoio_df[nota_apoio_df['TX_DESCRICAO'] == nota_apoio_selecionado]
+            with tabinformativo2:
+                st.write("FORMULÁRIO DE CADASTRO DE NOTAS DE MANUTENÇÃO (INFORMATIVO) - ADMINISTRAÇÃO")
+                var_Novo_GID_Nota_Informativo = str(uuid.uuid4())
+                with st.form(key="new_nota_informativo"):
+                    nota_informativo_df = project_data['informativo']
+                    nota_informativo_map = dict(zip(nota_informativo_df['TX_DESCRICAO'], nota_informativo_df['GID'])) if not nota_informativo_df.empty else {}
+                    nota_informativo_selecionado = st.selectbox("Descrição", options=list(nota_informativo_map.keys()) or [''])
+                    cd_nota_informativo = nota_informativo_map.get(nota_informativo_selecionado, None)
+                    cd_GID_informativo = var_Novo_GID_Nota_Informativo
+                    cd_nota_manutencao_informativo = var_Novo_GID_Nota_Manutencao
                     
-                    # Se o apoio foi encontrado, carregar o valor de custo e o percentual de custo
-                    if not apoio_selecionado_data.empty:
-                        var_vl_valor_custo_apoio = apoio_selecionado_data.iloc[0]['VL_VALOR_CUSTO']
-                        var_vl_percentual_custo_apoio = apoio_selecionado_data.iloc[0]['VL_PERCENTUAL_CUSTO']
+                    submit_button = st.form_submit_button("Salvar Nota Informativo")
+                    
+                    if submit_button:
+                        nova_nota_informativo = {
+                            'CD_INFORMATIVO': cd_nota_informativo,
+                            'GID': cd_GID_informativo,
+                            'CD_NOTA_MANUTENCAO': cd_nota_manutencao_informativo,
 
-                # Exibir os campos com os valores preenchidos
-                var_GID_apoio = var_Novo_GID_Nota_Apoio
-                var_cd_nota_manutencao_apoio = var_Novo_GID_Nota_Manutencao
+                        }
+                        with st.spinner("Salvando informações, por favor aguarde..."):
+                            create_data('timecenter.TB_NOTA_MANUTENCAO_INFORMATIVO', nova_nota_informativo)
+                            st.success("Nova Nota de Informativo cadastrada com sucesso!")
 
-                # Campo de Quantidade
-                var_vl_quantidade_apoio = st.text_input("Quantidade", value=str(var_vl_quantidade_apoio))
-                if not var_vl_quantidade_apoio.isdigit():
-                    st.warning("A quantidade deve ser um número.")
-                    var_vl_quantidade_apoio = 0.00  # Valor padrão se não for um número
+        with tab3:
+            # Criar as abas
+            tabmaterial1, tabmaterial2 = st.tabs([
+                "Lista de Dados Materiais",
+                "Cadastrar Material"
+            ])
 
-                # Campo de Valor de Custo (preenchido automaticamente com o valor do apoio selecionado)
-                var_vl_valor_custo_apoio = st.text_input("Valor de Custo (R$)", value=f"{var_vl_valor_custo_apoio:.2f}", disabled=True)
+            with tabmaterial1:
+                st.write("LANÇAMENTO DE NOTAS DE MANUTENÇÃO (MATERIAL) - MANUTENÇÃO")
+                df_MATERIAL = read_data("timecenter.TB_NOTA_MANUTENCAO_MATERIAL")
 
-                # Campo de Percentual de Custo (preenchido automaticamente com o percentual de custo)
-                var_vl_percentual_custo_apoio = st.text_input("Percentual de Custo (%)", value=f"{var_vl_percentual_custo_apoio:.2f}", disabled=True)
+                if df_MATERIAL is None or df_MATERIAL.empty:
+                    st.warning("Nenhum MATERIAL encontrado para a nota selecionada.")
+                    return
 
-                # Calcular o valor total com base em quantidade e valor de custo
-                try:
-                    var_vl_quantidade_apoio = float(var_vl_quantidade_apoio)
-                    var_vl_valor_custo_apoio = float(var_vl_valor_custo_apoio)
+                # Verifique se 'GID' contém mais de um valor
+                if isinstance(nota_data['GID'], pd.Series):
+                    # Se 'GID' for uma série (pode conter mais de um valor)
+                    df_MATERIAL = df_MATERIAL[df_MATERIAL['CD_NOTA_MANUTENCAO'].isin(nota_data['GID'])]
+                else:
+                    # Se 'GID' for um valor único (string ou número)
+                    df_MATERIAL = df_MATERIAL[df_MATERIAL['CD_NOTA_MANUTENCAO'] == nota_data['GID']]
 
-                    # Cálculo do valor total
-                    var_vl_custo_total_apoio = var_vl_quantidade_apoio * var_vl_valor_custo_apoio
+                # Renomear as colunas
+                df_MATERIAL = df_MATERIAL.rename(columns={
+                    'TX_IDENTIFICADOR': 'ID',
+                    'TX_DESCRICAO': 'Descrição',
+                    'VL_QUANTIDADE': 'Quantidade',
+                    'VL_CUSTO_TOTAL': 'Custo Total',
+                    'TX_NUMERO_RC': 'Número RC',
+                    'DT_PEDIDO':'Data Pedido',
+                    'TX_NUMERO_PEDIDO':'Número Pedido'
+                })
 
-                except ValueError:
-                    st.warning("Por favor, insira valores válidos para quantidade e valor de custo.")
-                    var_vl_custo_total_apoio = 0.00  # Valor padrão se houver erro
+                # Formatar a coluna Data (DT_LANCAMENTO) para o formato dd/mm/aaaa
+                df_MATERIAL['Data Pedido'] = pd.to_datetime(df_MATERIAL['Data Pedido'], errors='coerce').dt.strftime('%d/%m/%Y')
 
-                # Exibir o resultado do cálculo
-                st.text_input("Valor Total (R$)", value=f"{var_vl_custo_total_apoio:.2f}", disabled=True)               
+                # Exibir o DataFrame formatado
+                st.dataframe(df_MATERIAL[['ID', 'Descrição', 'Quantidade', 'Custo Total', 'Número RC', 'Data Pedido', 'Número Pedido']], 
+                            use_container_width=True, hide_index=True)
                 
-                submit_button = st.form_submit_button("Salvar Nota Apoio")
+            with tabmaterial2:
+                st.write("FORMULÁRIO DE CADASTRO DE NOTAS DE MANUTENÇÃO (MATERIAL) - MANUTENÇÃO")
+                var_Novo_GID_Nota_Material = str(uuid.uuid4())
+                with st.form(key="new_nota_material"):
+                    var_cd_gid_material = var_Novo_GID_Nota_Material
+                    var_TX_IDENTIFICADOR_material = st.text_input("Identificador")
+                    var_CD_NOTA_MANUTENCAO_material = var_Novo_GID_Nota_Manutencao
+                    var_TX_DESCRICAO_material = st.text_input("Descrição")
+                    var_VL_QUANTIDADE_material = st.text_input("Quantidade")
+                    if not var_VL_QUANTIDADE_material.isdigit():
+                        st.warning("A quantidade deve ser um número.")
+                    var_VL_CUSTO_TOTAL_material = st.text_input("Custo Total")
+                    if not var_VL_CUSTO_TOTAL_material.isdigit():
+                        st.warning("O custo total deve ser um número.")
+                    var_TX_NUMERO_RC_material = st.text_input("Número da RC")
+                    var_DT_PEDIDO_material = st.date_input("Data do Pedido", value=pd.to_datetime('today').date())
+                    var_TX_NUMERO_PEDIDO_material = st.text_input("Número do Pedido")
+                    
+                    submit_button = st.form_submit_button("Salvar Nota material")
+                    
+                    if submit_button:
+                        nova_nota_material = {
+                            'GID': var_cd_gid_material,
+                            'TX_IDENTIFICADOR': var_TX_IDENTIFICADOR_material,
+                            'CD_NOTA_MANUTENCAO': var_CD_NOTA_MANUTENCAO_material,
+                            'TX_DESCRICAO': var_TX_DESCRICAO_material,
+                            'VL_QUANTIDADE': var_VL_QUANTIDADE_material,
+                            'VL_CUSTO_TOTAL': var_VL_CUSTO_TOTAL_material,
+                            'TX_NUMERO_RC': var_TX_NUMERO_RC_material,
+                            'DT_PEDIDO': var_DT_PEDIDO_material,
+                            'TX_NUMERO_PEDIDO': var_TX_NUMERO_PEDIDO_material               
+
+                        }
+                        with st.spinner("Salvando informações, por favor aguarde..."):
+                            create_data('timecenter.TB_NOTA_MANUTENCAO_material', nova_nota_material)
+                            st.success("Nova Nota de material cadastrada com sucesso!")
+
+        with tab4:
+            # Criar as abas
+            tabrecurso1, tabrecurso2 = st.tabs([
+                "Lista de Dados Recursos",
+                "Cadastrar Recursos"
+            ])
+
+            with tabrecurso1:
+                st.write("LANÇAMENTO DE NOTAS DE MANUTENÇÃO (RECURSO) - ADMINISTRAÇÃO")
+                df_RECURSO = read_data("timecenter.TB_NOTA_MANUTENCAO_RECURSO")
+
+                if df_RECURSO is None or df_RECURSO.empty:
+                    st.warning("Nenhum RECURSO encontrado para a nota selecionada.")
+                    return
+
+                # Verifique se 'GID' contém mais de um valor
+                if isinstance(nota_data['GID'], pd.Series):
+                    # Se 'GID' for uma série (pode conter mais de um valor)
+                    df_RECURSO = df_RECURSO[df_RECURSO['CD_NOTA_MANUTENCAO'].isin(nota_data['GID'])]
+                else:
+                    # Se 'GID' for um valor único (string ou número)
+                    df_RECURSO = df_RECURSO[df_RECURSO['CD_NOTA_MANUTENCAO'] == nota_data['GID']]
+
+                # Carregar os dados de timecenter.TB_CADASTRO_RECURSO para mapear os códigos
+                df_CADASTRO_RECURSO = read_data("timecenter.TB_CADASTRO_RECURSO")
+
+                if df_CADASTRO_RECURSO is not None and not df_CADASTRO_RECURSO.empty:
+                    # Fazer a junção com base no campo CD_DESPESA
+                    df_RECURSO = pd.merge(df_RECURSO, df_CADASTRO_RECURSO[['GID', 'TX_DESCRICAO']], 
+                                            left_on='CD_RECURSO', right_on='GID', how='left')
+                    
+                    # Substituir a coluna CD_DESPESA por TX_DESCRICAO
+                    df_RECURSO['CD_RECURSO'] = df_RECURSO['TX_DESCRICAO']
+
+                        # Adicionar a nova coluna 'HH' como o produto de 'VL_QUANTIDADE' e 'VL_DURACAO'
+                df_RECURSO['HH'] = df_RECURSO['VL_QUANTIDADE'] * df_RECURSO['VL_DURACAO']
                 
-                if submit_button:
-                    nova_nota_apoio = {
-                        'GID': var_GID_apoio,
-                        'CD_NOTA_MANUTENCAO': var_cd_nota_manutencao_apoio,
-                        'CD_APOIO': var_cd_apoio,
-                        'VL_QUANTIDADE': var_vl_quantidade_apoio,
-                        'VL_VALOR_CUSTO': var_vl_valor_custo_apoio,
-                        'VL_CUSTO_TOTAL': var_vl_custo_total_apoio,
-                        'VL_PERCENTUAL_CUSTO': var_vl_percentual_custo_apoio
+                # Formatar a coluna 'HH' no formato brasileiro #.###0,00
+                df_RECURSO['HH'] = df_RECURSO['HH'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+                # Formatar a coluna 'HH' no formato brasileiro #.###0,00
+                df_RECURSO['VL_QUANTIDADE'] = df_RECURSO['VL_QUANTIDADE'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+                df_RECURSO['VL_DURACAO'] = df_RECURSO['VL_DURACAO'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+                df_RECURSO['VL_VALOR_CUSTO'] = df_RECURSO['VL_VALOR_CUSTO'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+                df_RECURSO['VL_CUSTO_TOTAL'] = df_RECURSO['VL_CUSTO_TOTAL'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
 
-                    }
-                    with st.spinner("Salvando informações, por favor aguarde..."):
-                        create_data('timecenter.TB_NOTA_MANUTENCAO_APOIO', nova_nota_apoio)
-                        st.success("Nova nota de recurso cadastrada com sucesso!")
-    
-# Função principal
-def main():
-    edit_nota_manutencao()
+                # Renomear as colunas
+                df_RECURSO = df_RECURSO.rename(columns={
+                    'TX_DESCRICAO': 'Descrição',
+                    'VL_QUANTIDADE': 'Quantidade',
+                    'VL_DURACAO': 'Duração',
+                    'VL_VALOR_CUSTO': 'Custo (R$)',
+                    'VL_CUSTO_TOTAL': 'Custo Total'
+                })
 
-if __name__ == "__main__":
-    main()
+                # Exibir o DataFrame formatado
+                st.dataframe(df_RECURSO[['Descrição', 'Quantidade', 'Duração', 'HH', 'Custo (R$)', 'Custo Total']], 
+                            use_container_width=True, hide_index=True)
+                
+            with tabrecurso2:
+                st.write("FORMULÁRIO DE CADASTRO DE NOTAS DE MANUTENÇÃO (RECURSO) - ADMINISTRAÇÃO")
+                var_Novo_GID_Nota_Recurso = str(uuid.uuid4())
+                with st.form(key="new_nota_recurso"):
+                    # Função para carregar os dados dos recursos do projeto
+                    nota_recurso_df = project_data['recurso']
+                    nota_recurso_map = dict(zip(nota_recurso_df['TX_DESCRICAO'], nota_recurso_df['GID'])) if not nota_recurso_df.empty else {}
+                    # Selecionar o código do recurso
+                    nota_recurso_selecionado = st.selectbox("Cód. Recurso", options=list(nota_recurso_map.keys()) or [''])
+                    var_cd_nota_recurso = nota_recurso_map.get(nota_recurso_selecionado, None)
+                    # Inicializar valores padrão
+                    var_vl_valor_custo_recurso = 0.0
+                    var_vl_quantidade_recurso = 0.0
+                    var_vl_duracao_recurso = 0.0
+                    var_vl_custo_total_recurso = 0.0
+
+                    # Carregar o valor do recurso selecionado
+                    if nota_recurso_selecionado:
+                        # Acessar os dados do recurso selecionado
+                        recurso_selecionado_data = nota_recurso_df[nota_recurso_df['TX_DESCRICAO'] == nota_recurso_selecionado]
+                        
+                        # Se o recurso foi encontrado, carregar o valor de custo
+                        if not recurso_selecionado_data.empty:
+                            var_vl_valor_custo_recurso = recurso_selecionado_data.iloc[0]['VL_VALOR_CUSTO']
+
+                    # Exibir os campos com os valores calculados
+                    var_GID_recurso = var_Novo_GID_Nota_Recurso
+                    var_cd_nota_manutencao_recurso = var_Novo_GID_Nota_Manutencao
+
+                    # Campo de Quantidade
+                    var_vl_quantidade_recurso = st.text_input("Quantidade", value=str(var_vl_quantidade_recurso))
+                    if not var_vl_quantidade_recurso.isdigit():
+                        st.warning("A quantidade deve ser um número.")
+                        var_vl_quantidade_recurso = 0.0  # Valor padrão se não for um número
+
+                    # Campo de Duração (horas)
+                    var_vl_duracao_recurso = st.text_input("Duração (h)", value=str(var_vl_duracao_recurso))
+                    if not var_vl_duracao_recurso.isdigit():
+                        st.warning("A duração deve ser um número.")
+                        var_vl_duracao_recurso = 0.0  # Valor padrão se não for um número
+
+                    # Campo de Valor de Custo (preenchido automaticamente com o valor do recurso selecionado)
+                    var_vl_valor_custo_recurso = st.text_input("Valor de Custo (R$)", value=str(var_vl_valor_custo_recurso))
+
+                    # Calcular o valor total com base em quantidade, duração e valor de custo
+                    try:
+                        var_vl_quantidade_recurso = float(var_vl_quantidade_recurso)
+                        var_vl_duracao_recurso = float(var_vl_duracao_recurso)
+                        var_vl_valor_custo_recurso = float(var_vl_valor_custo_recurso)
+
+                        # Cálculo do valor total
+                        var_vl_custo_total_recurso = var_vl_quantidade_recurso * var_vl_duracao_recurso * var_vl_valor_custo_recurso
+
+                    except ValueError:
+                        st.warning("Por favor, insira valores válidos para quantidade, duração e valor de custo.")
+                        var_vl_custo_total_recurso = 0.0  # Valor padrão se houver erro
+
+                    # Exibir o resultado do cálculo
+                    st.text_input("Valor Total (R$)", value=f"{var_vl_custo_total_recurso:.2f}", disabled=True)                
+                    
+                    submit_button = st.form_submit_button("Salvar Nota Recurso")
+                    
+                    if submit_button:
+                        nova_nota_recurso = {
+                            'GID': var_GID_recurso,
+                            'CD_NOTA_MANUTENCAO': var_cd_nota_manutencao_recurso,
+                            'CD_RECURSO': var_cd_nota_recurso,
+                            'VL_QUANTIDADE': var_vl_quantidade_recurso,
+                            'VL_DURACAO': var_vl_duracao_recurso,
+                            'VL_VALOR_CUSTO': var_vl_valor_custo_recurso,
+                            'VL_CUSTO_TOTAL': var_vl_custo_total_recurso
+
+                        }
+                        with st.spinner("Salvando informações, por favor aguarde..."):
+                            create_data('timecenter.TB_NOTA_MANUTENCAO_RECURSO', nova_nota_recurso)
+                            st.success("Nova nota de recurso cadastrada com sucesso!")
+        
+        with tab5:
+            # Criar as abas
+            tabapoio1, tabapoio2 = st.tabs([
+                "Lista de Dados Apoio",
+                "Cadastrar Apoio"
+            ])
+
+            with tabapoio1:
+                st.write("LANÇAMENTO DE NOTAS DE MANUTENÇÃO (APOIO) - ADMINISTRAÇÃO")
+                df_APOIO = read_data("timecenter.TB_NOTA_MANUTENCAO_APOIO")
+
+                if df_APOIO is None or df_APOIO.empty:
+                    st.warning("Nenhum APOIO encontrado para a nota selecionada.")
+                    return
+
+                # Verifique se 'GID' contém mais de um valor
+                if isinstance(nota_data['GID'], pd.Series):
+                    # Se 'GID' for uma série (pode conter mais de um valor)
+                    df_APOIO = df_APOIO[df_APOIO['CD_NOTA_MANUTENCAO'].isin(nota_data['GID'])]
+                else:
+                    # Se 'GID' for um valor único (string ou número)
+                    df_APOIO = df_APOIO[df_APOIO['CD_NOTA_MANUTENCAO'] == nota_data['GID']]
+
+                # Carregar os dados de timecenter.TB_CADASTRO_APOIO para mapear os códigos
+                df_CADASTRO_APOIO = read_data("timecenter.TB_CADASTRO_APOIO")
+
+                if df_CADASTRO_APOIO is not None and not df_CADASTRO_APOIO.empty:
+                    # Fazer a junção com base no campo CD_DESPESA
+                    df_APOIO = pd.merge(df_APOIO, df_CADASTRO_APOIO[['GID', 'TX_DESCRICAO']], 
+                                            left_on='CD_APOIO', right_on='GID', how='left')
+                    
+                    # Substituir a coluna CD_DESPESA por TX_DESCRICAO
+                    df_APOIO['CD_APOIO'] = df_APOIO['TX_DESCRICAO']
+
+                # Formatar a coluna 'HH' no formato brasileiro #.###0,00
+                df_APOIO['VL_QUANTIDADE'] = df_APOIO['VL_QUANTIDADE'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+                # Formatar a coluna 'VL_PERCENTUAL_CUSTO' no formato percentual
+                df_APOIO['VL_PERCENTUAL_CUSTO'] = df_APOIO['VL_PERCENTUAL_CUSTO'].apply(
+                    lambda x: f"{x * 100:,.2f}%".replace(",", "X").replace(".", ",").replace("X", ".")
+                )
+                df_APOIO['VL_VALOR_CUSTO'] = df_APOIO['VL_VALOR_CUSTO'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+                df_APOIO['VL_CUSTO_TOTAL'] = df_APOIO['VL_CUSTO_TOTAL'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+
+                # Renomear as colunas
+                df_APOIO = df_APOIO.rename(columns={
+                    'TX_DESCRICAO': 'Descrição',
+                    'VL_QUANTIDADE': 'Quantidade',
+                    'VL_VALOR_CUSTO': 'Custo (R$)',
+                    'VL_PERCENTUAL_CUSTO': 'Custo (%)',
+                    'VL_CUSTO_TOTAL': 'Custo Total'
+                })
+
+                # Exibir o DataFrame formatado
+                st.dataframe(df_APOIO[['Descrição', 'Quantidade', 'Custo (R$)', 'Custo (%)', 'Custo Total']], 
+                            use_container_width=True, hide_index=True)
+
+            with tabapoio2:
+                st.write("FORMULÁRIO DE CADASTRO DE NOTAS DE MANUTENÇÃO (APOIO) - ADMINISTRAÇÃO")
+                var_Novo_GID_Nota_Apoio = str(uuid.uuid4())
+                with st.form(key="new_nota_apoio"):
+                    # Função para carregar os dados dos apoios do projeto
+                    nota_apoio_df = project_data['apoio']
+                    nota_apoio_map = dict(zip(nota_apoio_df['TX_DESCRICAO'], nota_apoio_df['GID'])) if not nota_apoio_df.empty else {}
+                    # Selecionar o código de apoio
+                    nota_apoio_selecionado = st.selectbox("Cód. Apoio", options=list(nota_apoio_map.keys()) or [''])
+                    var_cd_apoio = nota_apoio_map.get(nota_apoio_selecionado, None)
+
+                    # Inicializar variáveis
+                    var_vl_valor_custo_apoio = 0.00
+                    var_vl_percentual_custo_apoio = 0.00
+                    var_vl_quantidade_apoio = 0.00
+                    var_vl_custo_total_apoio = 0.00
+
+                    # Carregar o valor do apoio selecionado
+                    if nota_apoio_selecionado:
+                        # Acessar os dados do apoio selecionado
+                        apoio_selecionado_data = nota_apoio_df[nota_apoio_df['TX_DESCRICAO'] == nota_apoio_selecionado]
+                        
+                        # Se o apoio foi encontrado, carregar o valor de custo e o percentual de custo
+                        if not apoio_selecionado_data.empty:
+                            var_vl_valor_custo_apoio = apoio_selecionado_data.iloc[0]['VL_VALOR_CUSTO']
+                            var_vl_percentual_custo_apoio = apoio_selecionado_data.iloc[0]['VL_PERCENTUAL_CUSTO']
+
+                    # Exibir os campos com os valores preenchidos
+                    var_GID_apoio = var_Novo_GID_Nota_Apoio
+                    var_cd_nota_manutencao_apoio = var_Novo_GID_Nota_Manutencao
+
+                    # Campo de Quantidade
+                    var_vl_quantidade_apoio = st.text_input("Quantidade", value=str(var_vl_quantidade_apoio))
+                    if not var_vl_quantidade_apoio.isdigit():
+                        st.warning("A quantidade deve ser um número.")
+                        var_vl_quantidade_apoio = 0.00  # Valor padrão se não for um número
+
+                    # Campo de Valor de Custo (preenchido automaticamente com o valor do apoio selecionado)
+                    var_vl_valor_custo_apoio = st.text_input("Valor de Custo (R$)", value=f"{var_vl_valor_custo_apoio:.2f}", disabled=True)
+
+                    # Campo de Percentual de Custo (preenchido automaticamente com o percentual de custo)
+                    var_vl_percentual_custo_apoio = st.text_input("Percentual de Custo (%)", value=f"{var_vl_percentual_custo_apoio:.2f}", disabled=True)
+
+                    # Calcular o valor total com base em quantidade e valor de custo
+                    try:
+                        var_vl_quantidade_apoio = float(var_vl_quantidade_apoio)
+                        var_vl_valor_custo_apoio = float(var_vl_valor_custo_apoio)
+
+                        # Cálculo do valor total
+                        var_vl_custo_total_apoio = var_vl_quantidade_apoio * var_vl_valor_custo_apoio
+
+                    except ValueError:
+                        st.warning("Por favor, insira valores válidos para quantidade e valor de custo.")
+                        var_vl_custo_total_apoio = 0.00  # Valor padrão se houver erro
+
+                    # Exibir o resultado do cálculo
+                    st.text_input("Valor Total (R$)", value=f"{var_vl_custo_total_apoio:.2f}", disabled=True)               
+                    
+                    submit_button = st.form_submit_button("Salvar Nota Apoio")
+                    
+                    if submit_button:
+                        nova_nota_apoio = {
+                            'GID': var_GID_apoio,
+                            'CD_NOTA_MANUTENCAO': var_cd_nota_manutencao_apoio,
+                            'CD_APOIO': var_cd_apoio,
+                            'VL_QUANTIDADE': var_vl_quantidade_apoio,
+                            'VL_VALOR_CUSTO': var_vl_valor_custo_apoio,
+                            'VL_CUSTO_TOTAL': var_vl_custo_total_apoio,
+                            'VL_PERCENTUAL_CUSTO': var_vl_percentual_custo_apoio
+
+                        }
+                        with st.spinner("Salvando informações, por favor aguarde..."):
+                            create_data('timecenter.TB_NOTA_MANUTENCAO_APOIO', nova_nota_apoio)
+                            st.success("Nova nota de recurso cadastrada com sucesso!")
+        
+    # Função principal
+    def main():
+        edit_nota_manutencao()
+
+    if __name__ == "__main__":
+        main()

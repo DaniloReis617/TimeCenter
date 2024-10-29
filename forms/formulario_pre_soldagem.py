@@ -453,7 +453,7 @@ def show_pre_soldagem_form():
     st.text(f"Tempo Aço Liga (min): {soldagem_selecionada['SCH 40/40S/10S/5S - Aço Liga (min)']}")
     
     # Campo para inserir quantidade de tubos
-    qtd_tubos = st.number_input("Quantidade de Tubos:", min_value=1)
+    qtd_tubos = st.number_input("Qtde de Tubos:", min_value=1)
     
     # Calcular Tempo Estimado
     if st.button("Calcular"):

@@ -30,11 +30,11 @@ def show_isolamento_termico_form():
                                                 (isolamento_termico['Descrição'] == descricao)].iloc[0]
     
     # Mostrar quantidade de material e quantidade de recursos conforme a seleção
-    st.text(f"Quantidade (ml): {isolamento_selecionado['Quant. (ml)']}")
-    st.text(f"Quantidade de Recursos (Is/Fu): {isolamento_selecionado['Qt Rec. (Is/Fu)']}")
+    st.text(f"Qtde (ml): {isolamento_selecionado['Quant. (ml)']}")
+    st.text(f"Qtde de Recursos (Is/Fu): {isolamento_selecionado['Qt Rec. (Is/Fu)']}")
     
     # Campo para inserir quantidade de material
-    qtd_ml = st.number_input("Quantidade (ml):", min_value=1)
+    qtd_ml = st.number_input("Qtde (ml):", min_value=1)
     
     # Calcular Tempo Estimado
     if st.button("Calcular"):
