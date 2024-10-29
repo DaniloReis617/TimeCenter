@@ -6,15 +6,19 @@ from utils import create_data
 @st.dialog("Cadastro")
 def add_projeto():
     with st.form("form_add_project"):
-        var_Novo_GID = uuid.uuid4()
-        cd_GID = str(var_Novo_GID)
-        nova_descricao = st.text_input("Descrição do Projeto")
-        nova_data_inicio = st.date_input("Data de Início")
-        nova_data_termino = st.date_input("Data de Término")
-        novo_orcamento = st.text_input("Orçamento (R$)", value="0.00")  # Campo de orçamento
-        novo_percentual_contingencia = st.text_input("Contingência (%)", value="0.00")  # Campo de contingência
-        novo_status = st.selectbox("Status do Projeto", ['A', 'I'], format_func=lambda x: 'Ativo' if x == 'A' else 'Inativo')
-        novas_informacoes = st.text_area("Informações Adicionais")
+        collayout_cad_proj1, collayout_cad_proj2 = st.columns(2)
+        with collayout_cad_proj1:
+            var_Novo_GID = uuid.uuid4()
+            cd_GID = str(var_Novo_GID)
+            nova_descricao = st.text_input("Descrição do Projeto")
+            nova_data_inicio = st.date_input("Data de Início")
+            nova_data_termino = st.date_input("Data de Término")
+            novo_orcamento = st.text_input("Orçamento (R$)", value="0.00")  # Campo de orçamento
+            
+        with collayout_cad_proj2:
+            novo_percentual_contingencia = st.text_input("Contingência (%)", value="0.00")  # Campo de contingência
+            novo_status = st.selectbox("Status do Projeto", ['A', 'I'], format_func=lambda x: 'Ativo' if x == 'A' else 'Inativo')
+            novas_informacoes = st.text_area("Informações Adicionais")
         
         submit_button = st.form_submit_button("Adicionar Projeto")
         

@@ -450,20 +450,22 @@ def edit_nota_manutencao():
                 var_Novo_GID_Nota_Material = str(uuid.uuid4())
                 with st.form(key="new_nota_material"):
 
-                    collayout_material1, collayout_material2 = st.columns(2)
+                    collayout_material1, collayout_material2, collayout_material3 = st.columns(3)
                     with collayout_material1:
                         var_cd_gid_material = var_Novo_GID_Nota_Material
                         var_TX_IDENTIFICADOR_material = st.text_input("Identificador")
                         var_CD_NOTA_MANUTENCAO_material = var_Novo_GID_Nota_Manutencao
                         var_TX_DESCRICAO_material = st.text_input("Descrição")
+
+                    with collayout_material2: 
                         var_VL_QUANTIDADE_material = st.text_input("Quantidade")
                         if not var_VL_QUANTIDADE_material.isdigit():
-                            st.warning("A quantidade deve ser um número.")
-                    with collayout_material2:                    
+                            st.warning("A quantidade deve ser um número.")                   
                         var_VL_CUSTO_TOTAL_material = st.text_input("Custo Total")
                         if not var_VL_CUSTO_TOTAL_material.isdigit():
                             st.warning("O custo total deve ser um número.")
                         var_TX_NUMERO_RC_material = st.text_input("Número da RC")
+                    with collayout_material3: 
                         var_DT_PEDIDO_material = st.date_input("Data do Pedido", value=pd.to_datetime('today').date())
                         var_TX_NUMERO_PEDIDO_material = st.text_input("Número do Pedido")
                     
@@ -549,7 +551,7 @@ def edit_nota_manutencao():
                 var_Novo_GID_Nota_Recurso = str(uuid.uuid4())
                 with st.form(key="new_nota_recurso"):
 
-                    collayout_recurso1, collayout_recurso2 = st.columns(2)
+                    collayout_recurso1, collayout_recurso2, collayout_recurso3 = st.columns(3)
                     with collayout_recurso1:
                         # Função para carregar os dados dos recursos do projeto
                         nota_recurso_df = project_data['recurso']
@@ -576,19 +578,20 @@ def edit_nota_manutencao():
                         var_GID_recurso = var_Novo_GID_Nota_Recurso
                         var_cd_nota_manutencao_recurso = var_Novo_GID_Nota_Manutencao
 
+                    with collayout_recurso2:
                         # Campo de Quantidade
                         var_vl_quantidade_recurso = st.text_input("Quantidade", value=str(var_vl_quantidade_recurso))
                         if not var_vl_quantidade_recurso.isdigit():
                             st.warning("A quantidade deve ser um número.")
                             var_vl_quantidade_recurso = 0.0  # Valor padrão se não for um número
 
-                    with collayout_recurso2:
                         # Campo de Duração (horas)
                         var_vl_duracao_recurso = st.text_input("Duração (h)", value=str(var_vl_duracao_recurso))
                         if not var_vl_duracao_recurso.isdigit():
                             st.warning("A duração deve ser um número.")
                             var_vl_duracao_recurso = 0.0  # Valor padrão se não for um número
 
+                    with collayout_recurso3:
                         # Campo de Valor de Custo (preenchido automaticamente com o valor do recurso selecionado)
                         var_vl_valor_custo_recurso = st.text_input("Valor de Custo (R$)", value=str(var_vl_valor_custo_recurso))
 
