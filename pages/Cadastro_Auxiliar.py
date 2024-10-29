@@ -511,8 +511,6 @@ def show_Familia_Equipamentos():
         'ID': 'ID',
         'TX_DESCRICAO': 'Descrição'
     })
-    # Exibir o DataFrame formatado
-    st.subheader("Cadastro de Familia Equipamentos - Administração")
     st.dataframe(df[['ID', 'Descrição']], use_container_width=True, hide_index=True)
 
 def show_INFORMATIVO():
