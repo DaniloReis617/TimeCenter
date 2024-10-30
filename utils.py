@@ -310,8 +310,80 @@ def get_servicos_projeto(projeto_gid):
     else:
         st.error("Não foi possível conectar ao banco de dados.")
         return pd.DataFrame()
-    
+
 def get_nota_informativo_projeto(projeto_gid):
+    query = """
+    SELECT * 
+    FROM timecenter.TB_NOTA_MANUTENCAO_INFORMATIVO
+    WHERE GID = ?
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar os dados de informativo em Notas de manutenção: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+
+def get_nota_material_projeto(projeto_gid):
+    query = """
+    SELECT * 
+    FROM timecenter.TB_NOTA_MANUTENCAO_MATERIAL
+    WHERE GID = ?
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar os dados de material em Notas de manutenção: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+    
+def get_nota_recurso_projeto(projeto_gid):
+    query = """
+    SELECT * 
+    FROM timecenter.TB_NOTA_MANUTENCAO_RECURSO
+    WHERE GID = ?
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar os dados de recurso em Notas de manutenção: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+    
+def get_nota_apoio_projeto(projeto_gid):
+    query = """
+    SELECT * 
+    FROM timecenter.TB_NOTA_MANUTENCAO_APOIO
+    WHERE GID = ?
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar os dados de apoio em Notas de manutenção: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+
+def get_informativo_projeto(projeto_gid):
     query = """
     SELECT GID, TX_DESCRICAO 
     FROM timecenter.TB_CADASTRO_INFORMATIVO 
@@ -330,7 +402,7 @@ def get_nota_informativo_projeto(projeto_gid):
         st.error("Não foi possível conectar ao banco de dados.")
         return pd.DataFrame()
     
-def get_nota_recurso_projeto(projeto_gid):
+def get_recurso_projeto(projeto_gid):
     query = """
     SELECT GID, TX_DESCRICAO, VL_VALOR_CUSTO 
     FROM timecenter.TB_CADASTRO_RECURSO 
@@ -349,7 +421,7 @@ def get_nota_recurso_projeto(projeto_gid):
         st.error("Não foi possível conectar ao banco de dados.")
         return pd.DataFrame()
     
-def get_nota_apoio_projeto(projeto_gid):
+def get_apoio_projeto(projeto_gid):
     query = """
     SELECT GID, TX_DESCRICAO, VL_VALOR_CUSTO, VL_PERCENTUAL_CUSTO  
     FROM timecenter.TB_CADASTRO_APOIO 

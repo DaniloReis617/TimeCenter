@@ -34,16 +34,12 @@ def escopo_screen():
         return
 
     # Criar as abas
-    tabdash, tab1, tab2, tab3, tab4 = st.tabs([
-        "Dashboard",
+    tab1, tab2, tab3, tab4 = st.tabs([
         "Gestão das Notas e Ordens",
         "Desafio do Escopo",
         "Declaração do Escopo",
         "Gestão das Alterações do Escopo"
     ])
-
-    with tabdash:
-        st.write("Conteúdo da aba Dashboard")
 
     # Conteúdo da aba 1
     with tab1: 
@@ -75,7 +71,7 @@ def gestao_notas_ordens_screen(df, projeto_info):
         df['VL_CUSTO_TOTAL'] = df['VL_CUSTO_TOTAL'].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
     else:
         # Se já for numérico, garantir que é float
-        df['VL_CUSTO_TOTAL'] = df['VL_CUSTO_TOTAL'].astype(float)
+        df['VL_CUSTO_TOTAL'] = df['VL_CUSTO_TOTAL'].astype(float) 
 
     # Converter a coluna ID_NOTA_MANUTENCAO para int
     df['ID_NOTA_MANUTENCAO'] = df['ID_NOTA_MANUTENCAO'].astype(int)
@@ -226,6 +222,7 @@ def gestao_notas_ordens_screen(df, projeto_info):
     # Formatar a coluna VALOR TOTAL para exibir com "R$"
     df_display['VALOR TOTAL'] = df_display['VALOR TOTAL'].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
 
+    st.subheader("Top 10 Notas de Manutenção")
     with st.container(border=True):
         # Exibir a tabela com cabeçalhos e botões
         col_id, col_nota, col_ordem, col_tag, col_familia, col_servico, col_hh, col_valor, col_escopo, col_situacao, col_acao = st.columns(

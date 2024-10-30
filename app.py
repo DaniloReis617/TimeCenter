@@ -40,6 +40,7 @@ def get_accessible_pages(user_profile):
     if user_profile in ["Super Usuário", "Administrador"]:
         return {
             "🏠 Home": "home",
+            "📊 Dashboard": "dashboard",
             "👥 Stakeholders": "stakeholders",
             "📋 Escopo": "escopo",
             "💰 Custos": "custos",
@@ -55,6 +56,7 @@ def get_accessible_pages(user_profile):
     elif user_profile == "Gestor":
         return {
             "🏠 Home": "home",
+            "📊 Dashboard": "dashboard",
             "👥 Stakeholders": "stakeholders",
             "📋 Escopo": "escopo",
             "💰 Custos": "custos",
@@ -64,6 +66,7 @@ def get_accessible_pages(user_profile):
     else:  # Visualizador
         return {
             "🏠 Home": "home",
+            "📊 Dashboard": "dashboard",
             "👥 Stakeholders": "stakeholders",
         }
 

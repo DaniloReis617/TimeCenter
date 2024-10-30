@@ -1,12 +1,13 @@
 import streamlit as st
 import pandas as pd
 from utils import apply_custom_style_and_header, get_all_projetos, get_projetos_por_usuario, get_descricao_projetos
-from utils import (get_servicos_projeto, get_nota_informativo_projeto, get_nota_recurso_projeto,
-                   get_nota_apoio_projeto, get_situacao_motivo_projeto, get_setor_solicitante_projeto,
+from utils import (get_servicos_projeto, get_informativo_projeto, get_recurso_projeto,
+                   get_apoio_projeto, get_situacao_motivo_projeto, get_setor_solicitante_projeto,
                    get_setor_responsavel_projeto, get_familia_equipamentos_projeto, get_plantas_projeto,
                    get_especialidades_projeto, get_areas_projeto, get_sistemas_operacionais_projeto,
                    get_escopo_origem_projeto, get_escopo_tipo_projeto, get_executantes_projeto, 
-                   get_vw_nota_manutencao_hh_data, get_nota_manutencao_geral,read_data)
+                   get_vw_nota_manutencao_hh_data, get_nota_manutencao_geral, get_nota_informativo_projeto,
+                   get_nota_material_projeto, get_nota_recurso_projeto, get_nota_apoio_projeto, read_data)
 
 # Função para carregar os dados com base no GID_PROJETO
 @st.cache_data
@@ -15,10 +16,14 @@ def load_project_data(selected_gid):
     return {
         'visualizar_notas_de_manutencao':get_vw_nota_manutencao_hh_data(selected_gid),
         'notas_de_manutencao_geral':get_nota_manutencao_geral(selected_gid),
+        'nota_informativo':get_nota_informativo_projeto(selected_gid),
+        'nota_material':get_nota_material_projeto(selected_gid),
+        'nota_recurso':get_nota_recurso_projeto(selected_gid),
+        'nota_apoio':get_nota_apoio_projeto(selected_gid),
         'servicos': get_servicos_projeto(selected_gid),
-        'informativo': get_nota_informativo_projeto(selected_gid),
-        'recurso': get_nota_recurso_projeto(selected_gid),
-        'apoio': get_nota_apoio_projeto(selected_gid),
+        'informativo': get_informativo_projeto(selected_gid),
+        'recurso': get_recurso_projeto(selected_gid),
+        'apoio': get_apoio_projeto(selected_gid),
         'situacao_motivo': get_situacao_motivo_projeto(selected_gid),
         'setor_solicitante': get_setor_solicitante_projeto(selected_gid),
         'setor_responsavel': get_setor_responsavel_projeto(selected_gid),

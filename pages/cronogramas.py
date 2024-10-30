@@ -100,7 +100,7 @@ def cronogramas_screen():
 
             # Primeira linha de containers (4 colunas)
             with st.container():
-                col1, col2, col3, col4 = st.columns(4)
+                col1, col2, col3 = st.columns(3)
                 
                 # Container 1 (Serviço de Pintura)
                 with col1:
@@ -123,33 +123,27 @@ def cronogramas_screen():
                         st.session_state['show_form_servico_isolamento'] = True
                         st.rerun()  # Atualiza a interface imediatamente
                 
-                # Container 4 (Serviço de Andaime)
-                with col4:
-                    display_image(images["Serviço de Andaime"], "Serviço de Andaime")
-                    st.button("Serviço de Andaime", use_container_width=True)
             
-            # Segunda linha de containers (4 colunas)
+            # Segunda linha de containers (3 colunas)
             with st.container():
-                col5, col6, col7, col8 = st.columns(4)
+                col4, col5, col6 = st.columns(3)
                 
                 # Container 5 (Caldeiraria e Solda)
-                with col5:
+                with col4:
                     display_image(images["Caldeiraria e Solda"], "Caldeiraria e Solda")
                     if st.button("Caldeiraria e Solda", use_container_width=True, key='caldeiraria_solda_btn'):
                             st.session_state['show_form_caldeiraria_solda'] = True
                             st.rerun()  # Atualiza a interface imediatamente
                 
                 # Container 6 (Item em Destaque)
+                with col5:
+                    display_image(images["Serviço de Andaime"], "Serviço de Andaime")
+                    st.button("Serviço de Andaime", use_container_width=True)
+
+                # Container vazio nas colunas 7 e 8 para manter o layout alinhado
                 with col6:
                     display_image(images["Item em Destaque"], "Item em Destaque")
                     st.button("Item em Destaque", use_container_width=True)
-
-                # Container vazio nas colunas 7 e 8 para manter o layout alinhado
-                with col7:
-                    st.empty()
-
-                with col8:
-                    st.empty()
 
         elif st.session_state['show_form']:
             show_servico_pintura_form()
