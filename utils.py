@@ -171,6 +171,100 @@ def get_nota_manutencao_geral(projeto_gid):
         st.error("Não foi possível conectar ao banco de dados.")
         return pd.DataFrame()
 
+def get_nota_manutencao_custo_total(projeto_gid):
+    query = """
+    SELECT * 
+    FROM timecenter.VW_NOTA_MANUTENCAO_TOTAL
+    WHERE GID_PROJETO = ?
+    ORDER BY DT_LANCAMENTO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar as Notas de manutenção: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+    
+def get_projeto_despesa(projeto_gid):
+    query = """
+    SELECT * 
+    FROM timecenter.VW_PROJETO_DESPESA
+    WHERE GID_PROJETO = ?
+    ORDER BY ID
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar as Notas de manutenção: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+    
+def get_projeto_despesa_total(projeto_gid):
+    query = """
+    SELECT * 
+    FROM timecenter.VW_PROJETO_DESPESA_TOTAL
+    WHERE GID_PROJETO = ?
+    ORDER BY DT_LANCAMENTO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar as Notas de manutenção: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+    
+def get_projeto_total(projeto_gid):
+    query = """
+    SELECT * 
+    FROM timecenter.VW_PROJETO_TOTAL
+    WHERE GID_PROJETO = ?
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar as Notas de manutenção: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+    
+def get_projeto_total_data(projeto_gid):
+    query = """
+    SELECT * 
+    FROM timecenter.VW_PROJETO_TOTAL_DATA
+    WHERE GID_PROJETO = ?
+    ORDER BY DT_LANCAMENTO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar as Notas de manutenção: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+
 def create_data(table_name, new_data):
     """Insere um novo registro em uma tabela e traz mais informações em caso de erro."""
     try:
@@ -306,78 +400,6 @@ def get_servicos_projeto(projeto_gid):
             return df
         except Exception as e:
             st.error(f"Erro ao buscar os serviços: {e}")
-            return pd.DataFrame()
-    else:
-        st.error("Não foi possível conectar ao banco de dados.")
-        return pd.DataFrame()
-
-def get_nota_informativo_projeto(projeto_gid):
-    query = """
-    SELECT * 
-    FROM timecenter.TB_NOTA_MANUTENCAO_INFORMATIVO
-    WHERE GID = ?
-    """
-    conn = get_db_connection()
-    if conn:
-        try:
-            df = pd.read_sql(query, conn, params=[projeto_gid])
-            return df
-        except Exception as e:
-            st.error(f"Erro ao buscar os dados de informativo em Notas de manutenção: {e}")
-            return pd.DataFrame()
-    else:
-        st.error("Não foi possível conectar ao banco de dados.")
-        return pd.DataFrame()
-
-def get_nota_material_projeto(projeto_gid):
-    query = """
-    SELECT * 
-    FROM timecenter.TB_NOTA_MANUTENCAO_MATERIAL
-    WHERE GID = ?
-    """
-    conn = get_db_connection()
-    if conn:
-        try:
-            df = pd.read_sql(query, conn, params=[projeto_gid])
-            return df
-        except Exception as e:
-            st.error(f"Erro ao buscar os dados de material em Notas de manutenção: {e}")
-            return pd.DataFrame()
-    else:
-        st.error("Não foi possível conectar ao banco de dados.")
-        return pd.DataFrame()
-    
-def get_nota_recurso_projeto(projeto_gid):
-    query = """
-    SELECT * 
-    FROM timecenter.TB_NOTA_MANUTENCAO_RECURSO
-    WHERE GID = ?
-    """
-    conn = get_db_connection()
-    if conn:
-        try:
-            df = pd.read_sql(query, conn, params=[projeto_gid])
-            return df
-        except Exception as e:
-            st.error(f"Erro ao buscar os dados de recurso em Notas de manutenção: {e}")
-            return pd.DataFrame()
-    else:
-        st.error("Não foi possível conectar ao banco de dados.")
-        return pd.DataFrame()
-    
-def get_nota_apoio_projeto(projeto_gid):
-    query = """
-    SELECT * 
-    FROM timecenter.TB_NOTA_MANUTENCAO_APOIO
-    WHERE GID = ?
-    """
-    conn = get_db_connection()
-    if conn:
-        try:
-            df = pd.read_sql(query, conn, params=[projeto_gid])
-            return df
-        except Exception as e:
-            st.error(f"Erro ao buscar os dados de apoio em Notas de manutenção: {e}")
             return pd.DataFrame()
     else:
         st.error("Não foi possível conectar ao banco de dados.")

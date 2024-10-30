@@ -6,8 +6,10 @@ from utils import (get_servicos_projeto, get_informativo_projeto, get_recurso_pr
                    get_setor_responsavel_projeto, get_familia_equipamentos_projeto, get_plantas_projeto,
                    get_especialidades_projeto, get_areas_projeto, get_sistemas_operacionais_projeto,
                    get_escopo_origem_projeto, get_escopo_tipo_projeto, get_executantes_projeto, 
-                   get_vw_nota_manutencao_hh_data, get_nota_manutencao_geral, get_nota_informativo_projeto,
-                   get_nota_material_projeto, get_nota_recurso_projeto, get_nota_apoio_projeto, read_data)
+                   get_vw_nota_manutencao_hh_data, get_nota_manutencao_geral, 
+                   get_nota_manutencao_custo_total, get_projeto_despesa, 
+                   get_projeto_despesa_total, get_projeto_total, 
+                   get_projeto_total_data,read_data)
 
 # Função para carregar os dados com base no GID_PROJETO
 @st.cache_data
@@ -16,10 +18,11 @@ def load_project_data(selected_gid):
     return {
         'visualizar_notas_de_manutencao':get_vw_nota_manutencao_hh_data(selected_gid),
         'notas_de_manutencao_geral':get_nota_manutencao_geral(selected_gid),
-        'nota_informativo':get_nota_informativo_projeto(selected_gid),
-        'nota_material':get_nota_material_projeto(selected_gid),
-        'nota_recurso':get_nota_recurso_projeto(selected_gid),
-        'nota_apoio':get_nota_apoio_projeto(selected_gid),
+        'projeto_nota_custo_total':get_nota_manutencao_custo_total(selected_gid),
+        'projeto_despesa':get_projeto_despesa(selected_gid),
+        'projeto_despesa_total':get_projeto_despesa_total(selected_gid),
+        'projeto_total':get_projeto_total(selected_gid),
+        'projeto_total_data':get_projeto_total_data(selected_gid),                               
         'servicos': get_servicos_projeto(selected_gid),
         'informativo': get_informativo_projeto(selected_gid),
         'recurso': get_recurso_projeto(selected_gid),
@@ -102,15 +105,16 @@ def home_screen():
 
                     # Carregar e armazenar todos os dados do projeto selecionado após a seleção
                     project_data = load_project_data(selected_gid)
+                    progress_bar.progress(25)  # Atualiza a barra para 25%
+                    # Armazenar os dados no estado da sessão
+                    st.session_state['project_data'] = project_data
+                    progress_bar.progress(50)  # Atualiza a barra para 50%                    
+                    # Acessar as notas de manutenção diretamente
+                    visualizar_notas_df = st.session_state['project_data']['visualizar_notas_de_manutencao']
+                    progress_bar.progress(75)  # Atualiza a barra para 75%                    
+                    notas_geral_df = st.session_state['project_data']['notas_de_manutencao_geral']
                     progress_bar.progress(100)  # Atualiza a barra para 100%
 
-                # Armazenar os dados no estado da sessão
-                st.session_state['project_data'] = project_data
-                
-                # Acessar as notas de manutenção diretamente
-                visualizar_notas_df = st.session_state['project_data']['visualizar_notas_de_manutencao']
-                notas_geral_df = st.session_state['project_data']['notas_de_manutencao_geral']
-                
                 st.success("Dados do projeto carregados com sucesso!")                
         else:
             st.warning("Este usuário não possui projetos ativos.")
