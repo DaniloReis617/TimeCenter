@@ -170,6 +170,25 @@ def get_nota_manutencao_geral(projeto_gid):
     else:
         st.error("Não foi possível conectar ao banco de dados.")
         return pd.DataFrame()
+    
+def get_nota_manutencao_declaracao_escopo(projeto_gid):
+    query = """
+    SELECT * 
+    FROM timecenter.VW_NOTA_MANUTENCAO_DECLARACAO_ESCOPO
+    WHERE ID_PROJETO = ?
+    ORDER BY ID
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn, params=[projeto_gid])
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar as Notas de manutenção: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
 
 def get_nota_manutencao_custo_total(projeto_gid):
     query = """

@@ -9,7 +9,8 @@ from utils import (get_servicos_projeto, get_informativo_projeto, get_recurso_pr
                    get_vw_nota_manutencao_hh_data, get_nota_manutencao_geral, 
                    get_nota_manutencao_custo_total, get_projeto_despesa, 
                    get_projeto_despesa_total, get_projeto_total, 
-                   get_projeto_total_data,read_data)
+                   get_projeto_total_data, get_nota_manutencao_declaracao_escopo, 
+                   read_data)
 
 # Função para carregar os dados com base no GID_PROJETO
 @st.cache_data
@@ -19,6 +20,7 @@ def load_project_data(selected_gid):
         'visualizar_notas_de_manutencao':get_vw_nota_manutencao_hh_data(selected_gid),
         'notas_de_manutencao_geral':get_nota_manutencao_geral(selected_gid),
         'projeto_nota_custo_total':get_nota_manutencao_custo_total(selected_gid),
+        'projeto_nota_declaracao_escopo':get_nota_manutencao_declaracao_escopo(selected_gid),
         'projeto_despesa':get_projeto_despesa(selected_gid),
         'projeto_despesa_total':get_projeto_despesa_total(selected_gid),
         'projeto_total':get_projeto_total(selected_gid),
