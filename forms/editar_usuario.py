@@ -16,7 +16,7 @@ def edit_usuario():
         nivel_atual = nivel_mapping.get(usuario_info['NR_NIVEL'], "Perfil Desconhecido")
         status_atual = status_mapping.get(usuario_info['FL_STATUS'], "Status Desconhecido")
         
-        with st.form(key=f"form_editar_usuario_dialog_{usuario_selecionado}"):
+        with st.form(key=f"form_editar_usuario_dialog_{usuario_selecionado}", enter_to_submit=False):
             login = st.text_input("Login", value=usuario_info['TX_LOGIN'], key="edicao_login_dialog")
             nivel = st.selectbox("Nível de Acesso", ["Visualizador", "Gestor", "Administrador", "Super Usuário"], index=["Visualizador", "Gestor", "Administrador", "Super Usuário"].index(nivel_atual), key="edicao_nivel_dialog")
             status = st.selectbox("Status", ["Ativo", "Inativo"], index=["Ativo", "Inativo"].index(status_atual), key="edicao_status_dialog")

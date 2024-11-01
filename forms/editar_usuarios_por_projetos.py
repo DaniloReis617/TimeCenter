@@ -39,7 +39,7 @@ def editar_projeto_usuario():
         st.error("Não foi possível associar descrições aos projetos do usuário.")
         return
 
-    with st.form(key="form_edicao_projeto"):
+    with st.form(key="form_edicao_projeto", enter_to_submit=False):
 
         # Selecionar o projeto a ser editado
         projeto_selecionado = st.selectbox(

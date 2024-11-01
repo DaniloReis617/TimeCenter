@@ -11,7 +11,7 @@ def edit_projeto():
     if projeto_selecionado:
         projeto_info = projetos_df[projetos_df['TX_DESCRICAO'] == projeto_selecionado].iloc[0]
         
-        with st.form(key=f"form_editar_projeto_dialog_{projeto_selecionado}"):
+        with st.form(key=f"form_editar_projeto_dialog_{projeto_selecionado}", enter_to_submit=False):
             collayout_edit_proj1, collayout_edit_proj2 = st.columns(2)
             with collayout_edit_proj1:
                 edit_descricao = st.text_input("Descrição do Projeto", value=projeto_info['TX_DESCRICAO'])

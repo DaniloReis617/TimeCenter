@@ -24,7 +24,7 @@ def escopo_screen():
     # Verifica se as informações do projeto e os dados carregados estão disponíveis
     if 'projeto_info' in st.session_state and 'project_data' in st.session_state:
         projeto_info = st.session_state['projeto_info']
-        st.markdown(f"### Projeto: {projeto_info['TX_DESCRICAO']}")
+        st.header(f"Projeto: {projeto_info['TX_DESCRICAO']}")
         
         # Obtendo o DataFrame de escopo específico do projeto do session_state
         df = st.session_state['project_data']['visualizar_notas_de_manutencao']
@@ -52,6 +52,31 @@ def escopo_screen():
         st.write("Conteúdo da aba Declaração do Escopo")
     with tab4:
         st.write("Conteúdo da aba Gestão das Alterações do Escopo")
+
+def download_modelo_escopo():
+    """
+    Gera um arquivo Excel vazio com as colunas especificadas para uso como modelo
+    e exibe um botão para download do arquivo.
+    """
+    # Definir as colunas para o modelo
+    colunas_modelo = ["Nota", "Ordem", "Tag", "Tag da Linha", "Data da Nota", "Situação da Nota"]
+
+    # Criar um DataFrame vazio com essas colunas
+    df_modelo = pd.DataFrame(columns=colunas_modelo)
+
+    # Criar um buffer em memória para o arquivo Excel
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+        df_modelo.to_excel(writer, index=False, sheet_name='Modelo_Escopo')
+    buffer.seek(0)
+
+    # Botão para baixar o modelo Excel
+    st.download_button(
+        label="📥 Download de planila modelo de escopo",
+        data=buffer,
+        file_name="modelo_escopo.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 def gestao_notas_ordens_screen(df, projeto_info):
     # Verifica se o DataFrame de escopo está vazio
@@ -86,7 +111,7 @@ def gestao_notas_ordens_screen(df, projeto_info):
     col1, col2, col3 = st.columns([8,1,1])
     with col1:
         # Exibir as métricas com st.metric
-        st.markdown("### Resumo do Projeto")
+        st.header("Resumo do Projeto")
     with col2:  
         if st.button("➕ Cadastrar Nota",key="addNota"):
             cadastrar_nota_manutencao()               
@@ -118,23 +143,23 @@ def gestao_notas_ordens_screen(df, projeto_info):
         
         with col1:
             nota_filter = st.multiselect("ID Nota Manutenção", options=sorted(filter(None, df['ID_NOTA_MANUTENCAO'].unique())))
-        with col2:
             texto_Nota_filter = st.multiselect("Nota", options=sorted(filter(None, df['TX_NOTA'].unique())))
-        with col3:
+        with col2:
             ordem_filter = st.multiselect("Ordem", options=sorted(filter(None, df['TX_ORDEM'].unique())))
-        with col4:
             tag_filter = st.multiselect("Tag", options=sorted(filter(None, df['TX_TAG'].unique())))
-        with col5:
+        with col3:
+            familia_equip_filter = st.multiselect("Familia de Equip.", options=sorted(filter(None, df['TX_FAMILIA_EQUIPAMENTOS'].unique())))
             situacao_filter = st.multiselect("Situação", options=sorted(filter(None, df['TX_SITUACAO'].unique())))
+            
         with col6:
-            # Adiciona o seletor para ordenar por VL_CUSTO_TOTAL
-            custo_total_order = st.radio("Ordem Custo Total", options=["Nenhum", "Maior para Menor", "Menor para Maior"])
+            # Opção de priorizar qual coluna ordenar primeiro
+            prioridade_ordem = st.radio("Prioridade de Ordenação", options=["ID Nota", "Custo Total"])
         with col7:
             # Adiciona o seletor para ordenar por ID_NOTA_MANUTENCAO
             id_nota_order = st.radio("Ordem ID Nota", options=["Nenhum", "Maior para Menor", "Menor para Maior"])
         with col8:
-            # Opção de priorizar qual coluna ordenar primeiro
-            prioridade_ordem = st.radio("Prioridade de Ordenação", options=["ID Nota", "Custo Total"])
+            # Adiciona o seletor para ordenar por VL_CUSTO_TOTAL
+            custo_total_order = st.radio("Ordem Custo Total", options=["Nenhum", "Maior para Menor", "Menor para Maior"])
 
         # Aplicar os filtros
         if nota_filter:
@@ -145,6 +170,8 @@ def gestao_notas_ordens_screen(df, projeto_info):
             df = df[df['TX_ORDEM'].isin(ordem_filter)]
         if tag_filter:
             df = df[df['TX_TAG'].isin(tag_filter)]
+        if familia_equip_filter:
+            df = df[df['TX_FAMILIA_EQUIPAMENTOS'].isin(familia_equip_filter)]
         if situacao_filter:
             df = df[df['TX_SITUACAO'].isin(situacao_filter)]
 
@@ -205,16 +232,13 @@ def gestao_notas_ordens_screen(df, projeto_info):
     df['VALOR TOTAL'] = pd.to_numeric(df['VALOR TOTAL'], errors='coerce').fillna(0.0)
 
 
-    # Filtrar somente as colunas renomeadas
-    df_renomeado = df[['ID', 'NOTA', 'ORDEM', 'TAG', 'FAMILIA DE EQUIP.', 'SERVIÇO', 'HH', 'VALOR TOTAL', 'TIPO ESCOPO', 'SITUAÇÃO']]
-
     # Limitar o número de registros para melhorar o desempenho
     max_rows = 1000
-    if len(df_renomeado) > max_rows:
-        st.warning(f"O conjunto de dados é grande ({len(df_renomeado)} registros). Exibindo os primeiros {max_rows} registros.")
-        df_display = df_renomeado.head(max_rows)
+    if len(df) > max_rows:
+        st.warning(f"O conjunto de dados é grande ({len(df)} registros). Exibindo os primeiros {max_rows} registros.")
+        df_display = df.head(max_rows)
     else:
-        df_display = df_renomeado
+        df_display = df
 
     # Garantir que a coluna ID seja exibida como string, sem formatação extra
     df_display['ID'] = df_display['ID'].astype(str)
@@ -222,7 +246,47 @@ def gestao_notas_ordens_screen(df, projeto_info):
     # Formatar a coluna VALOR TOTAL para exibir com "R$"
     df_display['VALOR TOTAL'] = df_display['VALOR TOTAL'].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
 
-    st.subheader("Top 10 Notas de Manutenção")
+    # Filtrar somente as colunas renomeadas
+    df_col_selecionadas = df_display[['ID', 'NOTA', 'ORDEM', 'TAG', 'FAMILIA DE EQUIP.', 'SERVIÇO', 'HH', 'VALOR TOTAL', 'TIPO ESCOPO', 'SITUAÇÃO']]
+
+
+    col1, col2 = st.columns([9,1])
+    with col1:
+        st.subheader("Top 10 Notas de Manutenção")
+
+    with col2:
+        
+        with st.popover("⚙️ Opções"):
+            # Criar um buffer em memória para o arquivo Excel
+            buffer = io.BytesIO()
+            with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                df_col_selecionadas.to_excel(writer, index=False, sheet_name='Dados')
+                # Ajustar a largura das colunas
+                worksheet = writer.sheets['Dados']
+                for column in worksheet.columns:
+                    max_length = 0
+                    column_letter = column[0].column_letter
+                    for cell in column:
+                        try:
+                            if len(str(cell.value)) > max_length:
+                                max_length = len(str(cell.value))
+                        except:
+                            pass
+                    adjusted_width = (max_length + 2)
+                    worksheet.column_dimensions[column_letter].width = adjusted_width
+            buffer.seek(0)
+
+            st.download_button(
+                label="📥 Baixar dados das notas em excel",
+                data=buffer,
+                file_name='dados_projeto.xlsx',
+                mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            
+            # Chamando a função para exibir o botão de download do modelo
+            download_modelo_escopo()
+
+
     with st.container(border=True):
         # Exibir a tabela com cabeçalhos e botões
         col_id, col_nota, col_ordem, col_tag, col_familia, col_servico, col_hh, col_valor, col_escopo, col_situacao, col_acao = st.columns(
@@ -242,7 +306,7 @@ def gestao_notas_ordens_screen(df, projeto_info):
         col_acao.markdown("**Ações**")
 
         # Exibir cada linha
-        for index, row in df.head(10).iterrows():
+        for index, row in df_display.head(10).iterrows():
             with st.container():
                 col_id, col_nota, col_ordem, col_tag, col_familia, col_servico, col_hh, col_valor, col_escopo, col_situacao, col_acao = st.columns(
                     [0.5, 1, 1, 1, 1.5, 2, 0.5, 1, 1, 1, 1]
@@ -273,7 +337,7 @@ def gestao_notas_ordens_screen(df, projeto_info):
                     if user_details:
                         user_profile = user_details['perfil']
 
-                        if user_profile in ['Super Usuário', 'Administrador']:
+                        if user_profile in ['Super Usuário', 'Administrador', 'Gestor']:
                             with col_btn2:
                                 if st.button("🗑️", key=f"ExcluirNota_{index}"):
                                     delete_data("timecenter.TB_NOTA_MANUTENCAO", "GID", row['GID_NOTA_MANUTENCAO'])

@@ -10,7 +10,7 @@ def add_usuario():
                
     st.subheader("Cadastro de Novo Usuário")
 
-    with st.form(key="form_novo_usuario_cadastro"):
+    with st.form(key="form_novo_usuario_cadastro", clear_on_submit=True, enter_to_submit=False):
         var_Novo_GID = uuid.uuid4()
         cd_GID = str(var_Novo_GID)
         novo_login = st.text_input("Login", key="novo_login_dialog")

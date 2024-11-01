@@ -5,7 +5,7 @@ from utils import create_data
 
 @st.dialog("Cadastro")
 def add_projeto():
-    with st.form("form_add_project"):
+    with st.form("form_add_project", clear_on_submit=True, enter_to_submit=False):
         collayout_cad_proj1, collayout_cad_proj2 = st.columns(2)
         with collayout_cad_proj1:
             var_Novo_GID = uuid.uuid4()

@@ -16,7 +16,7 @@ def add_projeto_usuario():
         return
 
     # Criar o formulário para selecionar usuário e projeto
-    with st.form(key="form_cadastro_projeto"):
+    with st.form(key="form_cadastro_projeto", clear_on_submit=True, enter_to_submit=False):
         st.header("Cadastrar Projeto para Usuário")
 
         # Gerar um novo GUID
