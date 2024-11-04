@@ -56,9 +56,15 @@ def show_exec_atividades_END_form():
     var_qt_tubos = st.number_input("Quantidade de Tubos:", min_value=1)
     
     # Calcular Tempo Estimado
-    if st.button("Calcular Tempo Estimado"):
+    if st.button("Calcular Tempo"):
         tempo_estimado = float(var_qt_tubos) * float(ensaio_selecionado['Tempo (min)'])
-        st.success(f"Tempo Estimado: {round(tempo_estimado, 2)} minutos")
+        
+        # Condição para exibir o tempo em minutos ou horas
+        if tempo_estimado < 60:
+            st.success(f"Tempo: {round(tempo_estimado, 2)} minutos")
+        else:
+            horas = tempo_estimado / 60
+            st.success(f"Tempo: {round(horas, 2)} horas")
 
 # Função principal que chama o formulário
 def main():

@@ -40,7 +40,7 @@ def show_servico_pintura_form():
         # Calcular a produtividade por hora
         produtividade_por_hora = servico_selecionado['m2_dia'] / 8
         tempo_estimado = qtd_m2 / produtividade_por_hora if qtd_m2 > 0 else 0
-        st.success(f"Tempo Estimado: {round(tempo_estimado, 2)} horas")
+        st.success(f"Tempo: {round(tempo_estimado, 2)} horas")
 
     # Botão de reset
     if st.button("Voltar"):

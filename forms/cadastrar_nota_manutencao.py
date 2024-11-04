@@ -277,6 +277,7 @@ def cadastrar_nota_manutencao():
                 with st.spinner("Salvando informações, por favor aguarde..."):
                     create_data('timecenter.TB_NOTA_MANUTENCAO', new_data)
                     st.success("Nota cadastrada com sucesso!")
+                    st.rerun()
                     
             except Exception as e:
                 st.error(f"Erro ao realizar o novo registro na tabela timecenter.TB_NOTA_MANUTENCAO: {e}")

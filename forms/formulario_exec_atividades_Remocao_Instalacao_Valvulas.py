@@ -120,7 +120,7 @@ def show_exec_atividades_Remocao_Instalacao_Valvulas_form():
     #st.write(f"Duração (hs): {atividade_selecionada['Duracao']}")
     st.write(f"Qtde Recursos: {atividade_selecionada['QtRec']}")
     st.write(f"Hh: {atividade_selecionada['Hh']}")
-    st.success(f"Tempo Estimado: {round(float(atividade_selecionada['Duracao'].replace(',', '.')), 2)} horas")
+    st.success(f"Tempo: {round(float(atividade_selecionada['Duracao'].replace(',', '.')), 2)} horas")
 
 # Função principal que chama o formulário
 def main():

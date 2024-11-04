@@ -1696,7 +1696,12 @@ def show_pre_soldagem_form():
     if st.button("Calcular"):
         # Calcular o tempo estimado com base na quantidade de tubos e no tempo de execução
         tempo_estimado = qtd_tubos * soldagem_selecionada["Carbono (min)"]
-        st.success(f"Tempo Estimado: {round(tempo_estimado, 2)} minutos")
+        # Condição para exibir o tempo em minutos ou horas
+        if tempo_estimado < 60:
+            st.success(f"Tempo: {round(tempo_estimado, 2)} minutos")
+        else:
+            horas = tempo_estimado / 60
+            st.success(f"Tempo: {round(horas, 2)} horas")
 
 
 # Função principal que chama o formulário

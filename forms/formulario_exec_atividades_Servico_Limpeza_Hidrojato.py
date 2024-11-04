@@ -31,7 +31,13 @@ def show_exec_atividades_Servico_Limpeza_Hidrojato_form():
     # Calcular Tempo Estimado
     if st.button("Calcular"):
         resultado = float(var_Tempo_Por_Tubo) * float(atividade_selecionada['TempoPorTubo'])
-        st.success(f"Tempo Estimado: {round(resultado, 2)} minutos")
+        
+        # Condição para exibir o tempo em minutos ou horas
+        if resultado < 60:
+            st.success(f"Tempo: {round(resultado, 2)} minutos")
+        else:
+            horas = resultado / 60
+            st.success(f"Tempo: {round(horas, 2)} horas")
 
 # Função principal que chama o formulário
 def main():

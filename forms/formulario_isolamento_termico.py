@@ -34,13 +34,13 @@ def show_isolamento_termico_form():
     st.text(f"Qtde de Recursos (Is/Fu): {isolamento_selecionado['Qt Rec. (Is/Fu)']}")
     
     # Campo para inserir quantidade de material
-    qtd_ml = st.number_input("Qtde (ml):", min_value=1)
+    qtd_ml = st.number_input("Qtde de Recursos (Is/Fu):", min_value=1)
     
     # Calcular Tempo Estimado
     if st.button("Calcular"):
         # Calcular o tempo estimado com base na quantidade e nos recursos
         tempo_estimado = qtd_ml / isolamento_selecionado['Quant. (ml)'] * isolamento_selecionado['Qt Rec. (Is/Fu)']
-        st.success(f"Tempo Estimado: {round(tempo_estimado, 2)} horas")
+        st.success(f"Tempo: {round(tempo_estimado, 2)} horas")
 
     # Botão de reset
     if st.button("Voltar"):

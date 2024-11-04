@@ -303,7 +303,7 @@ def show_edit_nota_form(project_data, nota_data):
             with st.spinner("Salvando informações, por favor aguarde..."):
                 update_data('timecenter.TB_NOTA_MANUTENCAO', 'ID', int(nota_data['ID']), updated_data)
                 st.success("Nota atualizada com sucesso!")
-
+                
         except Exception as e:
             st.error(f"Erro ao atualizar a nota: {e}")
 

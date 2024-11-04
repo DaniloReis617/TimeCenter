@@ -69,9 +69,16 @@ def show_exec_atividades_Trocadores_De_Calor_form():
     st.write(f"Qtde Recursos: {atividade_selecionada['Rec']}")
     
     # Calcular Tempo Estimado
-    if st.button("Calcular Tempo Estimado"):
+    if st.button("Calcular Tempo"):
         resultado = float(atividade_selecionada['Rec']) * float(atividade_selecionada['Duracao'].replace(',', '.'))
-        st.success(f"Tempo Estimado: {round(resultado, 2)} horas")
+        
+        # Condição para exibir o tempo em minutos ou horas
+        if resultado < 60:
+            st.success(f"Tempo: {round(resultado, 2)} minutos")
+        else:
+            horas = resultado / 60
+            st.success(f"Tempo: {round(horas, 2)} horas")
+
 
 # Função principal que chama o formulário
 def main():

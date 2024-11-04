@@ -39,10 +39,10 @@ def show_exec_atividades_boca_visita_form():
                                                         (exec_atividades_boca_visita['Diametro'] == diametro)].iloc[0]
     
     # Exibir os resultados da consulta
-    st.write(f"Duração (hs): {atividade_selecionada['Duracao']}")
     st.write(f"Qtde de Recursos: {atividade_selecionada['QtRec']}")
-    #st.write(f"Hh: {atividade_selecionada['Hh']}")
-    st.success(f"Tempo Estimado: {round(float(atividade_selecionada['Hh'].replace(',', '.')), 2)} horas")
+    st.write(f"Hh: {atividade_selecionada['Hh']}")
+    #st.write(f"Duração (hs): {atividade_selecionada['Duracao']}")
+    st.success(f"Tempo: {round(float(atividade_selecionada['Duracao'].replace(',', '.')), 2)} horas")
 
 # Função principal que chama o formulário
 def main():
