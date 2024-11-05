@@ -34,8 +34,18 @@ def show_exec_atividades_bandejamento_form():
     st.write(f"Qtde de Recursos: {atividade_selecionada['QtRec']}")
     st.write(f"HH: {atividade_selecionada['Hh']}")
     #st.write(f"Duração (hs): {atividade_selecionada['Duracao']}")
+    
+    # Converter a duração para minutos primeiro
+    duracao_minutos = float(atividade_selecionada['Duracao'].replace(',', '.')) * 60  # Converte horas para minutos
+    # Calcular o tempo total em minutos
+    resultado = duracao_minutos
 
-    st.success(f"Tempo: {round(float(atividade_selecionada['Duracao'].replace(',', '.')), 2)} horas")
+    # Condição para exibir o tempo em minutos ou horas
+    if resultado < 60:
+        st.success(f"Duração: {round(resultado, 2)} minutos")
+    else:
+        horas = resultado / 60
+        st.success(f"Duração: {round(horas, 2)} horas")
 
 # Função principal que chama o formulário
 def main():

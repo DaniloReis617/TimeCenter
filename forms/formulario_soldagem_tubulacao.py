@@ -229,10 +229,10 @@ def show_soldagem_tubulacao_form():
         tempo_estimado = qtd_soldagem * soldagem_selecionada['SCH 40 - Carbono (min)']
         # Condição para exibir o tempo em minutos ou horas
         if tempo_estimado < 60:
-            st.success(f"Tempo: {round(tempo_estimado, 2)} minutos")
+            st.success(f"Duração: {round(tempo_estimado, 2)} minutos")
         else:
             horas = tempo_estimado / 60
-            st.success(f"Tempo: {round(horas, 2)} horas")
+            st.success(f"Duração: {round(horas, 2)} horas")
 
 # Função principal que chama o formulário
 def main():

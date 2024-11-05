@@ -24,6 +24,26 @@ def cadastrar_nota_manutencao():
     # Recuperar dados do projeto já carregados em `home`
     project_data = st.session_state.get("project_data", {})
 
+
+    tab1, tab2 = st.tabs([
+        "Cadastrar Nova Notas de Manutenção", "Carregar Notas em Massa"
+    ])
+
+    with tab1:
+        show_cad_nota_form(project_data, selected_gid)
+    with tab2:
+        show_importar_dados_escopo_tab(project_data, selected_gid)
+
+def show_cad_nota_form(project_data, selected_gid):
+    """Exibe o formulário para editar informações principais da nota de manutenção."""
+    # Usar dados de notas já carregados em `st.session_state['notas_data']`
+    df_notas = st.session_state['project_data']['notas_de_manutencao_geral']
+    
+    # Carregar o próximo ID de nota
+    novo_id = 1 if df_notas.empty else df_notas['ID'].max() + 1
+
+    # Recuperar dados do projeto já carregados em `home`
+    project_data = st.session_state.get("project_data", {})
     with st.form(key="new_nota_form", clear_on_submit=True, enter_to_submit=False):
         col1, col2 = st.columns(2)
         with col1:
@@ -277,10 +297,88 @@ def cadastrar_nota_manutencao():
                 with st.spinner("Salvando informações, por favor aguarde..."):
                     create_data('timecenter.TB_NOTA_MANUTENCAO', new_data)
                     st.success("Nota cadastrada com sucesso!")
-                    st.rerun()
                     
             except Exception as e:
                 st.error(f"Erro ao realizar o novo registro na tabela timecenter.TB_NOTA_MANUTENCAO: {e}")
+
+def show_importar_dados_escopo_tab(project_data, selected_gid):
+    """
+    Permite o upload de um arquivo Excel com colunas específicas,
+    exibe uma prévia dos dados e insere as linhas não vazias no banco de dados,
+    preenchendo automaticamente os campos obrigatórios do projeto.
+    """
+    # Define as colunas que devem estar presentes no arquivo Excel
+    colunas_requeridas = ["Nota", "Ordem", "Tag", "Tag da Linha", "Situação da Nota"]
+
+    # Carregar o arquivo Excel
+    uploaded_file = st.file_uploader("Escolha um arquivo Excel para importar dados do escopo", type=["xlsx"])
+
+    if uploaded_file:
+        # Ler o arquivo e verificar as colunas
+        df_upload = pd.read_excel(uploaded_file)
+
+        # Verificar se todas as colunas estão presentes
+        if not all(col in df_upload.columns for col in colunas_requeridas):
+            st.error("O arquivo importado não contém todas as colunas requeridas.")
+            return
+
+        # Filtrar as colunas desejadas e remover linhas vazias
+        df_filtrado = df_upload[colunas_requeridas].dropna(how="all")
+
+        # Exibir uma prévia dos dados importados
+        st.write("Prévia dos dados carregados:")
+        st.dataframe(df_filtrado.head(), use_container_width=True, hide_index=True)
+
+        # Verificar se o DataFrame filtrado está vazio
+        if df_filtrado.empty:
+            st.warning("O arquivo está vazio ou não contém dados válidos para importação.")
+        else:
+            # Obter o próximo ID de nota
+            df_notas = st.session_state['project_data']['notas_de_manutencao_geral']
+            df_notas['TX_NOTA'] = df_notas['TX_NOTA'].astype(str)  # Garantir que TX_NOTA é string
+            novo_id = 1 if df_notas.empty else df_notas['ID'].max() + 1
+
+            # Botão para inserir os dados no banco, apenas se houver dados válidos
+            if st.button("Inserir dados no banco", key="btnsalvarupload"):
+                duplicadas = []  # Lista para armazenar notas duplicadas
+                
+                # Inserir cada linha do DataFrame no banco de dados
+                for _, row in df_filtrado.iterrows():
+                    tx_nota = str(row["Nota"])  # Converter para string
+                    
+                    # Verificar se a nota já existe no banco de dados
+                    if tx_nota in df_notas['TX_NOTA'].values:
+                        duplicadas.append(tx_nota)
+                        continue  # Pula a inserção desta linha e vai para a próxima
+
+                    # Extrair o primeiro caractere da coluna "Situação da Nota"
+                    situacao = row["Situação da Nota"].strip().upper()[:1] if isinstance(row["Situação da Nota"], str) else ""
+                    
+                    # Verificar se o primeiro caractere é "A", "P" ou "R"; caso contrário, deixar em branco
+                    if situacao not in ["A", "P", "R"]:
+                        situacao = ""
+
+                    # Preparar os dados para inserção
+                    data = {
+                        "CD_PROJETO": selected_gid,
+                        "GID": str(uuid.uuid4()),
+                        "ID": novo_id,
+                        "DT_NOTA": pd.to_datetime('today').date(),
+                        "FL_SITUACAO": situacao,  # Usar o valor ajustado
+                        "TX_NOTA": tx_nota,
+                        "TX_ORDEM": row["Ordem"],
+                        "TX_TAG": row["Tag"],
+                        "TX_TAG_LINHA": row["Tag da Linha"]
+                    }
+                    create_data("timecenter.TB_NOTA_MANUTENCAO", data)
+                    novo_id += 1  # Incrementar o ID para cada nova linha inserida
+                
+                # Mensagem de sucesso e aviso sobre notas duplicadas
+                if duplicadas:
+                    st.warning(f"As seguintes notas já existem e não foram inseridas: {', '.join(duplicadas)}")
+                else:
+                    st.success("Dados inseridos com sucesso!")
+
 
 def main():
     cadastrar_nota_manutencao()

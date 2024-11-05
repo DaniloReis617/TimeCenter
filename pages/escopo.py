@@ -59,7 +59,7 @@ def download_modelo_escopo():
     e exibe um botão para download do arquivo.
     """
     # Definir as colunas para o modelo
-    colunas_modelo = ["Nota", "Ordem", "Tag", "Tag da Linha", "Data da Nota", "Situação da Nota"]
+    colunas_modelo = ["Nota", "Ordem", "Tag", "Tag da Linha", "Situação da Nota"]
 
     # Criar um DataFrame vazio com essas colunas
     df_modelo = pd.DataFrame(columns=colunas_modelo)

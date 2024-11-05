@@ -120,7 +120,19 @@ def show_exec_atividades_Remocao_Instalacao_Valvulas_form():
     #st.write(f"Duração (hs): {atividade_selecionada['Duracao']}")
     st.write(f"Qtde Recursos: {atividade_selecionada['QtRec']}")
     st.write(f"Hh: {atividade_selecionada['Hh']}")
-    st.success(f"Tempo: {round(float(atividade_selecionada['Duracao'].replace(',', '.')), 2)} horas")
+    
+    # Converter a duração para minutos primeiro
+    duracao_minutos = float(atividade_selecionada['Duracao'].replace(',', '.')) * 60  # Converte horas para minutos
+    # Calcular o tempo total em minutos
+    resultado = duracao_minutos
+
+    # Condição para exibir o tempo em minutos ou horas
+    if resultado < 60:
+        st.success(f"Duração: {round(resultado, 2)} minutos")
+    else:
+        horas = resultado / 60
+        st.success(f"Duração: {round(horas, 2)} horas")
+
 
 # Função principal que chama o formulário
 def main():

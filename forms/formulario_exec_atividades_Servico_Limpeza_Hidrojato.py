@@ -34,10 +34,10 @@ def show_exec_atividades_Servico_Limpeza_Hidrojato_form():
         
         # Condição para exibir o tempo em minutos ou horas
         if resultado < 60:
-            st.success(f"Tempo: {round(resultado, 2)} minutos")
+            st.success(f"Duração: {round(resultado, 2)} minutos")
         else:
             horas = resultado / 60
-            st.success(f"Tempo: {round(horas, 2)} horas")
+            st.success(f"Duração: {round(horas, 2)} horas")
 
 # Função principal que chama o formulário
 def main():

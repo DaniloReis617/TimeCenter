@@ -40,7 +40,7 @@ def show_isolamento_termico_form():
     if st.button("Calcular"):
         # Calcular o tempo estimado com base na quantidade e nos recursos
         tempo_estimado = qtd_ml / isolamento_selecionado['Quant. (ml)'] * isolamento_selecionado['Qt Rec. (Is/Fu)']
-        st.success(f"Tempo: {round(tempo_estimado, 2)} horas")
+        st.success(f"Duração: {round(tempo_estimado, 2)} horas")
 
     # Botão de reset
     if st.button("Voltar"):

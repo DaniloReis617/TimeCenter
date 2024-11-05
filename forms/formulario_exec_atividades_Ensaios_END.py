@@ -47,24 +47,32 @@ def show_exec_atividades_END_form():
                                              (exec_atividades_END['Tubulação'] == var_tubulacao)].iloc[0]
     
     # Exibir os resultados da consulta
-    st.write(f"Tempo de Execução (min): {ensaio_selecionado['Tempo (min)']}")
+    st.write(f"Preparação Superfície (min): {ensaio_selecionado['Prep. Superf. Tempo (min)']}")
     st.write(f"Preparação Equipamento (h): {ensaio_selecionado['Preparação Equip. (h)']}")
     st.write(f"Qtde de Recurso: {ensaio_selecionado['Rec. (Ca)']}")
-    st.write(f"Preparação Superfície (min): {ensaio_selecionado['Prep. Superf. Tempo (min)']}")
+    st.write(f"Tempo de Execução (min): {ensaio_selecionado['Tempo (min)']}")
 
     # Campo para inserir a quantidade de Tubos
-    var_qt_tubos = st.number_input("Quantidade de Tubos:", min_value=1)
+    #var_qt_tubos = st.number_input("Quantidade de Tubos:", min_value=1)
+
+    # Converter a preparação do equipamento de horas para minutos
+    preparacao_equipamento_min = float(ensaio_selecionado['Preparação Equip. (h)']) * 60
     
-    # Calcular Tempo Estimado
-    if st.button("Calcular Tempo"):
-        tempo_estimado = float(var_qt_tubos) * float(ensaio_selecionado['Tempo (min)'])
-        
-        # Condição para exibir o tempo em minutos ou horas
-        if tempo_estimado < 60:
-            st.success(f"Tempo: {round(tempo_estimado, 2)} minutos")
-        else:
-            horas = tempo_estimado / 60
-            st.success(f"Tempo: {round(horas, 2)} horas")
+    # Somar os tempos de preparação
+    total_preparacao_min = (
+        float(ensaio_selecionado['Prep. Superf. Tempo (min)']) +
+        preparacao_equipamento_min
+    )
+    
+    # Multiplicar pelo tempo de execução considerando a quantidade de tubos
+    tempo_estimado = total_preparacao_min * float(ensaio_selecionado['Tempo (min)'])
+
+    # Condição para exibir o tempo em minutos ou horas
+    if tempo_estimado < 60:
+        st.success(f"Duração: {round(tempo_estimado, 2)} minutos")
+    else:
+        horas = tempo_estimado / 60
+        st.success(f"Duração: {round(horas, 2)} horas")
 
 # Função principal que chama o formulário
 def main():
