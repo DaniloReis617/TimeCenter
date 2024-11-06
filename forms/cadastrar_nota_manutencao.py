@@ -21,10 +21,6 @@ def cadastrar_nota_manutencao():
     # Carregar o próximo ID de nota
     novo_id = 1 if df_notas.empty else df_notas['ID'].max() + 1
 
-    # Recuperar dados do projeto já carregados em `home`
-    project_data = st.session_state.get("project_data", {})
-
-
     tab1, tab2 = st.tabs([
         "Cadastrar Nova Notas de Manutenção", "Carregar Notas em Massa"
     ])
