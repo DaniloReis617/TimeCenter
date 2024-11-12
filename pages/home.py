@@ -10,27 +10,63 @@ from utils import (get_servicos_projeto, get_informativo_projeto, get_recurso_pr
                    get_nota_manutencao_custo_total, get_projeto_despesa, 
                    get_projeto_despesa_total, get_projeto_total, 
                    get_projeto_total_data, get_nota_manutencao_declaracao_escopo, 
-                   read_data, get_dados_projetos, get_vw_nota_manutencao)
+                   read_data, get_dados_projetos, get_vw_nota_manutencao,
+                   get_vw_nota_manutencao_apoio, get_vw_nota_manutencao_informativo,
+                   get_vw_nota_manutencao_material,get_vw_nota_manutencao_recurso)
+
+def merge_with_gids(projeto_gid):
+    # Obter o DataFrame principal com a coluna `GID_PROJETO`
+    df_principal = get_vw_nota_manutencao(projeto_gid)
+    
+    # Verificar se o DataFrame principal está vazio
+    if df_principal.empty:
+        st.warning("Nenhuma nota foi encontrada no DataFrame principal.")
+        return pd.DataFrame()  # Retornar um DataFrame vazio se não houver dados
+    
+    # Obter os demais DataFrames e fazer merge com `df_principal`
+    df_apoio = get_vw_nota_manutencao_apoio().merge(
+        df_principal[['GID_NOTA_MANUTENCAO', 'GID_PROJETO']], 
+        on='GID_NOTA_MANUTENCAO', 
+        how='left'
+    )
+    
+    df_informativo = get_vw_nota_manutencao_informativo().merge(
+        df_principal[['GID_NOTA_MANUTENCAO', 'GID_PROJETO']], 
+        on='GID_NOTA_MANUTENCAO', 
+        how='left'
+    )
+    
+    df_recurso = get_vw_nota_manutencao_recurso().merge(
+        df_principal[['GID_NOTA_MANUTENCAO', 'GID_PROJETO']], 
+        on='GID_NOTA_MANUTENCAO', 
+        how='left'
+    )
+    
+    # Filtrar os DataFrames para manter apenas as linhas com o GID_PROJETO especificado
+    df_apoio = df_apoio[df_apoio['GID_PROJETO'] == projeto_gid]
+    df_informativo = df_informativo[df_informativo['GID_PROJETO'] == projeto_gid]
+    df_recurso = df_recurso[df_recurso['GID_PROJETO'] == projeto_gid]    
+    
+    return df_apoio, df_informativo, df_recurso
+
 
 # Função para carregar os dados com base no GID_PROJETO
 @st.cache_data
 def load_project_data(selected_gid):
     """Carrega todos os dados relacionados ao projeto selecionado."""
-    return {
-        'visualizar_notas_de_manutencao':get_vw_nota_manutencao_hh_data(selected_gid),
-        'notas_de_manutencao_geral':get_nota_manutencao_geral(selected_gid),
-        'projeto_nota_custo_total':get_nota_manutencao_custo_total(selected_gid),
-        'vw_notas_de_manutencao':get_vw_nota_manutencao(selected_gid),        
-        'projeto_nota_declaracao_escopo':get_nota_manutencao_declaracao_escopo(selected_gid),
-        'projeto_despesa':get_projeto_despesa(selected_gid),
-        'projeto_despesa_total':get_projeto_despesa_total(selected_gid),
-        'dados_projetos':get_dados_projetos(selected_gid),
-        'projeto_total':get_projeto_total(selected_gid),
-        'projeto_total_data':get_projeto_total_data(selected_gid),                               
+    # Carrega os dados principais
+    project_data = {
+        'visualizar_notas_de_manutencao': get_vw_nota_manutencao_hh_data(selected_gid),
+        'notas_de_manutencao_geral': get_nota_manutencao_geral(selected_gid),
+        'projeto_nota_custo_total': get_nota_manutencao_custo_total(selected_gid),
+        'vw_notas_de_manutencao': get_vw_nota_manutencao(selected_gid),        
+        'projeto_nota_declaracao_escopo': get_nota_manutencao_declaracao_escopo(selected_gid),
+        'projeto_despesa': get_projeto_despesa(selected_gid),
+        'projeto_despesa_total': get_projeto_despesa_total(selected_gid),
+        'dados_projetos': get_dados_projetos(selected_gid),
+        'projeto_total': get_projeto_total(selected_gid),
+        'projeto_total_data': get_projeto_total_data(selected_gid),                               
         'servicos': get_servicos_projeto(selected_gid),
-        'informativo': get_informativo_projeto(selected_gid),
-        'recurso': get_recurso_projeto(selected_gid),
-        'apoio': get_apoio_projeto(selected_gid),
         'situacao_motivo': get_situacao_motivo_projeto(selected_gid),
         'setor_solicitante': get_setor_solicitante_projeto(selected_gid),
         'setor_responsavel': get_setor_responsavel_projeto(selected_gid),
@@ -43,6 +79,14 @@ def load_project_data(selected_gid):
         'escopo_tipo': get_escopo_tipo_projeto(selected_gid),
         'executantes': get_executantes_projeto(selected_gid)
     }
+    
+    # Realizar o merge para adicionar GID_PROJETO aos DataFrames
+    df_apoio, df_informativo, df_recurso = merge_with_gids(selected_gid)
+    project_data['apoio'] = df_apoio
+    project_data['informativo'] = df_informativo
+    project_data['recurso'] = df_recurso
+    
+    return project_data
 
 def home_screen():
     apply_custom_style_and_header("Tela Home")

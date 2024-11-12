@@ -47,7 +47,7 @@ def escopo_screen():
 
     # Conteúdo das outras abas
     with tab2:
-        st.write("Conteúdo da aba Desafio do Escopo")
+        desafio_escopo_screen(df, projeto_info)
     with tab3:
         st.write("Conteúdo da aba Declaração do Escopo")
     with tab4:
@@ -208,10 +208,18 @@ def gestao_notas_ordens_screen(df, projeto_info):
     custo_total = df['VL_CUSTO_TOTAL'].sum()
 
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Total de Notas", f"{total_notas}")
-    col2.metric("Total de Ordens", f"{total_ordens}")
-    col3.metric("Total de HH", f"{total_hh}")
-    col4.metric("Custo Total", f"R$ {custo_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+    with col1:
+        with st.container(border=True):
+            st.metric("Total de Notas", f"{total_notas}")
+    with col2:
+        with st.container(border=True):
+            st.metric("Total de Ordens", f"{total_ordens}")
+    with col3:
+        with st.container(border=True):
+            st.metric("Total de HH", f"{total_hh}")
+    with col4:
+        with st.container(border=True):
+            st.metric("Custo Total", f"R$ {custo_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
 
     # Renomear as colunas
     df = df.rename(columns={
@@ -342,6 +350,215 @@ def gestao_notas_ordens_screen(df, projeto_info):
                                 if st.button("🗑️", key=f"ExcluirNota_{index}"):
                                     delete_data("timecenter.TB_NOTA_MANUTENCAO", "GID", row['GID_NOTA_MANUTENCAO'])
                                     st.success(f"Item excluído de ID: {row['ID']}")
+                                    
+                                    
+def desafio_escopo_screen(df, projeto_info):
+    # Filtrar as notas que não estão com situação "Pendente"
+    df = df[df['TX_SITUACAO'] != "Pendente"]
+
+    if df.empty:
+        st.warning("Nenhuma nota aprovada ou não pendente foi encontrada.")
+        return
+    # Converter colunas categóricas para string
+    categorical_cols = ['TX_NOTA', 'TX_ORDEM', 'TX_TAG', 'TX_SERVICO',
+                        'TX_SETOR_SOLICITANTE', 'TX_NOME_SOLICITANTE',
+                        'TX_PLANTA', 'TX_ESPECIALIDADE', 'TX_REC_INSPECAO',
+                        'TX_FAMILIA_EQUIPAMENTOS', 'TX_DESCRICAO_SERVICO', 
+                        'TX_ESCOPO_TIPO', 'TX_SITUACAO','TX_LIBERAVEL_EM_ROTINA',
+                        'TX_PERIODO_DE_MANUTENCAO', 'TX_EQUIPTO_RESERVA_OU_SISTBY_PASS',
+                        'TX_CRITICO', 'TX_OPORTUNIDADE','TX_SITUACAO_MOTIVO']
+    df[categorical_cols] = df[categorical_cols].astype(str)
+    
+    # Remover colunas e garantir tipos numéricos
+    df = df.drop(columns=['TX_NOME_SOLICITANTE'])
+    df['VL_HH_TOTAL'] = pd.to_numeric(df['VL_HH_TOTAL'], errors='coerce').fillna(0.0)
+    df['VL_CUSTO_TOTAL'] = pd.to_numeric(df['VL_CUSTO_TOTAL'], errors='coerce').fillna(0.0)
+    df['ID_NOTA_MANUTENCAO'] = df['ID_NOTA_MANUTENCAO'].astype(int)
+
+    df = df.sort_values(by='ID_NOTA_MANUTENCAO', ascending=False)
+
+    col1, col2, col3 = st.columns([8, 1, 1])
+    with col1:
+        st.header("Desafio do Escopo - Notas Aprovadas e Não Pendentes")
+    with col2:
+        if st.button("➕ Cadastrar Nota", key="addNotaDesafio"):
+            cadastrar_nota_manutencao()
+    with col3:
+        if st.button("🔄 Atualizar Dados", key="AtualizarDesafio"):
+            projeto_gid = projeto_info.get('GID', None)
+            if projeto_gid:
+                try:
+                    st.session_state['project_data']['visualizar_notas_de_manutencao'] = get_vw_nota_manutencao_hh_data(projeto_gid)
+                    df = st.session_state['project_data']['visualizar_notas_de_manutencao']
+                    st.success("Dados atualizados com sucesso!")
+                except Exception as e:
+                    st.error(f"Erro ao atualizar os dados: {str(e)}")
+            else:
+                st.error("GID do projeto não encontrado no session_state.")
+
+    with st.expander("Filtros"):
+        col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
+        
+        with col1:
+            especialidade_filter = st.multiselect("Especialidade", options=sorted(filter(None, df['TX_ESPECIALIDADE'].unique())))
+            texto_Nota_filter = st.multiselect("Nota", options=sorted(filter(None, df['TX_NOTA'].unique())))
+        with col2:
+            rec_filter = st.multiselect("REC", options=sorted(filter(None, df['TX_REC_INSPECAO'].unique())))
+            tag_filter = st.multiselect("TAG", options=sorted(filter(None, df['TX_TAG'].unique())))
+        with col3:
+            familia_equip_filter = st.multiselect("Familia de Equip.", options=sorted(filter(None, df['TX_FAMILIA_EQUIPAMENTOS'].unique())))
+            situacao_filter = st.multiselect("Situação", options=sorted(filter(None, df['TX_SITUACAO'].unique())))
+
+        with col6:
+            prioridade_ordem = st.radio("Prioridade de Ordenação", options=["ID Nota", "Custo Total"],key="prioridade_ordemdesafio")
+        with col7:
+            id_nota_order = st.radio("Ordem ID Nota", options=["Nenhum", "Maior para Menor", "Menor para Maior"],key="id_nota_orderdesafio")
+        with col8:
+            custo_total_order = st.radio("Ordem Custo Total", options=["Nenhum", "Maior para Menor", "Menor para Maior"],key="custo_total_orderdesafio")
+
+        if especialidade_filter:
+            df = df[df['TX_ESPECIALIDADE'].isin(especialidade_filter)]
+        if texto_Nota_filter:
+            df = df[df['TX_NOTA'].isin(texto_Nota_filter)]
+        if rec_filter:
+            df = df[df['TX_REC_INSPECAO'].isin(rec_filter)]
+        if tag_filter:
+            df = df[df['TX_TAG'].isin(tag_filter)]
+        if familia_equip_filter:
+            df = df[df['TX_FAMILIA_EQUIPAMENTOS'].isin(familia_equip_filter)]
+        if situacao_filter:
+            df = df[df['TX_SITUACAO'].isin(situacao_filter)]
+
+        order_columns = []
+        ascending_order = []
+        
+        if prioridade_ordem == "ID Nota":
+            if id_nota_order != "Nenhum":
+                order_columns.append("ID_NOTA_MANUTENCAO")
+                ascending_order.append(id_nota_order == "Menor para Maior")
+            if custo_total_order != "Nenhum":
+                order_columns.append("VL_CUSTO_TOTAL")
+                ascending_order.append(custo_total_order == "Menor para Maior")
+        else:
+            if custo_total_order != "Nenhum":
+                order_columns.append("VL_CUSTO_TOTAL")
+                ascending_order.append(custo_total_order == "Menor para Maior")
+            if id_nota_order != "Nenhum":
+                order_columns.append("ID_NOTA_MANUTENCAO")
+                ascending_order.append(id_nota_order == "Menor para Maior")
+
+        if order_columns:
+            df = df.sort_values(by=order_columns, ascending=ascending_order)
+
+    # Exibir métricas
+    total_notas = len(df['ID_NOTA_MANUTENCAO'].unique())
+    total_recs = len(df['TX_REC_INSPECAO'].dropna().unique())
+    total_hh = df['VL_HH_TOTAL'].sum()
+    custo_total = df['VL_CUSTO_TOTAL'].sum()
+
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        with st.container(border=True):
+            st.metric("Total de Notas", f"{total_notas}")
+    with col2:
+        with st.container(border=True):
+            st.metric("Total de REC's", f"{total_recs}")
+    with col3:
+        with st.container(border=True):
+            st.metric("Total de HH", f"{total_hh}")
+    with col4:
+        with st.container(border=True):
+            st.metric("Custo Total", f"R$ {custo_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+
+    # Renomear colunas para exibição
+    df = df.rename(columns={
+        'ID_NOTA_MANUTENCAO': 'ID',
+        'TX_NOTA': 'NOTA',
+        'TX_ORDEM': 'ORDEM',
+        'TX_TAG': 'TAG',
+        'TX_FAMILIA_EQUIPAMENTOS': 'FAMILIA DE EQUIP.',
+        'TX_DESCRICAO_SERVICO': 'SERVIÇO',
+        'VL_HH_TOTAL': 'HH',
+        'VL_CUSTO_TOTAL': 'VALOR TOTAL',
+        'TX_ESCOPO_TIPO': 'TIPO ESCOPO',
+        'TX_SITUACAO': 'SITUAÇÃO',
+        'TX_SITUACAO_MOTIVO': 'MOTIVO',        
+        'TX_SETOR_SOLICITANTE':'SETOR SOLICITANTE',
+        'TX_NOME_SOLICITANTE':'SOLICITANTE',
+        'TX_PLANTA':'PLANTA',
+        'TX_ESPECIALIDADE':'ESPECIALIDADE',
+        'TX_REC_INSPECAO':'REC',
+        'TX_LIBERAVEL_EM_ROTINA':'LIBERÁVEL EM ROTINA',
+        'TX_PERIODO_DE_MANUTENCAO':'PERÍODO DE MANUTENÇÃO',
+        'TX_EQUIPTO_RESERVA_OU_SISTBY_PASS':'EQUIP. RESERVA OU STSTBY-PASS',
+        'TX_CRITICO':'CRÍTICO',
+        'TX_OPORTUNIDADE':'OPORTUNIDADE'
+    })
+
+    df['HH'] = pd.to_numeric(df['HH'], errors='coerce').fillna(0.0)
+    df['VALOR TOTAL'] = pd.to_numeric(df['VALOR TOTAL'], errors='coerce').fillna(0.0)
+
+    # Formatação para exibir valores monetários corretamente
+    df['ID'] = df['ID'].astype(str)
+    df['HH'] = df['HH'].apply(lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+    df['VALOR TOTAL'] = df['VALOR TOTAL'].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+
+    max_rows = 1000
+    df_display = df.head(max_rows) if len(df) > max_rows else df
+    
+     # Configurar as colunas e seus respectivos tamanhos para exibição
+    colunas = [
+        {"nome": "ID", "tamanho": 0.5},
+        {"nome": "NOTA", "tamanho": 1},
+        {"nome": "TAG", "tamanho": 1},
+        {"nome": "SERVIÇO", "tamanho": 1.8},
+        {"nome": "SETOR SOLICITANTE", "tamanho": 1.5},
+        {"nome": "SOLICITANTE", "tamanho": 1.5},
+        {"nome": "FAMILIA DE EQUIP.", "tamanho": 1.5},
+        {"nome": "PLANTA", "tamanho": 0.8},  
+        {"nome": "ESPECIALIDADE", "tamanho": 1.5},              
+        {"nome": "REC", "tamanho": 1},
+        {"nome": "SITUAÇÃO", "tamanho": 1},        
+        {"nome": "MOTIVO", "tamanho": 1},
+        {"nome": "Ações", "tamanho": 1}
+    ]
+
+    # Função para exibir cabeçalhos dinamicamente
+    def exibir_cabecalhos_dinamicos(colunas):
+        cols = st.columns([col["tamanho"] for col in colunas])
+        for col, header in zip(cols, colunas):
+            col.markdown(f"**{header['nome']}**")
+
+    # Função para exibir cada linha de dados com botões de ação
+    def exibir_linha_dados_dinamica(row, index, colunas):
+        cols = st.columns([col["tamanho"] for col in colunas])
+        for col, header in zip(cols, colunas[:-1]):
+            col.write(row.get(header["nome"], "N/A"))
+
+        # Coluna para os botões de ação
+        with cols[-1]:
+            col_btn1, col_btn2 = st.columns(2)
+            with col_btn1:
+                if st.button("✏️", key=f"EditNotaDesafio_{index}"):
+                    st.session_state["nota_selecionada"] = row['GID_NOTA_MANUTENCAO']
+                    edit_nota_manutencao()
+
+            user_details = st.session_state.get('user_details', None)
+            if user_details and user_details['perfil'] in ['Super Usuário', 'Administrador', 'Gestor']:
+                with col_btn2:
+                    if st.button("🗑️", key=f"ExcluirNotaDesafio_{index}"):
+                        delete_data("timecenter.TB_NOTA_MANUTENCAO", "GID", row['GID_NOTA_MANUTENCAO'])
+                        st.success(f"Item excluído de ID: {row['ID']}")
+
+    # Exibir título e cabeçalhos
+    st.subheader("Top 10 Notas de Manutenção")
+    with st.container(border=True):
+        exibir_cabecalhos_dinamicos(colunas)
+        
+        # Exibir cada linha de dados
+        for index, row in df_display.head(10).iterrows():
+            exibir_linha_dados_dinamica(row, index, colunas)
+
 
 def app():
     escopo_screen()

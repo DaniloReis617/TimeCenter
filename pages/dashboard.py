@@ -34,7 +34,11 @@ def dashboard_screen():
         df_Projeto_total_data = st.session_state['project_data']['projeto_total_data']  
         df_Projeto_despesa = st.session_state['project_data']['projeto_despesa'] 
         df_Projeto_despesa_total = st.session_state['project_data']['projeto_despesa_total']   
-        df_nota_principal = st.session_state['project_data']['vw_notas_de_manutencao']             
+        df_nota_principal = st.session_state['project_data']['vw_notas_de_manutencao']  
+        df_projeto_nota_declaracao_escopo = st.session_state['project_data']['projeto_nota_declaracao_escopo']          
+        df_apoio = st.session_state['project_data']['apoio']                  
+        df_informativo = st.session_state['project_data']['informativo']
+        df_recurso = st.session_state['project_data']['recurso']
         
     else:
         st.error("Selecione um projeto na tela inicial.")
@@ -55,9 +59,9 @@ def dashboard_screen():
     # Conteúdo da aba 1
     with tab1:
         # Aplicar o estilo e o cabeçalho personalizado
-        st.title("Dashboard de Projeto")
+        st.subheader("Projeto - Geral")
 
-            # Garantir que as colunas monetárias estejam em formato numérico
+        # Garantir que as colunas monetárias estejam em formato numérico
         if 'VL_VALOR_ORCAMENTO' in df_Projeto.columns:
             df_Projeto['VL_VALOR_ORCAMENTO'] = df_Projeto['VL_VALOR_ORCAMENTO'].apply(convert_to_float)
         
@@ -88,14 +92,22 @@ def dashboard_screen():
 
         # Exibir as métricas principais
         col1, col2, col3, col4 = st.columns(4)
-        with st.container(border=True):
-            col1.metric("Valor Orçamento", f"R$ {valor_orcamento:,.2f}")
-        with st.container(border=True):            
-            col2.metric("Custo Total Projeto Geral", f"R$ {custo_projeto_total:,.2f}")
-        with st.container(border=True):            
-            col3.metric("Percentual Gasto", f"{percentual_gasto:.2f}%")
-        with st.container(border=True):            
-            col4.metric("Percentual Contingência", f"{percentual_contingencia:.2f}%")
+        
+        with col1:
+            with st.container(border=True):
+                st.metric("Valor Orçamento", f"R$ {valor_orcamento:,.2f}")
+                
+        with col2:
+            with st.container(border=True):
+                st.metric("Custo Total Projeto Geral", f"R$ {custo_projeto_total:,.2f}")
+                
+        with col3:
+            with st.container(border=True):
+                st.metric("Percentual Gasto", f"{percentual_gasto:.2f}%")
+                
+        with col4:
+            with st.container(border=True):
+                st.metric("Percentual Contingência", f"{percentual_contingencia:.2f}%")
 
         # Gráfico de Pizza para Divisão dos Custos e Despesas
         labels = ["Custo total material", "Custo total apoio", "Custo total despesa", "Custo total recurso"]
@@ -150,7 +162,7 @@ def dashboard_screen():
     
     # Conteúdo da aba 2
     with tab2:
-        st.title("Projeto Despesas")
+        st.subheader("Projeto - Despesas")
 
         # Garantir que as colunas monetárias estejam em formato numérico
         if 'VL_VALOR_CUSTO' in df_Projeto_despesa.columns:
@@ -257,7 +269,7 @@ def dashboard_screen():
     
     # Conteúdo da aba 3
     with tab3:
-        st.title("Dashboard de Notas de Manutenção - Principal")
+        st.subheader("Notas de Manutenção - Principal")
 
         # Filtros na tela principal
         with st.expander("Filtros"):
@@ -292,15 +304,22 @@ def dashboard_screen():
         custo_reprovado = df_filtrado[df_filtrado['TX_SITUACAO'] == 'Reprovada']['VL_CUSTO_TOTAL'].sum()
         quantidade_notas = df_filtrado['ID_NOTA_MANUTENCAO'].nunique()
 
-        col1, col2, col3, col4 = st.columns(4)
-        with st.container(border=True):        
-            col1.metric("Custo Aprovado", f"R$ {custo_aprovado:,.2f}")
-        with st.container(border=True):            
-            col2.metric("Custo Pendente de Aprovação", f"R$ {custo_pendente:,.2f}")
-        with st.container(border=True):            
-            col3.metric("Custo Reprovado", f"R$ {custo_reprovado:,.2f}")
-        with st.container(border=True):            
-            col4.metric("Quantidade de Notas", f"{quantidade_notas}")
+        col1, col2, col3, col4 = st.columns(4)             
+        with col1:
+            with st.container(border=True):
+                st.metric("Custo Aprovado", f"R$ {custo_aprovado:,.2f}")
+                
+        with col2:
+            with st.container(border=True):
+                st.metric("Custo Pendente de Aprovação", f"R$ {custo_pendente:,.2f}")
+                
+        with col3:
+            with st.container(border=True):
+                st.metric("Custo Reprovado", f"R$ {custo_reprovado:,.2f}")
+                
+        with col4:
+            with st.container(border=True):
+                st.metric("Quantidade de Notas", f"{quantidade_notas}")
 
         # Gráfico de Pizza - Notas de Manutenção por Situação
         situacao_counts = df_filtrado['TX_SITUACAO'].value_counts()
@@ -327,10 +346,13 @@ def dashboard_screen():
         # Exibir os gráficos lado a lado
         st.subheader("Distribuição de Notas de Manutenção")
         col1, col2 = st.columns(2)
-        with st.container(border=True):        
-            col1.plotly_chart(fig_situacao, use_container_width=True)
-        with st.container(border=True):            
-            col2.plotly_chart(fig_status, use_container_width=True)
+        with col1:
+            with st.container(border=True):        
+                st.plotly_chart(fig_situacao, use_container_width=True)
+        
+        with col2:
+            with st.container(border=True): 
+                st.plotly_chart(fig_status, use_container_width=True)
 
         # Dados para as tabelas
         tipos_servicos = df_filtrado['TX_SERVICO'].value_counts().reset_index()
@@ -361,28 +383,327 @@ def dashboard_screen():
 
     # Conteúdo da aba 3
     with tab4:
-        st.write("Nota - Apoios")
-        # Aqui você pode adicionar mais detalhes específicos ou gráficos para "Gestão do Desembolso"
+        st.subheader("Notas de Manutenção - Apoios")
+                
+        # Agrupamos e contamos as ocorrências de cada tipo de apoio
+        df_apoio_count = df_apoio['TX_TIPO'].value_counts().reset_index()
+        df_apoio_count.columns = ['Tipo', 'Quantidade']  # Renomear as colunas para facilitar a visualização
+
+        # Exibir Métrica de Custos Totais
+        custos_totais = df_apoio['VL_CUSTO_TOTAL'].sum()  # Supondo que a coluna VL_CUSTO_TOTAL existe em df_apoio
+        with st.container(border=True):
+            st.metric("Custos Totais", f"R$ {custos_totais:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+
+        # Separar o layout com colunas e contêineres
+        st.subheader("Graficos de Apoio")
+        with st.container(border=True):
+            # Criar gráfico de barras para "Quantidade de Apoios pelo Tipo"
+            fig = px.bar(
+                df_apoio_count, 
+                x="Tipo", 
+                y="Quantidade", 
+                text="Quantidade",
+                title="Quantidade de Apoios x Tipo",
+                labels={"Tipo": "Tipo de Apoio", "Quantidade": "Quantidade"},
+            )
+            fig.update_traces(marker_color="teal", textposition="outside")
+            fig.update_layout(
+                title_x=0.5,
+                xaxis_tickangle=0,
+                xaxis_title="",
+                yaxis_title="",
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+ 
+        # Tabelas de detalhes por tipo de apoio
+        st.subheader("Detalhes de Empresas e Notas de Apoio por Tipo")
+        # Tabela 1 - Coluna da esquerda
+        col1, col2 = st.columns(2)
+
+        with col1:
+            with st.container(border=True):
+                st.markdown("#### Empresas Primárias Executantes e Notas de Apoio")
+                # Exibir a tabela de apoio
+                st.dataframe(df_apoio_count, use_container_width=True, hide_index=True)  
+
+        # Tabela 2 - Coluna da direita (simulação de outra tabela para mostrar variação)
+        with col2:
+            with st.container(border=True):
+                st.markdown("#### Empresas Secundárias Executantes e Notas de Apoio")
+                # Exibir a mesma tabela ou uma variação, caso existam dados adicionais
+                st.dataframe(df_apoio_count, use_container_width=True, hide_index=True) 
 
     # Conteúdo da aba 3
     with tab5:
-        st.write("Nota - Informativos")
-        # Aqui você pode adicionar mais detalhes específicos ou gráficos para "Gestão do Desembolso"
+        st.subheader("Notas de Manutenção - Informativos")
+        
+        # 1. Gráfico de Barras - Contagem de Informativos por Descrição
+        df_descricao_count = df_informativo['TX_DESCRICAO'].value_counts().reset_index()
+        df_descricao_count.columns = ['Descrição', 'Quantidade']
+
+        # 2. Tabela - Família de Equipamentos e Quantidade (usando df_nota_principal)
+        df_familia_count = df_nota_principal['TX_FAMILIA_EQUIPAMENTOS'].value_counts().reset_index()
+        df_familia_count.columns = ['Família Equipamentos', 'Quantidade']
+        df_familia_count = df_familia_count.sort_values(by="Quantidade", ascending=False)
+
+        # 3. Gráfico de Rosca - Notas de Manutenção por Família de Equipamentos (usando df_nota_principal)
+        df_familia_pizza = df_familia_count.copy().head(10)  # Usando o mesmo DataFrame da tabela para consistência
+        with st.container(border=True):
+            # Exibir o Gráfico de Barras
+            fig_bar = px.bar(
+                df_descricao_count, 
+                x="Descrição", 
+                y="Quantidade", 
+                text="Quantidade",
+                title="Top 10 Informativos por Descrição",                
+                labels={"Descrição": "Descrição", "Quantidade": "Quantidade"},
+            )
+            fig_bar.update_traces(marker_color="teal", textposition="outside")
+            fig_bar.update_layout(
+                title_x=0.5,
+                xaxis_tickangle=0,
+                xaxis_title="",
+                yaxis_title="Quantidade",
+            )
+            st.plotly_chart(fig_bar, use_container_width=True)
+
+        st.subheader("Detalhamento de Informativo") 
+        # Exibir Tabela e Gráfico de Rosca lado a lado
+        col1, col2 = st.columns([1, 1])
+
+        with col1:
+            with st.container(border=True):
+                st.subheader("Família de Equipamentos")
+                st.dataframe(df_descricao_count, use_container_width=True, hide_index=True) 
+
+        with col2:
+            with st.container(border=True):            
+                fig_pie = px.pie(
+                    df_familia_pizza, 
+                    names="Família Equipamentos", 
+                    values="Quantidade",
+                    title="Notas de Manutenção x Família de Equipamentos",
+                    hole=0.4,  # Cria um gráfico de rosca (donut)
+                )
+                fig_pie.update_traces(textinfo='percent')  # Exibir porcentagem e rótulo
+                st.plotly_chart(fig_pie, use_container_width=True)
 
     # Conteúdo da aba 3
     with tab6:
-        st.write("Nota - Recursos")
-        # Aqui você pode adicionar mais detalhes específicos ou gráficos para "Gestão do Desembolso"
+        st.subheader("Notas de Manutenção - Recursos")
+        
+        # Calcular VL_HH como produto de VL_DURACAO e VL_QUANTIDADE
+        df_recurso['VL_HH'] = df_recurso['VL_DURACAO'] * df_recurso['VL_QUANTIDADE']
+        # Filtrar `df_recurso` para incluir apenas registros onde `GID_NOTA_MANUTENCAO` não está em branco
+        df_recurso_filtrado = df_recurso[df_recurso['GID_NOTA_MANUTENCAO'].isin(df_nota_principal['GID_NOTA_MANUTENCAO'])]
+
+        # Agrupar por `TX_DESCRICAO` e somar `VL_HH`, ordenando de forma decrescente
+        df_hh_por_tipo = df_recurso_filtrado.groupby('TX_DESCRICAO')['VL_HH'].sum().reset_index()
+        df_hh_por_tipo = df_hh_por_tipo.sort_values(by="VL_HH", ascending=False)  # Ordenar de forma decrescente
+        # Obter a ordem das categorias para `TX_DESCRICAO` conforme o valor decrescente de `VL_HH`
+        categoria_ordem_hh = df_hh_por_tipo['TX_DESCRICAO'].tolist()
+        # Exibir Métrica de Custos Totais
+        custos_totais = df_recurso['VL_CUSTO_TOTAL'].sum()  # Supondo que a coluna VL_CUSTO_TOTAL existe em df_recurso
+        with st.container(border=True):
+            st.metric("Custos Totais", f"R$ {custos_totais:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+        st.subheader("Visualização Gráfica de Recursos")
+        col1, col2 = st.columns(2)
+        with col1:
+            with st.container(border=True):    
+                # Gráfico 1: HH por Tipo           
+                fig = px.bar(
+                    df_hh_por_tipo, 
+                    x="VL_HH", 
+                    y="TX_DESCRICAO", 
+                    text=df_hh_por_tipo["VL_HH"].apply(lambda x: f"{x // 1000} Mil"),
+                    title="HH x Tipo", 
+                    labels={"VL_HH": "Horas Homem", "TX_DESCRICAO": "Tipo de Recurso"},
+                    category_orders={"TX_DESCRICAO": categoria_ordem_hh}  # Forçar ordem decrescente                    
+                )
+                fig.update_traces(marker_color="teal", textposition="outside")
+                fig.update_layout(
+                    title_x=0.5,
+                    xaxis_tickangle=-45,
+                    xaxis_title="",
+                    yaxis_title="",
+                    xaxis=dict(showticklabels=False),
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            with col2:
+                with st.container(border=True): 
+                    # Gráfico 2: Quantidade de Notas por Tipo
+                    df_qtd_notas_por_tipo = df_recurso_filtrado['TX_DESCRICAO'].value_counts().reset_index()
+                    df_qtd_notas_por_tipo.columns = ['Tipo', 'Quantidade']
+                    df_qtd_notas_por_tipo = df_qtd_notas_por_tipo.sort_values(by="Quantidade", ascending=False)  # Ordenar de forma decrescente
+                    # Obter a ordem das categorias para `Tipo` conforme o valor decrescente de `Quantidade`
+                    categoria_ordem_qtd = df_qtd_notas_por_tipo['Tipo'].tolist()
+                    fig_notas = px.bar(
+                        df_qtd_notas_por_tipo, 
+                        x="Quantidade", 
+                        y="Tipo", 
+                        text="Quantidade",
+                        title="Qtde. Notas x Tipo",                        
+                        labels={"Quantidade": "Quantidade de Notas", "Tipo": "Tipo de Recurso"},
+                        category_orders={"Tipo": categoria_ordem_qtd}  # Forçar ordem decrescente
+                    )
+                    fig_notas.update_traces(marker_color="teal", textposition="outside")
+                    fig_notas.update_layout(
+                        title_x=0.5,
+                        xaxis_title="",
+                        yaxis_title="",
+                        xaxis=dict(showticklabels=False),  # Ocultar os rótulos do eixo x para uma aparência mais limpa
+                    )
+                    st.plotly_chart(fig_notas, use_container_width=True)       
 
     # Conteúdo da aba 3
     with tab7:
-        st.write("Nota - HH e Custos")
-        # Aqui você pode adicionar mais detalhes específicos ou gráficos para "Gestão do Desembolso"
+        st.subheader("Notas de Manutenção HH e Custos")
+        
+        # Realizar o merge para garantir que `TX_FAMILIA_EQUIPAMENTOS` está em `df_recurso`
+        df_recurso_completo = pd.merge(df_recurso, df_nota_principal[['GID_NOTA_MANUTENCAO', 'TX_FAMILIA_EQUIPAMENTOS']], on="GID_NOTA_MANUTENCAO", how="left")
+
+        # 1. Quantidade de Notas por `TX_FAMILIA_EQUIPAMENTOS` (contagem de `ID_NOTA_MANUTENCAO` em `df_nota_principal`)
+        df_qtd_notas = df_nota_principal.groupby('TX_FAMILIA_EQUIPAMENTOS')['ID_NOTA_MANUTENCAO'].count().reset_index()
+        df_qtd_notas.columns = ['TX_FAMILIA_EQUIPAMENTOS', 'Qtde_Notas']
+        df_qtd_notas = df_qtd_notas.sort_values(by="Qtde_Notas", ascending=False).head(10)
+
+        # 2. HH Total por `TX_FAMILIA_EQUIPAMENTOS` (soma de `VL_HH` em `df_recurso_completo`)
+        df_hh_total = df_recurso_completo.groupby('TX_FAMILIA_EQUIPAMENTOS')['VL_HH'].sum().reset_index()
+        df_hh_total = df_hh_total.sort_values(by="VL_HH", ascending=False).head(10)
+
+        # 3. Custo Total por `TX_FAMILIA_EQUIPAMENTOS` (soma de `VL_CUSTO_TOTAL` em `df_nota_principal`)
+        df_custo_total = df_nota_principal.groupby('TX_FAMILIA_EQUIPAMENTOS')['VL_CUSTO_TOTAL'].sum().reset_index()
+        df_custo_total = df_custo_total.sort_values(by="VL_CUSTO_TOTAL", ascending=False).head(10)
+
+
+        # Configurar layout dos gráficos
+        col1, col2, col3 = st.columns(3)
+
+        # Gráfico 1: Qtde. de Notas
+        with col1:
+            with st.container(border=True): 
+                fig_qtd_notas = px.bar(
+                    df_qtd_notas,
+                    x="Qtde_Notas",
+                    y="TX_FAMILIA_EQUIPAMENTOS",
+                    orientation="h",
+                    text="Qtde_Notas",
+                    title="Qtde. de Notas",                
+                    labels={"Qtde_Notas": "Quantidade de Notas", "TX_FAMILIA_EQUIPAMENTOS": "Família de Equipamentos"},
+                )
+                fig_qtd_notas.update_traces(marker_color="teal", textposition="outside")
+                fig_qtd_notas.update_layout(
+                    title_x=0.5,
+                    xaxis_title="",
+                    yaxis_title="",
+                    yaxis=dict(categoryorder="total ascending"),
+                )
+                st.plotly_chart(fig_qtd_notas, use_container_width=True)
+
+        # Gráfico 2: HH Total
+        with col2:
+            with st.container(border=True): 
+                fig_hh_total = px.bar(
+                    df_hh_total,
+                    x="VL_HH",
+                    y="TX_FAMILIA_EQUIPAMENTOS",
+                    orientation="h",
+                    text=df_hh_total["VL_HH"].apply(lambda x: f"{x // 1000} Mil"),  # Exibir valores em milhares
+                    title="HH Total",                
+                    labels={"VL_HH": "Horas Homem Total", "TX_FAMILIA_EQUIPAMENTOS": "Família de Equipamentos"},
+                )
+                fig_hh_total.update_traces(marker_color="green", textposition="outside")
+                fig_hh_total.update_layout(
+                    title_x=0.5,
+                    xaxis_title="",
+                    yaxis_title="",
+                    yaxis=dict(categoryorder="total ascending"),
+                )
+                st.plotly_chart(fig_hh_total, use_container_width=True)
+
+        # Gráfico 3: Custo Total
+        with col3:
+            with st.container(border=True): 
+                fig_custo_total = px.bar(
+                    df_custo_total,
+                    x="VL_CUSTO_TOTAL",
+                    y="TX_FAMILIA_EQUIPAMENTOS",
+                    orientation="h",
+                    text=df_custo_total["VL_CUSTO_TOTAL"].apply(lambda x: f"{x // 1000} Mil"),  # Exibir valores em milhares
+                    title="Custo Total",                 
+                    labels={"VL_CUSTO_TOTAL": "Custo Total", "TX_FAMILIA_EQUIPAMENTOS": "Família de Equipamentos"},
+                )
+                fig_custo_total.update_traces(marker_color="orange", textposition="outside")
+                fig_custo_total.update_layout(
+                    title_x=0.5,
+                    xaxis_title="",
+                    yaxis_title="",
+                    yaxis=dict(categoryorder="total ascending"),
+                )
+                st.plotly_chart(fig_custo_total, use_container_width=True)
 
     # Conteúdo da aba 3
     with tab8:
-        st.write("Nota - Top 5")
-        # Aqui você pode adicionar mais detalhes específicos ou gráficos para "Gestão do Desembolso"
+        st.subheader("Notas de Manutenção - Top 5")
+        
+        df_recurso['VL_HH'] = df_recurso['VL_DURACAO'] * df_recurso['VL_QUANTIDADE']        
+        # Realizar o merge para garantir que `TX_FAMILIA_EQUIPAMENTOS` está em `df_recurso`
+        df_recurso_completo = pd.merge(df_recurso, df_nota_principal[['GID_NOTA_MANUTENCAO', 'TX_NOTA']], on="GID_NOTA_MANUTENCAO", how="left")
+      
+        # Calcular o Top 5 Custos e HH Total usando as colunas corretas
+
+        # 1. Top 5 Custos (DataFrame `df_nota_principal`)
+        df_top_custos = df_nota_principal[['TX_NOTA', 'VL_CUSTO_TOTAL']].sort_values(by='VL_CUSTO_TOTAL', ascending=False).head(5)
+
+        # 2. Top 5 HH por `TX_NOTA` (após garantir que 'TX_NOTA' está presente em `df_recurso_completo`)
+        df_hh_total = df_recurso_completo.groupby('TX_NOTA')['VL_HH'].sum().reset_index()
+        df_top_hh = df_hh_total.sort_values(by='VL_HH', ascending=False).head(5)
+
+        # Configurar layout dos gráficos
+        col1, col2 = st.columns(2)
+
+        # Gráfico 1: Top 5 Custos
+        with col1:
+            with st.container(border=True):
+                fig_custos = px.bar(
+                    df_top_custos,
+                    x="TX_NOTA",
+                    y="VL_CUSTO_TOTAL",
+                    orientation="h",  # Configurado para barras verticais
+                    text=df_top_custos["VL_CUSTO_TOTAL"].apply(lambda x: f"{x / 1e6:.1f} Mi"),  # Exibir valores em milhões
+                    title="Top 5 Custos",
+                    labels={"VL_CUSTO_TOTAL": "Custo Total", "TX_NOTA": "Nota"},
+                )
+                fig_custos.update_traces(marker_color="teal", textposition="outside")
+                fig_custos.update_layout(
+                    title_x=0.5,
+                    xaxis_title="",
+                    yaxis_title="",
+                    xaxis=dict(categoryorder="total descending"),
+                )
+                st.plotly_chart(fig_custos, use_container_width=True)
+
+        # Gráfico 2: Top 5 HH
+        with col2:
+            with st.container(border=True):
+                fig_hh = px.bar(
+                    df_top_hh,
+                    x="TX_NOTA",
+                    y="VL_HH",
+                    orientation="h",  # Configurado para barras verticais
+                    text="VL_HH",
+                    title="Top 5 HH",                
+                    labels={"VL_HH": "Horas Homem", "TX_NOTA": "Nota"},
+                )
+                fig_hh.update_traces(marker_color="darkgreen", textposition="outside")
+                fig_hh.update_layout(
+                    title_x=0.5,
+                    xaxis_title="",
+                    yaxis_title="",
+                    xaxis=dict(categoryorder="total descending"),
+                )
+                st.plotly_chart(fig_hh, use_container_width=True)
  
 def app():
     dashboard_screen()

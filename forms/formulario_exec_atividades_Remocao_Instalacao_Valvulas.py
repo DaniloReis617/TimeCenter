@@ -112,9 +112,14 @@ def show_exec_atividades_Remocao_Instalacao_Valvulas_form():
     classe_pressao_opcoes = exec_atividades_Remocao_Instalacao_Valvulas[exec_atividades_Remocao_Instalacao_Valvulas['Atividade'] == atividade]['ClassePressao'].unique()
     classe_pressao = st.selectbox("Classe de Pressão:", classe_pressao_opcoes)
 
+    # Filtrar as opções de Diâmetro com base na Classe de Pressão
+    diametro_opcoes = exec_atividades_Remocao_Instalacao_Valvulas[(exec_atividades_Remocao_Instalacao_Valvulas['Atividade'] == atividade) & (exec_atividades_Remocao_Instalacao_Valvulas['ClassePressao'] == classe_pressao)]['Diametro'].unique()
+    diametro = st.selectbox("Diâmetro:", diametro_opcoes)
+
     # Filtrar os dados da tabela com base nas seleções
     atividade_selecionada = exec_atividades_Remocao_Instalacao_Valvulas[(exec_atividades_Remocao_Instalacao_Valvulas['Atividade'] == atividade) & 
-                                                        (exec_atividades_Remocao_Instalacao_Valvulas['ClassePressao'] == classe_pressao)].iloc[0]
+                                                          (exec_atividades_Remocao_Instalacao_Valvulas['ClassePressao'] == classe_pressao) & 
+                                                          (exec_atividades_Remocao_Instalacao_Valvulas['Diametro'] == diametro)].iloc[0]
     
     # Exibir os resultados da consulta
     #st.write(f"Duração (hs): {atividade_selecionada['Duracao']}")

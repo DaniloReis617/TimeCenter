@@ -190,6 +190,74 @@ def get_vw_nota_manutencao(projeto_gid):
         st.error("Não foi possível conectar ao banco de dados.")
         return pd.DataFrame()
     
+def get_vw_nota_manutencao_apoio():
+    query = """
+    SELECT * 
+    FROM timecenter.VW_NOTA_MANUTENCAO_APOIO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn)  # Remover `params=[projeto_gid]`
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar as Notas de manutenção: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+
+def get_vw_nota_manutencao_informativo():
+    query = """
+    SELECT * 
+    FROM timecenter.VW_NOTA_MANUTENCAO_INFORMATIVO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn)  # Remover `params=[projeto_gid]`
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar as Notas de manutenção: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+
+def get_vw_nota_manutencao_material():
+    query = """
+    SELECT * 
+    FROM timecenter.VW_NOTA_MANUTENCAO_MATERIAL
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn)  # Remover `params=[projeto_gid]`
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar as Notas de manutenção: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()
+
+def get_vw_nota_manutencao_recurso():
+    query = """
+    SELECT * 
+    FROM timecenter.VW_NOTA_MANUTENCAO_RECURSO
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn)  # Remover `params=[projeto_gid]`
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar as Notas de manutenção: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()        
+    
 def get_nota_manutencao_declaracao_escopo(projeto_gid):
     query = """
     SELECT * 
