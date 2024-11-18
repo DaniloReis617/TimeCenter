@@ -5,6 +5,7 @@ import locale
 import io  # Importar o módulo io
 from forms.cadastrar_nota_manutencao import cadastrar_nota_manutencao
 from forms.editar_nota_manutencao import edit_nota_manutencao
+from forms.editar_nota_manutencao_desafio import edit_nota_manutencao_desafio
 from utils import (
     apply_custom_style_and_header,
     get_vw_nota_manutencao_hh_data,
@@ -541,7 +542,7 @@ def desafio_escopo_screen(df, projeto_info):
             with col_btn1:
                 if st.button("✏️", key=f"EditNotaDesafio_{index}"):
                     st.session_state["nota_selecionada"] = row['GID_NOTA_MANUTENCAO']
-                    edit_nota_manutencao()
+                    edit_nota_manutencao_desafio()
 
             user_details = st.session_state.get('user_details', None)
             if user_details and user_details['perfil'] in ['Super Usuário', 'Administrador', 'Gestor']:

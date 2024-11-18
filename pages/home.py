@@ -67,6 +67,9 @@ def load_project_data(selected_gid):
         'projeto_total': get_projeto_total(selected_gid),
         'projeto_total_data': get_projeto_total_data(selected_gid),                               
         'servicos': get_servicos_projeto(selected_gid),
+        'informativo': get_informativo_projeto(selected_gid),
+        'recurso': get_recurso_projeto(selected_gid),
+        'apoio': get_apoio_projeto(selected_gid),        
         'situacao_motivo': get_situacao_motivo_projeto(selected_gid),
         'setor_solicitante': get_setor_solicitante_projeto(selected_gid),
         'setor_responsavel': get_setor_responsavel_projeto(selected_gid),
@@ -82,9 +85,9 @@ def load_project_data(selected_gid):
     
     # Realizar o merge para adicionar GID_PROJETO aos DataFrames
     df_apoio, df_informativo, df_recurso = merge_with_gids(selected_gid)
-    project_data['apoio'] = df_apoio
-    project_data['informativo'] = df_informativo
-    project_data['recurso'] = df_recurso
+    project_data['marge_apoio'] = df_apoio
+    project_data['marge_informativo'] = df_informativo
+    project_data['marge_recurso'] = df_recurso
     
     return project_data
 

@@ -36,9 +36,9 @@ def dashboard_screen():
         df_Projeto_despesa_total = st.session_state['project_data']['projeto_despesa_total']   
         df_nota_principal = st.session_state['project_data']['vw_notas_de_manutencao']  
         df_projeto_nota_declaracao_escopo = st.session_state['project_data']['projeto_nota_declaracao_escopo']          
-        df_apoio = st.session_state['project_data']['apoio']                  
-        df_informativo = st.session_state['project_data']['informativo']
-        df_recurso = st.session_state['project_data']['recurso']
+        df_apoio = st.session_state['project_data']['marge_apoio']                  
+        df_informativo = st.session_state['project_data']['marge_informativo']
+        df_recurso = st.session_state['project_data']['marge_recurso']
         
     else:
         st.error("Selecione um projeto na tela inicial.")
@@ -647,62 +647,103 @@ def dashboard_screen():
     with tab8:
         st.subheader("Notas de Manutenção - Top 5")
         
-        df_recurso['VL_HH'] = df_recurso['VL_DURACAO'] * df_recurso['VL_QUANTIDADE']        
-        # Realizar o merge para garantir que `TX_FAMILIA_EQUIPAMENTOS` está em `df_recurso`
-        df_recurso_completo = pd.merge(df_recurso, df_nota_principal[['GID_NOTA_MANUTENCAO', 'TX_NOTA']], on="GID_NOTA_MANUTENCAO", how="left")
-      
-        # Calcular o Top 5 Custos e HH Total usando as colunas corretas
+        # Calcular VL_HH como produto de VL_DURACAO e VL_QUANTIDADE
+        df_recurso['VL_HH'] = df_recurso['VL_DURACAO'] * df_recurso['VL_QUANTIDADE']
 
-        # 1. Top 5 Custos (DataFrame `df_nota_principal`)
-        df_top_custos = df_nota_principal[['TX_NOTA', 'VL_CUSTO_TOTAL']].sort_values(by='VL_CUSTO_TOTAL', ascending=False).head(5)
+        # Filtrar `df_recurso` para incluir apenas registros onde `GID_NOTA_MANUTENCAO` não está em branco
+        df_recurso_filtrado = df_recurso[df_recurso['GID_NOTA_MANUTENCAO'].isin(df_nota_principal['GID_NOTA_MANUTENCAO'])]
 
-        # 2. Top 5 HH por `TX_NOTA` (após garantir que 'TX_NOTA' está presente em `df_recurso_completo`)
-        df_hh_total = df_recurso_completo.groupby('TX_NOTA')['VL_HH'].sum().reset_index()
-        df_top_hh = df_hh_total.sort_values(by='VL_HH', ascending=False).head(5)
+        # Realizar o merge para garantir que `TX_NOTA` está presente em `df_recurso_completo`
+        df_recurso_completo = pd.merge(
+            df_recurso,
+            df_nota_principal[['GID_NOTA_MANUTENCAO', 'TX_NOTA']],
+            on="GID_NOTA_MANUTENCAO",
+            how="left"
+        )
 
-        # Configurar layout dos gráficos
+        # Converter `TX_NOTA` para string, preenchendo valores ausentes com "N/A"
+        df_nota_principal['TX_NOTA'] = df_nota_principal['TX_NOTA'].astype(str).fillna("None")
+        df_recurso_completo['TX_NOTA'] = df_recurso_completo['TX_NOTA'].astype(str).fillna("None")
+
+        # 1. Preparar dados para o gráfico de Top 5 Custos
+        df_top_custos = (
+            df_nota_principal.groupby('TX_NOTA', as_index=False)['VL_CUSTO_TOTAL']
+            .sum()
+            .sort_values(by='VL_CUSTO_TOTAL', ascending=False)
+            .head(5)
+            .rename(columns={'TX_NOTA': 'Nota', 'VL_CUSTO_TOTAL': 'Valor'})
+        )
+
+        # 2. Preparar dados para o gráfico de Top 5 HH
+        df_top_hh = (
+            df_recurso_completo.groupby('TX_NOTA', as_index=False)['VL_HH']
+            .sum()
+            .sort_values(by='VL_HH', ascending=False)
+            .head(5)
+            .rename(columns={'TX_NOTA': 'Nota', 'VL_HH': 'Horas_Homem'})
+        )
+
+            # Configurar layout dos gráficos
         col1, col2 = st.columns(2)
 
         # Gráfico 1: Top 5 Custos
         with col1:
-            with st.container(border=True):
-                fig_custos = px.bar(
-                    df_top_custos,
-                    x="TX_NOTA",
-                    y="VL_CUSTO_TOTAL",
-                    orientation="h",  # Configurado para barras verticais
-                    text=df_top_custos["VL_CUSTO_TOTAL"].apply(lambda x: f"{x / 1e6:.1f} Mi"),  # Exibir valores em milhões
-                    title="Top 5 Custos",
-                    labels={"VL_CUSTO_TOTAL": "Custo Total", "TX_NOTA": "Nota"},
-                )
-                fig_custos.update_traces(marker_color="teal", textposition="outside")
-                fig_custos.update_layout(
-                    title_x=0.5,
-                    xaxis_title="",
-                    yaxis_title="",
-                    xaxis=dict(categoryorder="total descending"),
-                )
+            valor_limite_custos = df_top_custos['Valor'].mean()  # Usar a média como limite para exemplo
+            fig_custos = go.Figure()
+
+            for index, row in df_top_custos.iterrows():
+                text_position = "inside" if row["Valor"] >= valor_limite_custos else "outside"
+                fig_custos.add_trace(go.Bar(
+                    y=[row["Nota"]],
+                    x=[row["Valor"]],
+                    orientation='h',
+                    text=f"R$ {row['Valor'] / 1e6:.1f} Mi",
+                    textposition=text_position,
+                    texttemplate="%{text}",
+                    name=row["Nota"]
+                ))
+
+            fig_custos.update_layout(
+                title="Top 5 Custos",
+                xaxis_title="Custo Total (Milhões)",
+                yaxis_title="",
+                showlegend=False,
+                yaxis=dict(categoryorder="total ascending", tickfont=dict(size=14)),  # Aumentar margem e diminuir fonte
+                margin=dict(l=200),  # Ajuste a margem para dar mais espaço ao eixo Y
+                width=900
+            )
+
+            with st.container(border=True): 
                 st.plotly_chart(fig_custos, use_container_width=True)
 
         # Gráfico 2: Top 5 HH
         with col2:
-            with st.container(border=True):
-                fig_hh = px.bar(
-                    df_top_hh,
-                    x="TX_NOTA",
-                    y="VL_HH",
-                    orientation="h",  # Configurado para barras verticais
-                    text="VL_HH",
-                    title="Top 5 HH",                
-                    labels={"VL_HH": "Horas Homem", "TX_NOTA": "Nota"},
-                )
-                fig_hh.update_traces(marker_color="darkgreen", textposition="outside")
-                fig_hh.update_layout(
-                    title_x=0.5,
-                    xaxis_title="",
-                    yaxis_title="",
-                    xaxis=dict(categoryorder="total descending"),
-                )
+            valor_limite_hh = df_top_hh['Horas_Homem'].mean()
+            fig_hh = go.Figure()
+
+            for index, row in df_top_hh.iterrows():
+                text_position = "inside" if row["Horas_Homem"] >= valor_limite_hh else "outside"
+                fig_hh.add_trace(go.Bar(
+                    y=[row["Nota"]],
+                    x=[row["Horas_Homem"]],
+                    orientation='h',
+                    text=f"{row['Horas_Homem']}",
+                    textposition=text_position,
+                    texttemplate="%{text}",
+                    name=row["Nota"]
+                ))
+
+            fig_hh.update_layout(
+                title="Top 5 HH",
+                xaxis_title="Horas Homem (HH)",
+                yaxis_title="",
+                showlegend=False,
+                yaxis=dict(categoryorder="total ascending", tickfont=dict(size=14)),
+                margin=dict(l=200),
+                width=900
+            )
+
+            with st.container(border=True): 
                 st.plotly_chart(fig_hh, use_container_width=True)
  
 def app():

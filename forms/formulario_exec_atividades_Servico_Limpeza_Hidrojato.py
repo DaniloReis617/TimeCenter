@@ -38,6 +38,11 @@ def show_exec_atividades_Servico_Limpeza_Hidrojato_form():
         else:
             horas = resultado / 60
             st.success(f"Duração: {round(horas, 2)} horas")
+            
+    # Botão de reset
+    if st.button("Voltar"):
+        st.session_state['show_form_limpeza'] = False
+        st.rerun()
 
 # Função principal que chama o formulário
 def main():

@@ -13,7 +13,8 @@ from forms.formulario_exec_atividades_bandejamento import show_exec_atividades_b
 from forms.formulario_exec_atividades_Ensaios_END import show_exec_atividades_END_form 
 from forms.formulario_isolamento_termico import show_isolamento_termico_form
 from forms.formulario_pre_soldagem import show_pre_soldagem_form
-from forms.formulario_soldagem_tubulacao import show_soldagem_tubulacao_form  
+from forms.formulario_soldagem_tubulacao import show_soldagem_tubulacao_form 
+from forms.formulario_andaime import show_andaime_form 
 
 def cronogramas_screen():
     apply_custom_style_and_header("Tela de Cronogramas")
@@ -29,8 +30,8 @@ def cronogramas_screen():
         st.session_state['show_form'] = False
 
     # Controle para exibir o formulário de execução de atividades
-    if 'show_form_execucao' not in st.session_state:
-        st.session_state['show_form_execucao'] = False
+    if 'show_form_limpeza' not in st.session_state:
+        st.session_state['show_form_limpeza'] = False
 
     # Controle para exibir o formulário de isolamento
     if 'show_form_servico_isolamento' not in st.session_state:
@@ -39,6 +40,14 @@ def cronogramas_screen():
     # Controle para exibir o formulário de isolamento
     if 'show_form_caldeiraria_solda' not in st.session_state:
         st.session_state['show_form_caldeiraria_solda'] = False
+
+    # Controle para exibir o formulário de isolamento
+    if 'show_form_servico_inspecao' not in st.session_state:
+        st.session_state['show_form_servico_inspecao'] = False
+        
+    # Controle para exibir o formulário de isolamento
+    if 'show_form_servico_andaime' not in st.session_state:
+        st.session_state['show_form_servico_andaime'] = False
 
     # Variável para controlar a atividade selecionada
     if 'selected_activity' not in st.session_state:
@@ -61,18 +70,18 @@ def cronogramas_screen():
     
     # Conteúdo da aba 3 - Calculadora de Métricas
     with tab3:
-        if not st.session_state['show_form'] and not st.session_state['show_form_execucao'] and not st.session_state['show_form_servico_isolamento'] and not st.session_state['show_form_caldeiraria_solda']:
+        if not st.session_state['show_form'] and not st.session_state['show_form_limpeza'] and not st.session_state['show_form_servico_inspecao'] and not st.session_state['show_form_servico_isolamento'] and not st.session_state['show_form_servico_andaime'] and not st.session_state['show_form_caldeiraria_solda']:
             st.header("Calculadora de Métricas")
 
             # Pasta de imagens
             image_folder = 'assets'
             images = {
                 "Serviço de Pintura": os.path.join(image_folder, "servico_pintura.jpg"),
-                "Execução de Atividades": os.path.join(image_folder, "execucao_atividades.jpg"),
+                "Serviço de Limpeza": os.path.join(image_folder, "servico_de_limpeza.jpg"),
                 "Serviço de Isolamento": os.path.join(image_folder, "servico_isolamento.jpeg"),
                 "Serviço de Andaime": os.path.join(image_folder, "servico_andaime.jpg"),
                 "Caldeiraria e Solda": os.path.join(image_folder, "servico_calderaria.jpg"),
-                "Item em Destaque": os.path.join(image_folder, "item_destaque.jpeg")
+                "Serviço de Inspeção": os.path.join(image_folder, "servico_de_inspecao.png")
             }
 
             # Tamanho fixo da altura das imagens usando CSS
@@ -111,9 +120,9 @@ def cronogramas_screen():
                 
                 # Container 2 (Execução de Atividades)
                 with col2:
-                    display_image(images["Execução de Atividades"], "Execução de Atividades")
-                    if st.button("Execução de Atividades", use_container_width=True, key='execucao_btn'):
-                        st.session_state['show_form_execucao'] = True
+                    display_image(images["Serviço de Limpeza"], "Serviço de Limpeza")
+                    if st.button("Serviço de Limpeza", use_container_width=True, key='limpeza_btn'):
+                        st.session_state['show_form_limpeza'] = True
                         st.rerun()  # Atualiza a interface imediatamente
                 
                 # Container 3 (Serviço de Isolamento)
@@ -132,85 +141,37 @@ def cronogramas_screen():
                 with col4:
                     display_image(images["Caldeiraria e Solda"], "Caldeiraria e Solda")
                     if st.button("Caldeiraria e Solda", use_container_width=True, key='caldeiraria_solda_btn'):
-                            st.session_state['show_form_caldeiraria_solda'] = True
-                            st.rerun()  # Atualiza a interface imediatamente
+                        st.session_state['show_form_caldeiraria_solda'] = True
+                        st.rerun()  # Atualiza a interface imediatamente
                 
-                # Container 6 (Item em Destaque)
+                # Container 6 (Inspeção)
                 with col5:
                     display_image(images["Serviço de Andaime"], "Serviço de Andaime")
-                    st.button("Serviço de Andaime", use_container_width=True)
+                    if st.button("Serviço de Andaime", use_container_width=True, key='andaime_btn'):
+                        st.session_state['show_form_servico_andaime'] = True
+                        st.rerun()  # Atualiza a interface imediatamente
 
                 # Container vazio nas colunas 7 e 8 para manter o layout alinhado
                 with col6:
-                    display_image(images["Item em Destaque"], "Item em Destaque")
-                    st.button("Item em Destaque", use_container_width=True)
+                    display_image(images["Serviço de Inspeção"], "Serviço de Inspeção")
+                    if st.button("Serviço de Inspeção", use_container_width=True, key='inspecao_btn'):
+                        st.session_state['show_form_servico_inspecao'] = True
+                        st.rerun()  # Atualiza a interface imediatamente
 
         elif st.session_state['show_form']:
             show_servico_pintura_form()
 
         elif st.session_state['show_form_servico_isolamento']:
             show_isolamento_termico_form()
+            
+        elif st.session_state['show_form_servico_inspecao']:
+            show_exec_atividades_END_form()
         
-        elif st.session_state['show_form_execucao']:
-
-            # Container maior que pega a tela inteira
-            with st.container():
-                # Criando duas colunas dentro do container
-                col1, col2 = st.columns([1, 3])  # Coluna 1 menor e coluna 2 maior
-                
-                # Primeiro container dentro da primeira coluna para o rádio
-                with col1:
-                    with st.container():
-                        # Mostrar a galeria de atividades
-                        st.subheader("Selecione uma Atividade para Execução")
-                        atividades = [
-                            "RAQUETEAMENTO / DESRAQ. DE UNIÕES FLANGEADAS",
-                            "FECHAM/TORQUE UNIÕES FLANGEADAS",
-                            "ABERTURA / FECHAMENTO DE BOCA DE VISITA",
-                            "BANDEJAMENTO",
-                            "REMOÇÃO / INSTALAÇÃO DE VÁLVULAS FLANGEADAS",
-                            "TROCADORES DE CALOR",
-                            "PADRÃO ENSAIOS NÃO DESTRUTIVOS (END's)",
-                            "SERVIÇO DE LIMPEZA COM HIDROJATO"
-                        ]
-                        
-                        # Substituindo os botões por um rádio
-                        atividade_selecionada = st.radio("Selecione a atividade", atividades)
-
-                        # Botão de reset
-                        if st.button("Voltar"):
-                            st.session_state['show_form_execucao'] = False
-                            st.rerun()
-
-                        # Segundo container na segunda coluna para mostrar o resultado
-                with col2:
-                    with st.container():
-                        st.subheader("Resultado da Seleção")
-                        # Lógica de navegação com base na opção selecionada
-                        if atividade_selecionada == "RAQUETEAMENTO / DESRAQ. DE UNIÕES FLANGEADAS":
-                            st.expander("Calculo de RAQUETEAMENTO / DESRAQ. DE UNIÕES FLANGEADAS")
-                            show_exec_atividades_form()
-                        elif atividade_selecionada == "FECHAM/TORQUE UNIÕES FLANGEADAS":
-                            st.expander("Calculo de FECHAM/TORQUE UNIÕES FLANGEADAS")
-                            show_exec_atividades_torque_form()
-                        elif atividade_selecionada == "ABERTURA / FECHAMENTO DE BOCA DE VISITA":
-                            st.expander("Calculo de ABERTURA / FECHAMENTO DE BOCA DE VISITA")
-                            show_exec_atividades_boca_visita_form()
-                        elif atividade_selecionada == "BANDEJAMENTO":
-                            st.expander("Calculo de BANDEJAMENTO")
-                            show_exec_atividades_bandejamento_form()
-                        elif atividade_selecionada == "REMOÇÃO / INSTALAÇÃO DE VÁLVULAS FLANGEADAS":
-                            st.expander("Calculo de REMOÇÃO / INSTALAÇÃO DE VÁLVULAS FLANGEADAS")
-                            show_exec_atividades_Remocao_Instalacao_Valvulas_form()
-                        elif atividade_selecionada == "TROCADORES DE CALOR":
-                            st.expander("Calculo de TROCADORES DE CALOR")
-                            show_exec_atividades_Trocadores_De_Calor_form()
-                        elif atividade_selecionada == "PADRÃO ENSAIOS NÃO DESTRUTIVOS (END's)":
-                            st.expander("Calculo de PADRÃO ENSAIOS NÃO DESTRUTIVOS (END's)")
-                            show_exec_atividades_END_form()
-                        elif atividade_selecionada == "SERVIÇO DE LIMPEZA COM HIDROJATO":
-                            st.expander("Calculo de SERVIÇO DE LIMPEZA COM HIDROJATO")
-                            show_exec_atividades_Servico_Limpeza_Hidrojato_form()
+        elif st.session_state['show_form_limpeza']:
+            show_exec_atividades_Servico_Limpeza_Hidrojato_form()
+            
+        elif st.session_state['show_form_servico_andaime']:
+            show_andaime_form() 
 
         elif st.session_state['show_form_caldeiraria_solda']:
 
@@ -225,6 +186,12 @@ def cronogramas_screen():
                         # Mostrar a galeria de atividades
                         st.subheader("Selecione uma Atividade para Caldeiraria e Solda")
                         atividades_caldeiraria_solda = [
+                            "RAQUETEAMENTO / DESRAQ. DE UNIÕES FLANGEADAS",
+                            "FECHAM/TORQUE UNIÕES FLANGEADAS",
+                            "ABERTURA / FECHAMENTO DE BOCA DE VISITA",
+                            "BANDEJAMENTO",
+                            "REMOÇÃO / INSTALAÇÃO DE VÁLVULAS FLANGEADAS",
+                            "TROCADORES DE CALOR",
                             "PREPARAÇÃO PARA SOLDAGEM",
                             "SOLDAGEM DE TUBULAÇÃO"
                         ]
@@ -248,6 +215,24 @@ def cronogramas_screen():
                         elif atividade_selecionada_caldeiraria_solda == "SOLDAGEM DE TUBULAÇÃO":
                             st.expander("Calculo de Soldagm de Tubulação")
                             show_soldagem_tubulacao_form()
+                        elif atividade_selecionada_caldeiraria_solda == "RAQUETEAMENTO / DESRAQ. DE UNIÕES FLANGEADAS":
+                            st.expander("Calculo de RAQUETEAMENTO / DESRAQ. DE UNIÕES FLANGEADAS")
+                            show_exec_atividades_form()
+                        elif atividade_selecionada_caldeiraria_solda == "FECHAM/TORQUE UNIÕES FLANGEADAS":
+                            st.expander("Calculo de FECHAM/TORQUE UNIÕES FLANGEADAS")
+                            show_exec_atividades_torque_form()
+                        elif atividade_selecionada_caldeiraria_solda == "ABERTURA / FECHAMENTO DE BOCA DE VISITA":
+                            st.expander("Calculo de ABERTURA / FECHAMENTO DE BOCA DE VISITA")
+                            show_exec_atividades_boca_visita_form()
+                        elif atividade_selecionada_caldeiraria_solda == "BANDEJAMENTO":
+                            st.expander("Calculo de BANDEJAMENTO")
+                            show_exec_atividades_bandejamento_form()
+                        elif atividade_selecionada_caldeiraria_solda == "REMOÇÃO / INSTALAÇÃO DE VÁLVULAS FLANGEADAS":
+                            st.expander("Calculo de REMOÇÃO / INSTALAÇÃO DE VÁLVULAS FLANGEADAS")
+                            show_exec_atividades_Remocao_Instalacao_Valvulas_form()
+                        elif atividade_selecionada_caldeiraria_solda == "TROCADORES DE CALOR":
+                            st.expander("Calculo de TROCADORES DE CALOR")
+                            show_exec_atividades_Trocadores_De_Calor_form()
 
 
 def app():

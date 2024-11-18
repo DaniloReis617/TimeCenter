@@ -73,6 +73,11 @@ def show_exec_atividades_END_form():
     else:
         horas = tempo_estimado / 60
         st.success(f"Duração: {round(horas, 2)} horas")
+        
+    # Botão de reset
+    if st.button("Voltar"):
+        st.session_state['show_form_servico_inspecao'] = False
+        st.rerun()
 
 # Função principal que chama o formulário
 def main():

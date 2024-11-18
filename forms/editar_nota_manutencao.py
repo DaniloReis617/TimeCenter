@@ -325,7 +325,7 @@ def show_informativo_tab(project_data, nota_data):
         if df_INFORMATIVO is None or df_INFORMATIVO.empty:
             st.warning("Nenhum informativo encontrado para a nota selecionada.")
             return
-
+        
         # Verifique se 'GID' contém mais de um valor
         if isinstance(nota_data['GID'], pd.Series):
             # Se 'GID' for uma série (pode conter mais de um valor)
@@ -333,25 +333,27 @@ def show_informativo_tab(project_data, nota_data):
         else:
             # Se 'GID' for um valor único (string ou número)
             df_INFORMATIVO = df_INFORMATIVO[df_INFORMATIVO['CD_NOTA_MANUTENCAO'] == nota_data['GID']]
-
+            
+        st.dataframe(df_INFORMATIVO, use_container_width=True, hide_index=True)
         # Carregar os dados de timecenter.TB_CADASTRO_INFORMATIVO para mapear os códigos
         df_cadastro_INFORMATIVO = read_data("timecenter.TB_CADASTRO_INFORMATIVO")
+        st.dataframe(df_cadastro_INFORMATIVO, use_container_width=True, hide_index=True)
 
         if df_cadastro_INFORMATIVO is not None and not df_cadastro_INFORMATIVO.empty:
             # Fazer a junção com base no campo CD_DESPESA
-            df_INFORMATIVO = pd.merge(df_INFORMATIVO, df_cadastro_INFORMATIVO[['GID', 'TX_DESCRICAO']], 
+            df_INFORMATIVO_Mesclado = pd.merge(df_INFORMATIVO, df_cadastro_INFORMATIVO[['GID', 'TX_DESCRICAO']], 
                                     left_on='CD_INFORMATIVO', right_on='GID', how='left')
             
             # Substituir a coluna CD_DESPESA por TX_DESCRICAO
-            df_INFORMATIVO['CD_INFORMATIVO'] = df_INFORMATIVO['TX_DESCRICAO']
+            df_INFORMATIVO_Mesclado['CD_INFORMATIVO'] = df_INFORMATIVO_Mesclado['TX_DESCRICAO']
 
         # Renomear as colunas
-        df_INFORMATIVO = df_INFORMATIVO.rename(columns={
+        df_INFORMATIVO_Mesclado = df_INFORMATIVO_Mesclado.rename(columns={
             'TX_DESCRICAO': 'Descrição'
         })
 
         # Exibir o DataFrame formatado
-        st.dataframe(df_INFORMATIVO[['Descrição']], use_container_width=True, hide_index=True)
+        st.dataframe(df_INFORMATIVO_Mesclado[['Descrição']], use_container_width=True, hide_index=True)
 
     with tabinformativo2:
         st.write("FORMULÁRIO DE CADASTRO DE NOTAS DE MANUTENÇÃO (INFORMATIVO) - ADMINISTRAÇÃO")
