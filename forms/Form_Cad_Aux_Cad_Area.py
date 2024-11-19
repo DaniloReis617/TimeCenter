@@ -26,7 +26,7 @@ def cad_novo_area_adm():
             var_tx_descricao = st.text_input("Descrição")
 
         with col2:
-            var_vl_qtde_dias_exec = st.text_input("Qtde. dias de Execução", value="0.00")
+            var_vl_qtde_dias_exec = st.text_input("Qtde. dias de Execução", value="0")
 
 
 

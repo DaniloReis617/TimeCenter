@@ -225,8 +225,11 @@ def show_Area():
     # Garantir que a coluna é float
     df['VL_QUANTIDADE_DIAS_EXECUCAO'] = df['VL_QUANTIDADE_DIAS_EXECUCAO'].astype(float)
 
-    # Formatar a coluna VL_QUANTIDADE_DIAS_EXECUCAO como BRL
-    df['VL_QUANTIDADE_DIAS_EXECUCAO'] = df['VL_QUANTIDADE_DIAS_EXECUCAO'].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+    # Converter a coluna VL_QUANTIDADE_DIAS_EXECUCAO para int
+    df['VL_QUANTIDADE_DIAS_EXECUCAO'] = df['VL_QUANTIDADE_DIAS_EXECUCAO'].astype(int)
+
+    # Formatar a coluna VL_QUANTIDADE_DIAS_EXECUCAO para exibir como número inteiro
+    df['VL_QUANTIDADE_DIAS_EXECUCAO'] = df['VL_QUANTIDADE_DIAS_EXECUCAO'].apply(lambda x: f"{x:,}".replace(",", "."))
 
     # Converter a coluna ID para int
     df['ID'] = df['ID'].astype(int)
