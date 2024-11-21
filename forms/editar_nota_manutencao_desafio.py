@@ -160,7 +160,7 @@ def show_edit_nota_form(project_data, nota_data):
             tx_liberavel_em_rotina = st.text_input("Liberável em Rotina", nota_data.get('TX_LIBERAVEL_EM_ROTINA', ''))
                             
         with col2:
-            tx_periodo_de_manutencao = st.text_input("Período de Manutenção < 5 dias ou > 5 dias ", nota_data.get('TX_PERIODO_DE_MANUTENCAO', ''))
+            tx_periodo_de_manutencao = st.text_input("Período de Manutenção < 5 dias ?", nota_data.get('[TX_PERIODO_DE_MANUTENCAO_MENOR_QUE_5_DIAS]', ''))
             tx_equipamento_reserva_sistby_pass = st.text_input("Equipamento Reserva ou Sistema By-Pass", nota_data.get('TX_EQUIPTO_RESERVA_OU_SISTBY_PASS', ''))
             tx_critico = st.text_input("Crítico", nota_data.get('TX_CRITICO', ''))
             tx_oportunidade = st.text_input("Oprtunidade", nota_data.get('TX_OPORTUNIDADE', ''))                                                            
@@ -194,7 +194,7 @@ def show_edit_nota_form(project_data, nota_data):
             "CD_SITUACAO_MOTIVO": str(cd_situacao_motivo) if cd_situacao_motivo else None,
             "TX_REC_INSPECAO": str(tx_rec_inspecao) if tx_rec_inspecao else None,
             "TX_LIBERAVEL_EM_ROTINA": str(tx_liberavel_em_rotina) if tx_liberavel_em_rotina else None,
-            "TX_PERIODO_DE_MANUTENCAO": str(tx_periodo_de_manutencao) if tx_periodo_de_manutencao else None,
+            "TX_PERIODO_DE_MANUTENCAO_MENOR_QUE_5_DIAS": str(tx_periodo_de_manutencao) if tx_periodo_de_manutencao else None,
             "TX_EQUIPTO_RESERVA_OU_SISTBY_PASS": str(tx_equipamento_reserva_sistby_pass) if tx_equipamento_reserva_sistby_pass else None,
             "TX_CRITICO": str(tx_critico) if tx_critico else None,
             "TX_OPORTUNIDADE": str(tx_oportunidade) if tx_oportunidade else None,                                                            

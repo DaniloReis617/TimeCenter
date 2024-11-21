@@ -825,6 +825,22 @@ def get_all_projetos():
     projetos_df = execute_read_query(query)
     return projetos_df
 
+def get_all_empresas():
+    query = """
+    SELECT * 
+    FROM timecenter.TB_EMPRESAS
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            df = pd.read_sql(query, conn)  # Remover `params=[projeto_gid]`
+            return df
+        except Exception as e:
+            st.error(f"Erro ao buscar as Notas de manutenção: {e}")
+            return pd.DataFrame()
+    else:
+        st.error("Não foi possível conectar ao banco de dados.")
+        return pd.DataFrame()   
 
 # Função para aplicar estilo customizado e criar o cabeçalho
 def apply_custom_style_and_header(title):

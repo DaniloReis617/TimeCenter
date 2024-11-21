@@ -1,12 +1,14 @@
 import streamlit as st
 import pandas as pd
-from utils import apply_custom_style_and_header, get_db_connection, read_data, create_data, update_data, get_all_projetos, get_projetos_por_usuario, get_descricao_projetos
+from utils import apply_custom_style_and_header, get_db_connection, read_data, get_all_empresas, create_data, update_data, get_all_projetos, get_projetos_por_usuario, get_descricao_projetos
 from forms.cadastrar_usuarios import add_usuario
 from forms.editar_usuario import edit_usuario
 from forms.cadastrar_projetos import add_projeto
 from forms.editar_projeto import edit_projeto
 from forms.cadastrar_usuarios_por_projetos import add_projeto_usuario
 from forms.editar_usuarios_por_projetos import editar_projeto_usuario
+from forms.cadastrar_empresas import add_empresa
+from forms.editar_empresa import edit_empresa
 
 def adm_screen():
     apply_custom_style_and_header("Tela de Administração")
@@ -16,10 +18,11 @@ def adm_screen():
 
     if conn:
         # Criar as abas
-        tab1, tab2, tab3 = st.tabs([
+        tab1, tab2, tab3, tab4 = st.tabs([
             "Dashboards de Usuários", 
             "Projetos por Usuário", 
-            "Gestão de Projetos"
+            "Gestão de Projetos",
+            "Empresas"
         ])
         
         # Conteúdo da aba 1
@@ -61,6 +64,19 @@ def adm_screen():
                 if st.button("✏️ Editar",key="editproj"):
                     edit_projeto()
             show_gestao_projetos()
+
+        # Conteúdo da aba 3
+        with tab4:
+            col1, col2, col3 = st.columns([8,1,1])
+            with col1:
+                st.header("Empresas")
+            with col2:
+                if st.button("➕ Novo",key="addempresa"):
+                    add_empresa()
+            with col3:
+                if st.button("✏️ Editar",key="editempresa"):
+                    edit_empresa()
+            show_gestao_empresas()
 
 def show_user_dashboard():
     usuarios_df = read_data("timecenter.TB_USUARIO")
@@ -126,6 +142,16 @@ def show_gestao_projetos():
     projetos_df['DT_TERMINO'] = pd.to_datetime(projetos_df['DT_TERMINO']).dt.strftime('%d/%m/%Y')
 
     st.dataframe(projetos_df[['ID', 'TX_DESCRICAO', 'FL_STATUS_MAPPED', 'DT_INICIO', 'DT_TERMINO']], use_container_width=True, hide_index=True)
+
+def show_gestao_empresas():
+    st.subheader("Lista de Empresas")
+
+    empresas_df = get_all_empresas()
+    if empresas_df.empty:
+        st.error("Não há projetos disponíveis.")
+        return
+    
+    st.dataframe(empresas_df[['TX_NOME_EMPRESA']], use_container_width=True, hide_index=True)
 
 
 def app():

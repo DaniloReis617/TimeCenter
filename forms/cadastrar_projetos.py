@@ -1,7 +1,6 @@
-# forms/cadastrar_projeto.py
 import streamlit as st
 import uuid
-from utils import create_data
+from utils import create_data, read_data
 
 @st.dialog("Cadastro")
 def add_projeto():
@@ -10,6 +9,23 @@ def add_projeto():
         with collayout_cad_proj1:
             var_Novo_GID = uuid.uuid4()
             cd_GID = str(var_Novo_GID)
+            
+            # Lê os dados das empresas
+            empresa_df = read_data("timecenter.TB_EMPRESAS")
+            
+            # Usuário seleciona o nome da empresa
+            empresa_nome_selecionado = st.selectbox(
+                "Selecione uma empresa", 
+                empresa_df['TX_NOME_EMPRESA'], 
+                key="edicao_empresa_dialog"
+            )
+            
+            # Obtém o GID_EMPRESA correspondente
+            empresa_gid_selecionado = empresa_df.loc[
+                empresa_df['TX_NOME_EMPRESA'] == empresa_nome_selecionado, 
+                'GID_EMPRESA'
+            ].values[0]
+            
             nova_descricao = st.text_input("Descrição do Projeto")
             nova_data_inicio = st.date_input("Data de Início")
             nova_data_termino = st.date_input("Data de Término")
@@ -17,15 +33,20 @@ def add_projeto():
             
         with collayout_cad_proj2:
             novo_percentual_contingencia = st.text_input("Contingência (%)", value="0.00")  # Campo de contingência
-            novo_status = st.selectbox("Status do Projeto", ['A', 'I'], format_func=lambda x: 'Ativo' if x == 'A' else 'Inativo')
+            novo_status = st.selectbox(
+                "Status do Projeto", 
+                ['A', 'I'], 
+                format_func=lambda x: 'Ativo' if x == 'A' else 'Inativo'
+            )
             novas_informacoes = st.text_area("Informações Adicionais")
         
         submit_button = st.form_submit_button("Adicionar Projeto")
         
         if submit_button:
             novo_projeto = {
-                "GID":str(cd_GID),                
+                "GID": str(cd_GID),                
                 'TX_DESCRICAO': nova_descricao,
+                'CD_EMPRESA': empresa_gid_selecionado,  # Salva o GID_EMPRESA
                 'DT_INICIO': nova_data_inicio,
                 'DT_TERMINO': nova_data_termino,
                 'VL_VALOR_ORCAMENTO': float(novo_orcamento.replace(",", ".")),
